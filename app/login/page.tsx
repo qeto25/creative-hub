@@ -3,17 +3,20 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Sparkles, Mail, Lock, LogIn, Shield, User, Loader2, ArrowRight } from 'lucide-react';
+import { Sparkles, User, Lock, LogIn, Shield, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthSession } from '@/lib/context/AuthContext';
+import { isDemoMode } from '@/lib/config';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthSession();
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const isLive = process.env.NEXT_PUBLIC_APP_MODE === 'live' || !isDemoMode();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,41 +24,78 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
+      // Auto-mapping: jika input adalah "grown" atau tidak memiliki '@', petakan menjadi "grown@creativehub.id"
+      const rawInput = usernameOrEmail.trim();
+      let resolvedEmail = rawInput.toLowerCase();
+
+      if (resolvedEmail === 'grown' || !resolvedEmail.includes('@')) {
+        resolvedEmail = 'grown@creativehub.id';
+      }
+
       const supabase = createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: resolvedEmail,
         password,
       });
 
       if (error) {
-        // Jika akun belum dibuat di Supabase Auth atau offline, berikan fallback demo login
-        if (email.toLowerCase().includes('owner')) {
-          login({
-            role: 'owner',
-            user_id: 'demo-owner-id',
-            name: 'Demo Owner',
-            email: email || 'owner@creativehub.id',
-          });
-          router.push('/dashboard/owner');
-          return;
-        } else {
-          login({
-            role: 'member',
-            user_id: 'demo-member-id',
-            name: 'Demo Member',
-            email: email || 'member@creativehub.id',
-          });
-          router.push('/dashboard/member');
-          return;
+        // Hanya berikan fallback demo login jika aplikasi BERJALAN di mode demo
+        if (!isLive) {
+          if (resolvedEmail.includes('owner') || rawInput.toLowerCase() === 'grown') {
+            login({
+              role: 'owner',
+              user_id: 'demo-owner-id',
+              name: 'Owner Grown (Demo)',
+              email: resolvedEmail,
+            });
+            router.push('/dashboard/owner');
+            return;
+          } else {
+            login({
+              role: 'member',
+              user_id: 'demo-member-id',
+              name: 'Creative Member (Demo)',
+              email: resolvedEmail,
+            });
+            router.push('/dashboard/member');
+            return;
+          }
         }
+
+        // Mode Live: Tampilkan pesan error resmi dari Supabase
+        setErrorMessage(
+          error.message === 'Invalid login credentials'
+            ? 'Username/email atau kata sandi tidak cocok. Periksa kembali kredensial Anda.'
+            : error.message || 'Gagal masuk. Silakan coba lagi.'
+        );
+        return;
       }
 
       if (data?.user) {
-        const role: 'owner' | 'member' =
-          data.user.user_metadata?.role || (data.user.email?.includes('owner') ? 'owner' : 'member');
-        const name =
+        // Ambil profil dari Supabase untuk menentukan role & nama yang akurat
+        let role: 'owner' | 'member' =
+          (data.user.user_metadata?.role as 'owner' | 'member') ||
+          (resolvedEmail === 'grown@creativehub.id' || resolvedEmail.includes('owner') ? 'owner' : 'member');
+        let name =
           data.user.user_metadata?.full_name ||
-          (role === 'owner' ? 'Owner Agensi' : 'Creative Member');
+          (role === 'owner' ? 'Owner Grown' : 'Creative Member');
+
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+          if (profileData?.role) {
+            role = profileData.role as 'owner' | 'member';
+            if (profileData.full_name) {
+              name = profileData.full_name;
+            }
+          }
+        } catch {
+          // Gunakan fallback role dari metadata/email
+        }
 
         login({
           role,
@@ -71,19 +111,19 @@ export default function LoginPage() {
         }
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Gagal login.');
+      setErrorMessage(err?.message || 'Terjadi kesalahan sistem saat mencoba masuk.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Quick Demo Access Buttons
+  // Quick Demo Access Buttons (Hanya aktif di mode Demo)
   const loginAsOwnerDemo = () => {
     login({
       role: 'owner',
       user_id: 'demo-owner-id',
-      name: 'Owner Agensi (Demo)',
-      email: 'owner@creativehub.id',
+      name: 'Owner Grown (Demo)',
+      email: 'grown@creativehub.id',
     });
     router.push('/dashboard/owner');
   };
@@ -122,7 +162,7 @@ export default function LoginPage() {
         {/* Login Form Card */}
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-8 backdrop-blur-xl shadow-2xl space-y-6">
           {errorMessage && (
-            <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-400">
+            <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-400 font-medium">
               {errorMessage}
             </div>
           )}
@@ -130,16 +170,16 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Alamat Email
+                Username / Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                 <input
-                  type="email"
+                  type="text"
                   required
-                  placeholder="nama@creativehub.id"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Username / Email"
+                  value={usernameOrEmail}
+                  onChange={(e) => setUsernameOrEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </div>
@@ -165,7 +205,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all duration-200 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all duration-200 disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -181,31 +221,33 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Quick Demo Access Bar */}
-          <div className="pt-4 border-t border-zinc-800 space-y-3">
-            <span className="block text-[11px] uppercase tracking-wider text-center text-zinc-500 font-semibold">
-              Mode Demo Cepat (1-Click Access)
-            </span>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={loginAsOwnerDemo}
-                className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-colors"
-              >
-                <Shield className="h-3.5 w-3.5 text-amber-400" />
-                <span>Demo Owner</span>
-              </button>
+          {/* Quick Demo Access Bar (HANYA tampil saat mode DEMO) */}
+          {!isLive && (
+            <div className="pt-4 border-t border-zinc-800 space-y-3">
+              <span className="block text-[11px] uppercase tracking-wider text-center text-zinc-500 font-semibold">
+                Mode Demo Cepat (1-Click Access)
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={loginAsOwnerDemo}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                >
+                  <Shield className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Demo Owner</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={loginAsMemberDemo}
-                className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
-              >
-                <User className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Demo Member</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={loginAsMemberDemo}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                >
+                  <User className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Demo Member</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="text-center">
@@ -217,3 +259,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
