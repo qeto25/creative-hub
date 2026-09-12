@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Review } from '@/lib/types';
 import { MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { revalidatePath } from 'next/cache';
+import { isDemoMode } from '@/lib/config';
 
 function normalizePhone(phone: string): string {
   // Strip all non-digit characters
@@ -122,48 +123,51 @@ export async function submitReview(payload: {
       created_at: new Date().toISOString(),
     };
 
-    // 9. Simpan ke Supabase jika terhubung
-    try {
-      const { data: insertedReview, error: insertErr } = await supabase
-        .from('reviews')
-        .insert({
-          booking_id: foundBooking.id.startsWith('b') ? null : foundBooking.id,
-          profile_id: payload.profileId,
-          client_name: foundBooking.client_name,
-          rating: cleanRating,
-          comment: cleanComment,
-        })
-        .select()
-        .single();
-
-      if (!insertErr && insertedReview) {
-        newReview.id = insertedReview.id;
-      }
-
-      // Tandai has_reviewed = true pada bookings
-      await supabase
-        .from('bookings')
-        .update({ has_reviewed: true })
-        .eq('id', foundBooking.id);
-
-      // Recalculate Rating & Review Count di tabel profiles
-      const { data: allReviews } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('profile_id', payload.profileId);
-
-      if (allReviews && allReviews.length > 0) {
-        const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-        await supabase
-          .from('profiles')
-          .update({
-            rating: Math.round(avg * 10) / 10,
-            review_count: allReviews.length,
+    // 9. Simpan ke Supabase jika dalam Mode Live
+    if (!isDemoMode()) {
+      try {
+        const supabase = createClient();
+        const { data: insertedReview, error: insertErr } = await supabase
+          .from('reviews')
+          .insert({
+            booking_id: foundBooking.id.startsWith('b') ? null : foundBooking.id,
+            profile_id: payload.profileId,
+            client_name: foundBooking.client_name,
+            rating: cleanRating,
+            comment: cleanComment,
           })
-          .eq('id', payload.profileId);
+          .select()
+          .single();
+
+        if (!insertErr && insertedReview) {
+          newReview.id = insertedReview.id;
+        }
+
+        // Tandai has_reviewed = true pada bookings
+        await supabase
+          .from('bookings')
+          .update({ has_reviewed: true })
+          .eq('id', foundBooking.id);
+
+        // Recalculate Rating & Review Count di tabel profiles
+        const { data: allReviews } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('profile_id', payload.profileId);
+
+        if (allReviews && allReviews.length > 0) {
+          const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+          await supabase
+            .from('profiles')
+            .update({
+              rating: Math.round(avg * 10) / 10,
+              review_count: allReviews.length,
+            })
+            .eq('id', payload.profileId);
+        }
+      } catch (dbErr) {
+        console.warn('Database review sync note:', dbErr);
       }
-    } catch (dbErr) {
-      console.warn('Database review sync note:', dbErr);
     }
 
     // Tandai juga di memori mock data untuk sesi pengujian

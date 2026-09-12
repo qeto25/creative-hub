@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, X, AlertTriangle, Lock, Unlock, Ban, CheckCircle2, RotateCcw, DollarSign } from 'lucide-react';
 import { Profile } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 import { formatRupiah } from '@/lib/utils/currency';
 
 interface DisciplineModalProps {
@@ -49,15 +49,7 @@ export default function DisciplineModal({ isOpen, onClose, profile, onSaved }: D
     };
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', profile.id);
-
-      if (error) {
-        console.warn('Supabase discipline update fallback to local state:', error.message);
-      }
+      await dataLayer.updateProfile(profile.id, updates);
 
       const updated: Profile = {
         ...profile,
@@ -96,15 +88,7 @@ export default function DisciplineModal({ isOpen, onClose, profile, onSaved }: D
     };
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('profiles')
-        .update(revokedUpdates)
-        .eq('id', profile.id);
-
-      if (error) {
-        console.warn('Supabase revoke fallback to local state:', error.message);
-      }
+      await dataLayer.updateProfile(profile.id, revokedUpdates);
 
       const updated: Profile = {
         ...profile,

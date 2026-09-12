@@ -18,11 +18,13 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { useAuthSession } from '@/lib/context/AuthContext';
+import { isDemoMode } from '@/lib/config';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { session, logout } = useAuthSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isDemo = isDemoMode();
 
   const navLinks = [
     { href: '/', label: 'Home', icon: Compass },
@@ -34,7 +36,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* KIRI: Logo + Nama Agensi */}
+        {/* KIRI: Logo + Nama Agensi + Status Mode */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-0.5 shadow-gold-glow transition-all duration-300 group-hover:scale-105 group-hover:shadow-gold-glow-lg">
             <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-950">
@@ -42,9 +44,18 @@ export default function Navbar() {
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold tracking-widest text-lg text-white group-hover:text-amber-400 transition-colors">
-              CREATIVE<span className="text-amber-400">.</span>HUB
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold tracking-widest text-lg text-white group-hover:text-amber-400 transition-colors">
+                CREATIVE<span className="text-amber-400">.</span>HUB
+              </span>
+              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
+                isDemo
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              }`}>
+                {isDemo ? 'Demo' : 'Live'}
+              </span>
+            </div>
             <span className="text-[10px] tracking-wider uppercase text-zinc-400 font-medium -mt-1">
               Agensi Kreatif Pelajar
             </span>

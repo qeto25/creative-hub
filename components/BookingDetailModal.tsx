@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, User, MessageSquare, Check, Sparkles, FileText, CheckCircle2 } from 'lucide-react';
 import { Booking, BookingStatus } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 
 interface BookingDetailModalProps {
   isOpen: boolean;
@@ -44,13 +44,9 @@ export default function BookingDetailModal({
     const updated = { ...booking, status: newStatus };
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', booking.id);
+      await dataLayer.updateBooking(booking.id, { status: newStatus });
     } catch (err) {
-      // Mock fallback
+      console.warn('BookingDetailModal update note:', err);
     }
 
     onStatusUpdated(updated);

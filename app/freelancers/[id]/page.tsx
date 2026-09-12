@@ -23,9 +23,8 @@ import {
   Share2,
   Check,
 } from 'lucide-react';
-import { MOCK_PROFILES, MOCK_PORTFOLIOS, MOCK_REVIEWS } from '@/lib/data/mock-data';
 import { Profile, Portfolio, Review, Booking } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import ReviewModal from '@/components/ReviewModal';
 import BookingModal from '@/components/BookingModal';
@@ -34,57 +33,29 @@ export default function FreelancerDetailPage() {
   const params = useParams();
   const profileId = params?.id as string;
 
-  // Initial mock profile
-  const initialProfile = useMemo(() => {
-    return (
-      MOCK_PROFILES.find((p) => p.id === profileId || p.slug === profileId) ||
-      MOCK_PROFILES[0]
-    );
-  }, [profileId]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [profile, setProfile] = useState<Profile>(initialProfile);
-  const [portfolios, setPortfolios] = useState<Portfolio[]>(() => {
-    return MOCK_PORTFOLIOS.filter((port) => port.profile_id === initialProfile.id);
-  });
-  const [reviews, setReviews] = useState<Review[]>(() => {
-    return MOCK_REVIEWS.filter((r) => r.profile_id === initialProfile.id);
-  });
-
-  // Hybrid Data Sync: Ambil data dari Supabase, jika kosong/gagal fallback ke mock
+  // Load data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
     async function fetchLiveData() {
       try {
-        const supabase = createClient();
-        const { data: dbProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .or(`id.eq.${profileId},slug.eq.${profileId}`)
-          .maybeSingle();
-
-        if (dbProfile) {
-          setProfile(dbProfile);
-
-          // Portfolios
-          const { data: dbPortfolios } = await supabase
-            .from('portfolios')
-            .select('*')
-            .eq('profile_id', dbProfile.id);
-          if (dbPortfolios && dbPortfolios.length > 0) {
-            setPortfolios(dbPortfolios);
-          }
-
-          // Reviews
-          const { data: dbReviews } = await supabase
-            .from('reviews')
-            .select('*')
-            .eq('profile_id', dbProfile.id)
-            .order('created_at', { ascending: false });
-          if (dbReviews && dbReviews.length > 0) {
-            setReviews(dbReviews);
-          }
+        const fetchedProfile = await dataLayer.getProfileByIdOrSlug(profileId);
+        if (fetchedProfile) {
+          setProfile(fetchedProfile);
+          const [fetchedPortfolios, fetchedReviews] = await Promise.all([
+            dataLayer.getPortfolios({ profileId: fetchedProfile.id }),
+            dataLayer.getReviews({ profileId: fetchedProfile.id }),
+          ]);
+          setPortfolios(fetchedPortfolios);
+          setReviews(fetchedReviews);
         }
       } catch (err) {
-        console.warn('Supabase fetch note in detail page:', err);
+        console.warn('[FreelancerDetailPage] DataLayer fetch note:', err);
+      } finally {
+        setLoading(false);
       }
     }
     fetchLiveData();
@@ -95,6 +66,29 @@ export default function FreelancerDetailPage() {
   const [activeMediaFilter, setActiveMediaFilter] = useState<'all' | 'image' | 'video'>('all');
 
   // Status & Suspension
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-zinc-400">Memuat profil kreator...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-bold text-white">Profil Tidak Ditemukan</h2>
+          <p className="text-xs text-zinc-400">Kreator dengan identitas ini belum terdaftar atau telah dinonaktifkan.</p>
+          <Link href="/freelancers" className="inline-block px-4 py-2 text-xs font-semibold bg-amber-500 text-black rounded-xl">Kembali ke Direktori</Link>
+        </div>
+      </div>
+    );
+  }
+
   const isSuspended = !!profile.is_suspended;
   const isResting = profile.availability_status === 'resting' || profile.is_available === false;
   const isBusy = profile.availability_status === 'busy' || (!profile.availability_status && profile.is_working);

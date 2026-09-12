@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Booking } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
+import { isDemoMode } from '@/lib/config';
+
 export async function createBooking(payload: {
   profileId: string;
   talentName: string;
@@ -18,14 +20,15 @@ export async function createBooking(payload: {
   dpAmount: number;
 }): Promise<{ success: boolean; booking?: Booking; error?: string }> {
   try {
-    const supabase = createClient();
-
     // Generate ticket_code with format #CH-YYMM-[4-digit-random]
     const now = new Date();
     const yy = String(now.getFullYear()).slice(-2);
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const randomDigits = Math.floor(1000 + Math.random() * 9000);
     const ticketCode = `#CH-${yy}${mm}-${randomDigits}`;
+
+    const defaultHubFee = Math.round(payload.estimatedTotal * 0.25);
+    const defaultTalentFee = payload.estimatedTotal - defaultHubFee;
 
     const newBooking: Booking = {
       id: `book-${Date.now()}`,
@@ -44,36 +47,44 @@ export async function createBooking(payload: {
       status: 'pending_dp',
       step_progress: 1,
       payout_status: 'unpaid',
+      hub_fee: defaultHubFee,
+      talent_fee: defaultTalentFee,
       created_at: new Date().toISOString(),
     };
 
-    try {
-      const { data: dbInserted, error } = await supabase.from('bookings').insert({
-        ticket_code: newBooking.ticket_code,
-        profile_id: newBooking.profile_id,
-        talent_name: newBooking.talent_name,
-        client_name: newBooking.client_name,
-        client_whatsapp: newBooking.client_whatsapp,
-        deadline_date: newBooking.deadline_date,
-        project_brief: newBooking.project_brief,
-        include_source_file: newBooking.include_source_file,
-        is_rush_order: newBooking.is_rush_order,
-        include_extra_revision: newBooking.include_extra_revision,
-        estimated_total: newBooking.estimated_total,
-        dp_amount: newBooking.dp_amount,
-        status: 'pending_dp',
-        step_progress: 1,
-        payout_status: 'unpaid',
-        has_reviewed: false,
-      }).select().single();
+    // Jika mode Demo, JANGAN kirim mutasi ke Supabase asli
+    if (!isDemoMode()) {
+      try {
+        const supabase = createClient();
+        const { data: dbInserted, error } = await supabase.from('bookings').insert({
+          ticket_code: newBooking.ticket_code,
+          profile_id: newBooking.profile_id,
+          talent_name: newBooking.talent_name,
+          client_name: newBooking.client_name,
+          client_whatsapp: newBooking.client_whatsapp,
+          deadline_date: newBooking.deadline_date,
+          project_brief: newBooking.project_brief,
+          include_source_file: newBooking.include_source_file,
+          is_rush_order: newBooking.is_rush_order,
+          include_extra_revision: newBooking.include_extra_revision,
+          estimated_total: newBooking.estimated_total,
+          dp_amount: newBooking.dp_amount,
+          status: 'pending_dp',
+          step_progress: 1,
+          payout_status: 'unpaid',
+          hub_fee: defaultHubFee,
+          talent_fee: defaultTalentFee,
+          has_reviewed: false,
+        }).select().single();
 
-      if (!error && dbInserted) {
-        newBooking.id = dbInserted.id;
-      } else if (error) {
-        console.warn('Supabase bookings insert note:', error.message);
+        if (!error && dbInserted) {
+          newBooking.id = dbInserted.id;
+        } else if (error) {
+          console.warn('Supabase bookings insert note:', error.message);
+        }
+      } catch (dbErr) {
+        console.warn('Supabase live booking exception:', dbErr);
       }
-    } catch (dbErr) {
-      // Ignored for demo / mock mode
     }
 
     revalidatePath('/dashboard/owner');

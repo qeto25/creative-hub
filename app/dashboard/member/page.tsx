@@ -37,6 +37,8 @@ import {
 import { MOCK_PROFILES, MOCK_PORTFOLIOS, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Portfolio, Booking, BookingStatus } from '@/lib/types';
 import { uploadAsset, validateImageFile } from '@/lib/supabase/storage';
+import * as dataLayer from '@/lib/dataLayer';
+import { isDemoMode } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah, parseRupiah } from '@/lib/utils/currency';
 
@@ -56,29 +58,27 @@ const STUDENT_TOOLS_PRESET = [
 export default function MemberDashboardPage() {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'portfolio'>('orders');
   const [profile, setProfile] = useState<Profile>(MOCK_PROFILES[0]);
-  const [portfolios, setPortfolios] = useState<Portfolio[]>(
-    MOCK_PORTFOLIOS.filter((p) => p.profile_id === MOCK_PROFILES[0].id)
-  );
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
-  // Fetch real profile from Supabase on mount
+  // Load member data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
     async function loadMemberData() {
       try {
-        const supabase = createClient();
-        const { data: userData } = await supabase.auth.getUser();
-        
-        let targetId = userData?.user?.id;
-        if (!targetId) {
-          // If no active auth session, default to first member profile
-          targetId = MOCK_PROFILES[0].id;
+        let targetId = MOCK_PROFILES[0].id;
+        if (!isDemoMode()) {
+          try {
+            const supabase = createClient();
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData?.user?.id) {
+              targetId = userData.user.id;
+            }
+          } catch (e) {
+            // ignore
+          }
         }
 
-        const { data: dbProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', targetId)
-          .maybeSingle();
+        const dbProfile = await dataLayer.getProfileByIdOrSlug(targetId);
 
         if (dbProfile) {
           setProfile(dbProfile);
@@ -112,28 +112,21 @@ export default function MemberDashboardPage() {
           setSourceFilePrice(sPrice);
           setSourceFilePriceInput(formatRupiah(sPrice));
 
-          // Load portfolios
-          const { data: dbPortfolios } = await supabase
-            .from('portfolios')
-            .select('*')
-            .eq('profile_id', dbProfile.id);
+          // Load portfolios & bookings via DataLayer
+          const [fetchedPortfolios, fetchedBookings] = await Promise.all([
+            dataLayer.getPortfolios({ profileId: dbProfile.id }),
+            dataLayer.getBookings({ profileId: dbProfile.id }),
+          ]);
 
-          if (dbPortfolios && dbPortfolios.length > 0) {
-            setPortfolios(dbPortfolios);
+          if (fetchedPortfolios) {
+            setPortfolios(fetchedPortfolios);
           }
-
-          // Load live bookings
-          const { data: dbBookings } = await supabase
-            .from('bookings')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-          if (dbBookings && dbBookings.length > 0) {
-            setBookings(dbBookings);
+          if (fetchedBookings) {
+            setBookings(fetchedBookings);
           }
         }
       } catch (e) {
-        console.warn('Member fetch note:', e);
+        console.warn('[MemberDashboardPage] Member fetch note:', e);
       }
     }
     loadMemberData();
@@ -152,14 +145,10 @@ export default function MemberDashboardPage() {
     );
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('bookings')
-        .update({
-          step_progress: targetStep,
-          status: newStatus,
-        })
-        .eq('id', bookingId);
+      await dataLayer.updateBooking(bookingId, {
+        step_progress: targetStep,
+        status: newStatus,
+      });
     } catch (e) {
       console.warn('Member update step note:', e);
     }
@@ -222,15 +211,11 @@ export default function MemberDashboardPage() {
     }));
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('profiles')
-        .update({
-          availability_status: newStatus,
-          is_working: isWorkingVal,
-          is_available: isAvailableVal,
-        })
-        .eq('id', profile.id);
+      await dataLayer.updateProfile(profile.id, {
+        availability_status: newStatus,
+        is_working: isWorkingVal,
+        is_available: isAvailableVal,
+      });
     } catch (e) {
       console.warn('Update availability_status note:', e);
     }
@@ -256,11 +241,7 @@ export default function MemberDashboardPage() {
     setProfile((prev) => ({ ...prev, is_working: updated }));
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('profiles')
-        .update({ is_working: updated })
-        .eq('id', profile.id);
+      await dataLayer.updateProfile(profile.id, { is_working: updated });
     } catch (e) {
       console.warn('Update working status note:', e);
     }
@@ -304,13 +285,9 @@ export default function MemberDashboardPage() {
       setAvatarUrl(url);
       setProfile((prev) => ({ ...prev, avatar_url: url }));
 
-      // Langsung simpan public url ke Supabase DB
+      // Simpan public url ke database via DataLayer
       try {
-        const supabase = createClient();
-        await supabase
-          .from('profiles')
-          .update({ avatar_url: url })
-          .eq('id', profile.id);
+        await dataLayer.updateProfile(profile.id, { avatar_url: url });
       } catch (dbErr) {
         console.warn('DB avatar update note:', dbErr);
       }
@@ -339,13 +316,9 @@ export default function MemberDashboardPage() {
       setCoverUrl(url);
       setProfile((prev) => ({ ...prev, cover_url: url }));
 
-      // Langsung simpan public url ke Supabase DB
+      // Simpan public url ke database via DataLayer
       try {
-        const supabase = createClient();
-        await supabase
-          .from('profiles')
-          .update({ cover_url: url })
-          .eq('id', profile.id);
+        await dataLayer.updateProfile(profile.id, { cover_url: url });
       } catch (dbErr) {
         console.warn('DB cover update note:', dbErr);
       }
@@ -374,16 +347,7 @@ export default function MemberDashboardPage() {
     }));
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('profiles')
-        .update(updatedData)
-        .eq('id', profile.id);
-
-      if (error) {
-        console.warn('Supabase update pricing note:', error.message);
-      }
-
+      await dataLayer.updateProfile(profile.id, updatedData);
       setPricingSaveSuccess(true);
       setTimeout(() => setPricingSaveSuccess(false), 3000);
     } catch (err: any) {
@@ -423,12 +387,7 @@ export default function MemberDashboardPage() {
     }));
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('profiles')
-        .update(updatePayload)
-        .eq('id', profile.id);
-
+      await dataLayer.updateProfile(profile.id, updatePayload);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
@@ -458,8 +417,7 @@ export default function MemberDashboardPage() {
     setPortfolios((prev) => [newItem, ...prev]);
 
     try {
-      const supabase = createClient();
-      await supabase.from('portfolios').insert({
+      await dataLayer.createPortfolio({
         profile_id: profile.id,
         title: newItem.title,
         category: newItem.category,
@@ -482,8 +440,7 @@ export default function MemberDashboardPage() {
     if (confirm('Hapus portofolio ini?')) {
       setPortfolios((prev) => prev.filter((p) => p.id !== id));
       try {
-        const supabase = createClient();
-        await supabase.from('portfolios').delete().eq('id', id);
+        await dataLayer.deletePortfolio(id);
       } catch (e) {
         console.warn('Delete portfolio note:', e);
       }

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Sparkles, FolderKanban } from 'lucide-react';
-import { MOCK_PORTFOLIOS, MOCK_PROFILES } from '@/lib/data/mock-data';
+import { Portfolio } from '@/lib/types';
+import * as dataLayer from '@/lib/dataLayer';
 import ProjectCard from '@/components/ProjectCard';
 
 const CATEGORIES = [
@@ -15,24 +16,30 @@ const CATEGORIES = [
 
 export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Populate portofolio dengan profil talent
-  const populatedPortfolios = useMemo(() => {
-    return MOCK_PORTFOLIOS.map((item) => {
-      const talent = MOCK_PROFILES.find((p) => p.id === item.profile_id);
-      return {
-        ...item,
-        profile: talent,
-      };
-    });
+  // Load data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const fetched = await dataLayer.getPortfolios();
+        setPortfolios(fetched);
+      } catch (err) {
+        console.warn('[ProjectsPage] DataLayer fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
   const filteredPortfolios = useMemo(() => {
-    if (selectedCategory === 'Semua') return populatedPortfolios;
-    return populatedPortfolios.filter(
+    if (selectedCategory === 'Semua') return portfolios;
+    return portfolios.filter(
       (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
     );
-  }, [populatedPortfolios, selectedCategory]);
+  }, [portfolios, selectedCategory]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-10">

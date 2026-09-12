@@ -4,12 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Users, Trophy, Award, CheckCircle } from 'lucide-react';
-import { MOCK_PROFILES, MOCK_PORTFOLIOS } from '@/lib/data/mock-data';
 import FreelancerCard from '@/components/FreelancerCard';
 import ProjectCard from '@/components/ProjectCard';
 
-import { Profile } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import { Profile, Portfolio } from '@/lib/types';
+import * as dataLayer from '@/lib/dataLayer';
 
 const SKILL_FILTERS = [
   'Semua',
@@ -22,29 +21,26 @@ const SKILL_FILTERS = [
 export default function HomePage() {
   const [selectedSkill, setSelectedSkill] = useState('Semua');
   const [loading, setLoading] = useState(true);
-  const [profiles, setProfiles] = useState<Profile[]>(() => MOCK_PROFILES.filter((p) => !p.is_tester));
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
 
-  // Hybrid Data Sync: Ambil profiles dari Supabase dengan fallback
+  // Load data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   React.useEffect(() => {
-    async function loadProfiles() {
+    async function loadData() {
       try {
-        const supabase = createClient();
-        const { data: dbProfiles } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('is_tester', false)
-          .order('rating', { ascending: false });
-
-        if (dbProfiles && dbProfiles.length > 0) {
-          setProfiles(dbProfiles);
-        }
+        const [fetchedProfiles, fetchedPortfolios] = await Promise.all([
+          dataLayer.getProfiles({ includeTesters: false }),
+          dataLayer.getPortfolios(),
+        ]);
+        setProfiles(fetchedProfiles);
+        setPortfolios(fetchedPortfolios);
       } catch (err) {
-        console.warn('Supabase fetch note on homepage:', err);
+        console.warn('[HomePage] DataLayer load exception:', err);
       } finally {
         setLoading(false);
       }
     }
-    loadProfiles();
+    loadData();
   }, []);
 
   const publishedProfiles = profiles.filter((p) => !p.is_tester);
@@ -54,9 +50,9 @@ export default function HomePage() {
     : publishedProfiles.filter((p) => p.skills.some((s) => s.toLowerCase().includes(selectedSkill.toLowerCase())));
 
   // Portofolio teratas untuk preview kolektif
-  const featuredPortfolios = MOCK_PORTFOLIOS.slice(0, 4).map((port) => ({
+  const featuredPortfolios = portfolios.slice(0, 4).map((port) => ({
     ...port,
-    profile: publishedProfiles.find((p) => p.id === port.profile_id),
+    profile: port.profile || publishedProfiles.find((p) => p.id === port.profile_id),
   }));
 
   return (
@@ -257,7 +253,7 @@ export default function HomePage() {
               href="/projects"
               className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-zinc-200 hover:border-amber-400/50 hover:text-amber-400 transition-colors"
             >
-              Semua Proyek ({MOCK_PORTFOLIOS.length})
+              Semua Proyek ({portfolios.length})
             </Link>
           </div>
 

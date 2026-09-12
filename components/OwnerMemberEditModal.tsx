@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, Loader2, Sparkles, Check } from 'lucide-react';
 import { Profile } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 
 interface OwnerMemberEditModalProps {
   isOpen: boolean;
@@ -19,25 +19,25 @@ export default function OwnerMemberEditModal({
   profile,
   onProfileUpdated,
 }: OwnerMemberEditModalProps) {
-  const [fullName, setFullName] = useState('');
-  const [bio, setBio] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
-  const [skills, setSkills] = useState('');
-  const [tools, setTools] = useState('');
-  const [basePrice, setBasePrice] = useState<number>(0);
-  const [dpPercentage, setDpPercentage] = useState<number>(30);
-  const [turnaroundTime, setTurnaroundTime] = useState('2-4 Hari Kerja');
-  const [deliverables, setDeliverables] = useState('High-Res File, Web Version');
-  const [freeRevisions, setFreeRevisions] = useState<number>(1);
-  const [extraRevisionFee, setExtraRevisionFee] = useState<number>(50000);
-  const [rushFee, setRushFee] = useState<number>(300000);
-  const [sourceFilePrice, setSourceFilePrice] = useState<number>(250000);
-  const [isTester, setIsTester] = useState(false);
+  const [fullName, setFullName] = useState(profile?.full_name || '');
+  const [bio, setBio] = useState(profile?.bio || '');
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
+  const [coverUrl, setCoverUrl] = useState(profile?.cover_url || '');
+  const [skills, setSkills] = useState((profile?.skills || []).join(', '));
+  const [tools, setTools] = useState((profile?.tools || []).join(', '));
+  const [basePrice, setBasePrice] = useState(profile?.base_price || 20000);
+  const [dpPercentage, setDpPercentage] = useState(profile?.dp_percentage || 30);
+  const [turnaroundTime, setTurnaroundTime] = useState(profile?.turnaround_time || '2-3 Hari Kerja');
+  const [deliverables, setDeliverables] = useState((profile?.deliverables || []).join(', '));
+  const [freeRevisions, setFreeRevisions] = useState(profile?.free_revisions || 1);
+  const [extraRevisionFee, setExtraRevisionFee] = useState(profile?.extra_revision_fee || 3000);
+  const [rushFee, setRushFee] = useState(profile?.rush_fee || 10000);
+  const [sourceFilePrice, setSourceFilePrice] = useState(profile?.source_file_price || 5000);
+  const [isTester, setIsTester] = useState(profile?.is_tester || false);
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -47,15 +47,15 @@ export default function OwnerMemberEditModal({
       setCoverUrl(profile.cover_url || '');
       setSkills((profile.skills || []).join(', '));
       setTools((profile.tools || []).join(', '));
-      setBasePrice(profile.base_price || 0);
+      setBasePrice(profile.base_price || 20000);
       setDpPercentage(profile.dp_percentage || 30);
-      setTurnaroundTime(profile.turnaround_time || '2-4 Hari Kerja');
-      setDeliverables((profile.deliverables || ['High-Res File']).join(', '));
-      setFreeRevisions(profile.free_revisions ?? 1);
-      setExtraRevisionFee(profile.extra_revision_fee ?? 50000);
-      setRushFee(profile.rush_fee ?? 300000);
-      setSourceFilePrice(profile.source_file_price ?? 250000);
-      setIsTester(profile.is_tester ?? false);
+      setTurnaroundTime(profile.turnaround_time || '2-3 Hari Kerja');
+      setDeliverables((profile.deliverables || []).join(', '));
+      setFreeRevisions(profile.free_revisions || 1);
+      setExtraRevisionFee(profile.extra_revision_fee || 3000);
+      setRushFee(profile.rush_fee || 10000);
+      setSourceFilePrice(profile.source_file_price || 5000);
+      setIsTester(profile.is_tester || false);
     }
   }, [profile]);
 
@@ -87,28 +87,24 @@ export default function OwnerMemberEditModal({
     };
 
     try {
-      const supabase = createClient();
       try {
-        await supabase
-          .from('profiles')
-          .update({
-            full_name: updatedProfile.full_name,
-            bio: updatedProfile.bio,
-            avatar_url: updatedProfile.avatar_url,
-            cover_url: updatedProfile.cover_url,
-            skills: updatedProfile.skills,
-            tools: updatedProfile.tools,
-            base_price: updatedProfile.base_price,
-            dp_percentage: updatedProfile.dp_percentage,
-            turnaround_time: updatedProfile.turnaround_time,
-            deliverables: updatedProfile.deliverables,
-            free_revisions: updatedProfile.free_revisions,
-            extra_revision_fee: updatedProfile.extra_revision_fee,
-            rush_fee: updatedProfile.rush_fee,
-            source_file_price: updatedProfile.source_file_price,
-            is_tester: updatedProfile.is_tester,
-          })
-          .eq('id', profile.id);
+        await dataLayer.updateProfile(profile.id, {
+          full_name: updatedProfile.full_name,
+          bio: updatedProfile.bio,
+          avatar_url: updatedProfile.avatar_url,
+          cover_url: updatedProfile.cover_url,
+          skills: updatedProfile.skills,
+          tools: updatedProfile.tools,
+          base_price: updatedProfile.base_price,
+          dp_percentage: updatedProfile.dp_percentage,
+          turnaround_time: updatedProfile.turnaround_time,
+          deliverables: updatedProfile.deliverables,
+          free_revisions: updatedProfile.free_revisions,
+          extra_revision_fee: updatedProfile.extra_revision_fee,
+          rush_fee: updatedProfile.rush_fee,
+          source_file_price: updatedProfile.source_file_price,
+          is_tester: updatedProfile.is_tester,
+        });
       } catch (dbErr) {
         // Mock fallback
       }

@@ -20,8 +20,7 @@ import {
   Info
 } from 'lucide-react';
 import { Booking } from '@/lib/types';
-import { MOCK_BOOKINGS } from '@/lib/data/mock-data';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 import { formatRupiahDisplay } from '@/lib/utils/currency';
 
 const STEPS = [
@@ -88,35 +87,10 @@ function TrackContent() {
     setErrorMessage(null);
 
     try {
-      let candidate: Booking | null = null;
+      // Ambil data tiket via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
+      const candidate: Booking | null = await dataLayer.getBookingByTicket(cleanTicket);
 
-      // 1. Cek dari Supabase
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('*')
-          .ilike('ticket_code', cleanTicket)
-          .maybeSingle();
-
-        if (data && !error) {
-          candidate = data as Booking;
-        }
-      } catch (err) {
-        console.warn('Supabase search note:', err);
-      }
-
-      // 2. Fallback ke Mock Data jika belum ada di Supabase
-      if (!candidate) {
-        const foundMock = MOCK_BOOKINGS.find(
-          (b) => b.ticket_code.toUpperCase() === cleanTicket
-        );
-        if (foundMock) {
-          candidate = foundMock;
-        }
-      }
-
-      // 3. Verifikasi Keamanan 4 Digit Terakhir WhatsApp Klien
+      // Verifikasi Keamanan 4 Digit Terakhir WhatsApp Klien
       if (candidate) {
         const rawPhone = (candidate.client_whatsapp || '').replace(/\D/g, '');
         const targetLast4 = rawPhone.slice(-4);

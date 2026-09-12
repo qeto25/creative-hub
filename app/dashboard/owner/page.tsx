@@ -38,44 +38,29 @@ import OwnerMemberEditModal from '@/components/OwnerMemberEditModal';
 import BookingDetailModal from '@/components/BookingDetailModal';
 import DisciplineModal from '@/components/DisciplineModal';
 import { ownerCreateMember } from '@/app/actions/owner-create-member';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 
 export default function OwnerDashboardPage() {
   const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance'>('members');
-  const [profiles, setProfiles] = useState<Profile[]>(MOCK_PROFILES);
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingSearchQuery, setBookingSearchQuery] = useState('');
   const [financeSearchQuery, setFinanceSearchQuery] = useState('');
 
-  // Hybrid Data Sync: Ambil bookings & profiles riil dari Supabase
+  // Load bookings & profiles via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
     async function loadData() {
       try {
-        const supabase = createClient();
-        // 1. Fetch live bookings
-        const { data: dbBookings } = await supabase
-          .from('bookings')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (dbBookings && dbBookings.length > 0) {
-          const dbCodes = new Set(dbBookings.map((b) => b.ticket_code));
-          const nonDupMocks = MOCK_BOOKINGS.filter((mb) => !dbCodes.has(mb.ticket_code));
-          // Prepend real tickets at the very top for clear test tracking
-          setBookings([...dbBookings, ...nonDupMocks]);
+        const [liveBookings, liveProfiles] = await Promise.all([
+          dataLayer.getBookings(),
+          dataLayer.getProfiles({ includeTesters: true }),
+        ]);
+        if (liveBookings) {
+          setBookings(liveBookings);
         }
-
-        // 2. Fetch live profiles
-        const { data: dbProfiles } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (dbProfiles && dbProfiles.length > 0) {
-          const dbIds = new Set(dbProfiles.map((p) => p.id));
-          const nonDupMocks = MOCK_PROFILES.filter((mp) => !dbIds.has(mp.id));
-          setProfiles([...dbProfiles, ...nonDupMocks]);
+        if (liveProfiles) {
+          setProfiles(liveProfiles);
         }
       } catch (err) {
         console.warn('Owner fetch note:', err);
@@ -91,11 +76,7 @@ export default function OwnerDashboardPage() {
     );
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId);
+      await dataLayer.updateBooking(bookingId, { status: newStatus });
     } catch (err) {
       console.warn('Status update note:', err);
     }
@@ -115,14 +96,10 @@ export default function OwnerDashboardPage() {
     );
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('bookings')
-        .update({
-          step_progress: step,
-          status: newStatus,
-        })
-        .eq('id', bookingId);
+      await dataLayer.updateBooking(bookingId, {
+        step_progress: step,
+        status: newStatus,
+      });
     } catch (err) {
       console.warn('Owner step update note:', err);
     }
@@ -145,14 +122,10 @@ export default function OwnerDashboardPage() {
     );
 
     try {
-      const supabase = createClient();
-      await supabase
-        .from('bookings')
-        .update({
-          payout_status: newStatus,
-          payout_date: newDate,
-        })
-        .eq('id', bookingId);
+      await dataLayer.updateBooking(bookingId, {
+        payout_status: newStatus,
+        payout_date: newDate,
+      });
     } catch (err) {
       console.warn('Payout update fallback note:', err);
     }
@@ -235,13 +208,12 @@ export default function OwnerDashboardPage() {
     const newTalentFee = total - newHubFee;
 
     try {
-      const supabase = createClient();
-      await supabase.from('bookings').update({
+      await dataLayer.updateBooking(selectedBookingForKas.id, {
         hub_fee: newHubFee,
         talent_fee: newTalentFee,
-      }).eq('id', selectedBookingForKas.id);
+      });
     } catch (err) {
-      console.warn('Supabase update kas override note:', err);
+      console.warn('DataLayer update kas override note:', err);
     }
 
     setBookings((prev) =>
@@ -268,42 +240,24 @@ export default function OwnerDashboardPage() {
     setIsApplyingGlobalSplit(true);
     try {
       const percentage = Math.max(0, Math.min(100, Number(globalKasPercentage) || 0));
-      const targetBookings = applyToUnpaidOnly
-        ? bookings.filter((b) => b.payout_status !== 'paid' && b.status !== 'cancelled')
-        : bookings.filter((b) => b.status !== 'cancelled');
+      const filterFn = (b: Booking) => {
+        if (applyToUnpaidOnly) {
+          return b.payout_status !== 'paid' && b.status !== 'cancelled';
+        }
+        return b.status !== 'cancelled';
+      };
 
-      const updates = targetBookings.map((b) => {
+      const updatesFn = (b: Booking) => {
         const total = b.estimated_total || 0;
         const hubFee = Math.round(total * (percentage / 100));
         const talentFee = total - hubFee;
-        return { id: b.id, hub_fee: hubFee, talent_fee: talentFee };
-      });
+        return { hub_fee: hubFee, talent_fee: talentFee };
+      };
 
-      // Update di Supabase
-      try {
-        const supabase = createClient();
-        await Promise.all(
-          updates.map((u) =>
-            supabase
-              .from('bookings')
-              .update({ hub_fee: u.hub_fee, talent_fee: u.talent_fee })
-              .eq('id', u.id)
-          )
-        );
-      } catch (err) {
-        console.warn('Supabase global split update note:', err);
+      const updatedAll = await dataLayer.updateBookingsMass(updatesFn, filterFn);
+      if (updatedAll && updatedAll.length > 0) {
+        setBookings(updatedAll);
       }
-
-      // Revalidasi data seketika pada local state
-      setBookings((prev) =>
-        prev.map((b) => {
-          const match = updates.find((u) => u.id === b.id);
-          if (match) {
-            return { ...b, hub_fee: match.hub_fee, talent_fee: match.talent_fee };
-          }
-          return b;
-        })
-      );
 
       setShowGlobalSplitModal(false);
     } catch (err) {

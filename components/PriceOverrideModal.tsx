@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, DollarSign, Percent, Check, Loader2 } from 'lucide-react';
 import { Profile } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 
 interface PriceOverrideModalProps {
   isOpen: boolean;
@@ -40,7 +40,6 @@ export default function PriceOverrideModal({
     setError('');
 
     try {
-      const supabase = createClient();
       const updatedData = {
         ...profile,
         base_price: Number(basePrice),
@@ -49,21 +48,18 @@ export default function PriceOverrideModal({
       };
 
       try {
-        await supabase
-          .from('profiles')
-          .update({
-            base_price: Number(basePrice),
-            dp_percentage: Number(dpPercentage),
-          })
-          .eq('id', profile.id);
+        await dataLayer.updateProfile(profile.id, {
+          base_price: Number(basePrice),
+          dp_percentage: Number(dpPercentage),
+        });
       } catch (err) {
-        console.warn('Supabase DB update note:', err);
+        console.warn('DataLayer update note:', err);
       }
 
       onUpdated(updatedData);
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Gagal menyimpan perubahan harga.');
+      setError(err?.message || 'Gagal menyimpan perubahan tarif.');
     } finally {
       setLoading(false);
     }

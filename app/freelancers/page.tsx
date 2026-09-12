@@ -3,9 +3,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, SlidersHorizontal, Users, Sparkles, CheckCircle2 } from 'lucide-react';
-import { MOCK_PROFILES } from '@/lib/data/mock-data';
 import { Profile } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import * as dataLayer from '@/lib/dataLayer';
 import FreelancerCard from '@/components/FreelancerCard';
 
 export default function FreelancersDirectoryPage() {
@@ -14,24 +13,16 @@ export default function FreelancersDirectoryPage() {
   const [selectedSkill, setSelectedSkill] = useState<string>('Semua');
   const [maxPrice, setMaxPrice] = useState<number>(100000);
   const [loading, setLoading] = useState<boolean>(true);
-  const [profiles, setProfiles] = useState<Profile[]>(() => MOCK_PROFILES.filter((p) => !p.is_tester));
+  const [profiles, setProfiles] = useState<Profile[]>([]);
 
-  // Hybrid Data Sync: Ambil data live dari Supabase dengan fallback ke mock
+  // Load data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
     async function fetchProfiles() {
       try {
-        const supabase = createClient();
-        const { data: dbProfiles } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('is_tester', false)
-          .order('rating', { ascending: false });
-
-        if (dbProfiles && dbProfiles.length > 0) {
-          setProfiles(dbProfiles);
-        }
+        const fetched = await dataLayer.getProfiles({ includeTesters: false });
+        setProfiles(fetched);
       } catch (err) {
-        console.warn('Supabase fetch profiles note:', err);
+        console.warn('[FreelancersPage] DataLayer fetch error:', err);
       } finally {
         setLoading(false);
       }
