@@ -1,0 +1,91 @@
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { Booking } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
+
+export async function createBooking(payload: {
+  profileId: string;
+  talentName: string;
+  clientName: string;
+  clientWhatsapp: string;
+  deadlineDate: string;
+  projectBrief: string;
+  includeSourceFile: boolean;
+  isRushOrder: boolean;
+  includeExtraRevision?: boolean;
+  estimatedTotal: number;
+  dpAmount: number;
+}): Promise<{ success: boolean; booking?: Booking; error?: string }> {
+  try {
+    const supabase = createClient();
+
+    // Generate ticket_code with format #CH-YYMM-[4-digit-random]
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+    const ticketCode = `#CH-${yy}${mm}-${randomDigits}`;
+
+    const newBooking: Booking = {
+      id: `book-${Date.now()}`,
+      ticket_code: ticketCode,
+      profile_id: payload.profileId,
+      talent_name: payload.talentName,
+      client_name: payload.clientName.trim(),
+      client_whatsapp: payload.clientWhatsapp.trim(),
+      deadline_date: payload.deadlineDate,
+      project_brief: payload.projectBrief.trim(),
+      include_source_file: payload.includeSourceFile,
+      is_rush_order: payload.isRushOrder,
+      include_extra_revision: !!payload.includeExtraRevision,
+      estimated_total: payload.estimatedTotal,
+      dp_amount: payload.dpAmount,
+      status: 'pending_dp',
+      step_progress: 1,
+      payout_status: 'unpaid',
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data: dbInserted, error } = await supabase.from('bookings').insert({
+        ticket_code: newBooking.ticket_code,
+        profile_id: newBooking.profile_id,
+        talent_name: newBooking.talent_name,
+        client_name: newBooking.client_name,
+        client_whatsapp: newBooking.client_whatsapp,
+        deadline_date: newBooking.deadline_date,
+        project_brief: newBooking.project_brief,
+        include_source_file: newBooking.include_source_file,
+        is_rush_order: newBooking.is_rush_order,
+        include_extra_revision: newBooking.include_extra_revision,
+        estimated_total: newBooking.estimated_total,
+        dp_amount: newBooking.dp_amount,
+        status: 'pending_dp',
+        step_progress: 1,
+        payout_status: 'unpaid',
+        has_reviewed: false,
+      }).select().single();
+
+      if (!error && dbInserted) {
+        newBooking.id = dbInserted.id;
+      } else if (error) {
+        console.warn('Supabase bookings insert note:', error.message);
+      }
+    } catch (dbErr) {
+      // Ignored for demo / mock mode
+    }
+
+    revalidatePath('/dashboard/owner');
+
+    return {
+      success: true,
+      booking: newBooking,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || 'Gagal membuat tiket pesanan.',
+    };
+  }
+}
