@@ -91,7 +91,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     try {
       localStorage.removeItem(SESSION_KEY);
+      sessionStorage.clear();
       document.cookie = `${SESSION_KEY}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      document.cookie = `creativehub_demo_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
       if (isDemoMode()) {
         await logoutDemoAction();
       }
@@ -100,7 +102,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn('Error during logout', e);
     }
-    router.push('/');
   };
 
   return (

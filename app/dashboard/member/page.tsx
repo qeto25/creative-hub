@@ -46,6 +46,7 @@ import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/curr
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
+import { useAuthSession } from '@/lib/context/AuthContext';
 
 const AVAILABLE_TOOLS = [
   'Canva',

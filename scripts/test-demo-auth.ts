@@ -93,7 +93,53 @@ async function test() {
   // Restore
   process.env.NEXT_PUBLIC_APP_MODE = 'demo';
 
-  console.log('✅ ALL SERVER-SIDE TESTS (DEMO & LIVE MODE GUARDS) PASSED PERFECTLY!');
+  // --- TEST DRAFT PROFILE PRIVACY GUARDS ---
+  const draftId = 'f1a23456-7890-4123-8123-000000000005';
+  const publicId = 'f1a23456-7890-4123-8123-000000000001';
+
+  // Test 6: Unauthenticated visitor / logged out user accessing draft profile
+  const unauthDraftRes = await fetch(`http://localhost:3001/api/profile/${draftId}`);
+  console.log('6. Unauthenticated on draft profile API -> Status:', unauthDraftRes.status);
+  const unauthDraftJson = await unauthDraftRes.json();
+  if (unauthDraftRes.status !== 404 || unauthDraftJson.profile) {
+    throw new Error('Test 6 failed: Unauthenticated user was able to access draft profile data!');
+  }
+  if (JSON.stringify(unauthDraftJson).includes('Rian Syahputra')) {
+    throw new Error('Test 6 failed: Draft talent name leaked in API response!');
+  }
+
+  // Test 7: Member user accessing draft profile
+  const memberDraftRes = await fetch(`http://localhost:3001/api/profile/${draftId}`, {
+    headers: { Cookie: memberCookie },
+  });
+  console.log('7. Member on draft profile API -> Status:', memberDraftRes.status);
+  const memberDraftJson = await memberDraftRes.json();
+  if (memberDraftRes.status !== 404 || memberDraftJson.profile) {
+    throw new Error('Test 7 failed: Member user was able to access draft profile data!');
+  }
+
+  // Test 8: Valid Owner user accessing draft profile
+  const ownerDraftRes = await fetch(`http://localhost:3001/api/profile/${draftId}`, {
+    headers: { Cookie: ownerCookie },
+  });
+  console.log('8. Owner on draft profile API -> Status:', ownerDraftRes.status);
+  const ownerDraftJson = await ownerDraftRes.json();
+  if (ownerDraftRes.status !== 200 || !ownerDraftJson.profile || ownerDraftJson.canViewDraft !== true) {
+    throw new Error('Test 8 failed: Owner with valid session could not view draft profile in review mode!');
+  }
+  if (!ownerDraftJson.profile.full_name.includes('Rian Syahputra')) {
+    throw new Error('Test 8 failed: Owner did not receive expected draft profile data!');
+  }
+
+  // Test 9: Public profile accessible to anyone
+  const publicRes = await fetch(`http://localhost:3001/api/profile/${publicId}`);
+  console.log('9. Public profile API for normal talent -> Status:', publicRes.status);
+  const publicJson = await publicRes.json();
+  if (publicRes.status !== 200 || !publicJson.profile) {
+    throw new Error('Test 9 failed: Public profile should be accessible to all users!');
+  }
+
+  console.log('✅ ALL SERVER-SIDE TESTS (AUTH, ROUTE PROTECTION, DRAFT PRIVACY) PASSED PERFECTLY!');
 }
 
 test().catch((err) => {

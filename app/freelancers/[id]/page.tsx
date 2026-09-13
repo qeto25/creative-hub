@@ -29,17 +29,17 @@ import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/curr
 import ReviewModal from '@/components/ReviewModal';
 import BookingModal from '@/components/BookingModal';
 import { getTalentStatus } from '@/lib/utils/status';
-import { useAuthSession } from '@/lib/context/AuthContext';
+import { getVerifiedProfile } from '@/app/actions/profile';
 
 export default function FreelancerDetailPage() {
   const params = useParams();
   const profileId = params?.id as string;
-  const { session } = useAuthSession();
-  const isOwnerViewer = session?.role === 'owner';
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [isDraft, setIsDraft] = useState(false);
+  const [canViewDraft, setCanViewDraft] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -51,22 +51,24 @@ export default function FreelancerDetailPage() {
   const [customProjectCost, setCustomProjectCost] = useState<number>(20000);
   const [costInput, setCostInput] = useState<string>('20.000');
 
-  // Load data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
+  // Load data via server-verified action (guarantees zero draft leak without valid owner server session)
   useEffect(() => {
     async function fetchLiveData() {
       try {
-        const fetchedProfile = await dataLayer.getProfileByIdOrSlug(profileId);
-        if (fetchedProfile) {
-          setProfile(fetchedProfile);
-          const [fetchedPortfolios, fetchedReviews] = await Promise.all([
-            dataLayer.getPortfolios({ profileId: fetchedProfile.id }),
-            dataLayer.getReviews({ profileId: fetchedProfile.id }),
-          ]);
-          setPortfolios(fetchedPortfolios);
-          setReviews(fetchedReviews);
+        const res = await getVerifiedProfile(profileId);
+        setIsDraft(res.isDraft);
+        setCanViewDraft(res.canViewDraft);
+        if (res.profile) {
+          setProfile(res.profile);
+          setPortfolios(res.portfolios);
+          setReviews(res.reviews);
+        } else {
+          setProfile(null);
+          setPortfolios([]);
+          setReviews([]);
         }
       } catch (err) {
-        console.warn('[FreelancerDetailPage] DataLayer fetch note:', err);
+        console.warn('[FreelancerDetailPage] getVerifiedProfile error:', err);
       } finally {
         setLoading(false);
       }
@@ -125,22 +127,8 @@ export default function FreelancerDetailPage() {
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-bold text-white">Profil Tidak Ditemukan</h2>
-          <p className="text-xs text-zinc-400">Kreator dengan identitas ini belum terdaftar atau telah dinonaktifkan.</p>
-          <Link href="/freelancers" className="inline-block px-4 py-2 text-xs font-semibold bg-amber-500 text-black rounded-xl">Kembali ke Direktori</Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Privasi Profil Draft: Talent tester/draft tidak boleh dapat dibuka lewat URL publik
-  const isDraftProfile = profile.is_tester || profile.role === 'owner';
-
-  if (isDraftProfile && !isOwnerViewer) {
+  // Privasi Profil Draft: Jika profil draft dan pengunjung BUKAN owner terverifikasi server
+  if (isDraft && !canViewDraft) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/80 p-8 backdrop-blur-md shadow-2xl">
@@ -160,6 +148,18 @@ export default function FreelancerDetailPage() {
               <span>Kembali ke Direktori Talent</span>
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-bold text-white">Profil Tidak Ditemukan</h2>
+          <p className="text-xs text-zinc-400">Kreator dengan identitas ini belum terdaftar atau telah dinonaktifkan.</p>
+          <Link href="/freelancers" className="inline-block px-4 py-2 text-xs font-semibold bg-amber-500 text-black rounded-xl">Kembali ke Direktori</Link>
         </div>
       </div>
     );
@@ -195,7 +195,7 @@ export default function FreelancerDetailPage() {
           <span>Kembali ke Direktori Talent</span>
         </Link>
 
-        {isDraftProfile && isOwnerViewer && (
+        {isDraft && canViewDraft && (
           <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 px-3.5 py-1.5 text-[11px] font-bold text-amber-300 flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
             <span>Mode Peninjauan Owner: Profil ini belum dipublikasikan untuk umum</span>

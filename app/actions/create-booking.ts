@@ -5,6 +5,7 @@ import { Booking } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
 import { isDemoMode } from '@/lib/config';
+import * as dataLayer from '@/lib/dataLayer';
 
 export async function createBooking(payload: {
   profileId: string;
@@ -20,6 +21,20 @@ export async function createBooking(payload: {
   dpAmount: number;
 }): Promise<{ success: boolean; booking?: Booking; error?: string }> {
   try {
+    const profile = await dataLayer.getProfileByIdOrSlug(payload.profileId);
+    if (!profile) {
+      return { success: false, error: 'Profil talent tidak ditemukan.' };
+    }
+    const isDraft = Boolean(
+      profile.is_tester ||
+      (profile as any).published === false ||
+      (profile as any).status === 'draft' ||
+      profile.role === 'owner'
+    );
+    if (isDraft) {
+      return { success: false, error: 'Profil talent ini masih dalam peninjauan dan belum menerima order.' };
+    }
+
     // Generate ticket_code with format #CH-YYMM-[4-digit-random]
     const now = new Date();
     const yy = String(now.getFullYear()).slice(-2);

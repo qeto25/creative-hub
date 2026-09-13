@@ -45,8 +45,10 @@ import { createClient } from '@/lib/supabase/client';
 import { isDemoMode } from '@/lib/config';
 import { formatRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
+import { useAuthSession } from '@/lib/context/AuthContext';
 
 export default function OwnerDashboardPage() {
+  const { logout } = useAuthSession();
   const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance'>('members');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -59,11 +61,14 @@ export default function OwnerDashboardPage() {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('creativehub_user_session');
+      sessionStorage.clear();
       if (isDemoMode()) {
         await logoutDemoAction();
       }
       const supabase = createClient();
       await supabase.auth.signOut();
+      await logout();
     } catch (e) {
       // ignore
     }
