@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -30,6 +30,7 @@ import {
   Banknote,
   DollarSign,
   ArrowUpRight,
+  RefreshCw,
 } from 'lucide-react';
 import { MOCK_PROFILES, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Booking, BookingStatus } from '@/lib/types';
@@ -122,7 +123,10 @@ export default function OwnerDashboardPage() {
             dataLayer.getProfiles({ includeTesters: true }),
           ]);
           if (liveBookings) {
-            setBookings(liveBookings);
+            const sorted = [...liveBookings].sort(
+              (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+            );
+            setBookings(sorted);
           }
           if (liveProfiles) {
             setProfiles(liveProfiles);
@@ -136,6 +140,32 @@ export default function OwnerDashboardPage() {
     }
     verifyOwnerAndLoadData();
   }, []);
+
+  // Refetch / Refresh Otomatis Pesanan dari Tabel Bookings (Sorted by created_at DESC)
+  const [isRefreshingBookings, setIsRefreshingBookings] = useState(false);
+  const fetchBookings = useCallback(async () => {
+    try {
+      setIsRefreshingBookings(true);
+      const liveBookings = await dataLayer.getBookings();
+      if (liveBookings) {
+        const sorted = [...liveBookings].sort(
+          (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        );
+        setBookings(sorted);
+      }
+    } catch (err) {
+      console.warn('Error refreshing bookings:', err);
+    } finally {
+      setIsRefreshingBookings(false);
+    }
+  }, []);
+
+  // Refresh otomatis saat tab 'bookings' (Daftar Pesanan) dibuka
+  useEffect(() => {
+    if (isAuthorized && activeTab === 'bookings') {
+      fetchBookings();
+    }
+  }, [activeTab, isAuthorized, fetchBookings]);
 
   // Update Booking Status
   const handleUpdateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
@@ -1016,15 +1046,28 @@ export default function OwnerDashboardPage() {
               </p>
             </div>
 
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Cari no. tiket, nama klien, atau talent..."
-                value={bookingSearchQuery}
-                onChange={(e) => setBookingSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
-              />
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={fetchBookings}
+                disabled={isRefreshingBookings}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-750 text-xs font-semibold text-zinc-300 hover:text-white transition disabled:opacity-50 shrink-0 cursor-pointer"
+                title="Refresh Daftar Pesanan"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingBookings ? 'animate-spin text-amber-400' : ''}`} />
+                <span>{isRefreshingBookings ? 'Memuat...' : 'Refresh'}</span>
+              </button>
+
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Cari no. tiket, nama klien, atau talent..."
+                  value={bookingSearchQuery}
+                  onChange={(e) => setBookingSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 

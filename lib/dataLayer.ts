@@ -407,7 +407,9 @@ export async function getBookings(options?: {
     if (options?.status) {
       result = result.filter((b) => b.status === options.status);
     }
-    return result;
+    return [...result].sort(
+      (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    );
   }
 
   // Live Supabase

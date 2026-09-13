@@ -98,6 +98,41 @@ export default function BookingModal({
       maximumFractionDigits: 0,
     }).format(num);
 
+  // Format Pesan WhatsApp Terstruktur sesuai Standar Creative Hub
+  const generateStructuredWhatsAppMessage = (b: Booking) => {
+    const addonsList: string[] = [];
+    if (b.is_rush_order) addonsList.push('Pengerjaan Kilat (Rush Order)');
+    if (b.include_source_file) addonsList.push('Master / Source File');
+    if (b.include_extra_revision) addonsList.push('Ekstra Revisi');
+    const addonsFormatted = addonsList.length > 0 ? addonsList.join(', ') : 'Tidak ada';
+
+    const formatNumber = (num: number) => Number(num || 0).toLocaleString('id-ID');
+    const total = b.estimated_total || estimatedTotal;
+    const dpPercent = profile.dp_percentage ?? 30;
+    const dp = b.dp_amount || Math.round((total * dpPercent) / 100);
+    const sisa = total - dp;
+
+    return `Halo Admin CREATIVE HUB, saya ingin konfirmasi pemesanan jasa! 🚀
+
+📋 *RINCIAN TIKET & KLIEN:*
+• No. Tiket: ${b.ticket_code}
+• Nama Klien: ${b.client_name}
+• No. WhatsApp: ${b.client_whatsapp}
+• Talent Pilihan: ${b.talent_name}
+
+🎯 *DETAIL PROYEK & KEBUTUHAN:*
+• Deskripsi Singkat: ${b.project_brief}
+• Target Deadline: ${b.deadline_date}
+• Layanan Tambahan: ${addonsFormatted}
+
+💰 *RINCIAN PEMBAYARAN:*
+• Total Biaya: Rp ${formatNumber(total)}
+• DP Wajib (${dpPercent}%): Rp ${formatNumber(dp)}
+• Sisa Pelunasan: Rp ${formatNumber(sisa)}
+
+Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -120,6 +155,7 @@ export default function BookingModal({
     setError('');
 
     try {
+      // 1. WAJIB Tunggu Insert Supabase Selesai via Server Action
       const res = await createBooking({
         profileId: profile.id,
         talentName: profile.full_name,
@@ -134,24 +170,29 @@ export default function BookingModal({
         dpAmount,
       });
 
-      if (res.success && res.booking) {
-        setCreatedBooking(res.booking);
-        if (onBookingSuccess) onBookingSuccess(res.booking);
-
-        // Siapkan pesan WhatsApp terstruktur ke Admin Agensi
-        const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6285831041464';
-        const formattedTotalNumber = Number(res.booking.estimated_total || estimatedTotal).toLocaleString('id-ID');
-        const waMessage = `Halo Admin Creative Hub, saya mau konfirmasi pesanan dengan nomor tiket ${res.booking.ticket_code} atas nama ${clientName} untuk talent ${profile.full_name}. Total tagihan: Rp ${formattedTotalNumber}.`;
-
-        const waUrl = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(waMessage)}`;
-        
-        // Buka tab WhatsApp ke Admin Agensi
-        window.open(waUrl, '_blank');
-      } else {
-        setError(res.error || 'Terjadi kendala saat memproses booking.');
+      // 2. Jika proses insert gagal (error != null), hentikan proses, tampilkan alert error, JANGAN buka WhatsApp
+      if (!res.success || !res.booking || res.error) {
+        const errorMsg = res.error || 'Terjadi kendala saat memproses booking di database.';
+        setError(errorMsg);
+        alert(`Gagal membuat pesanan: ${errorMsg}`);
+        return;
       }
+
+      // 3. Hanya jika berhasil: simpan state dan buka WhatsApp
+      setCreatedBooking(res.booking);
+      if (onBookingSuccess) onBookingSuccess(res.booking);
+
+      // Siapkan pesan WhatsApp terstruktur ke Admin Agensi
+      const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6285831041464';
+      const waMessage = generateStructuredWhatsAppMessage(res.booking);
+      const waUrl = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(waMessage)}`;
+      
+      // Buka tab WhatsApp ke Admin Agensi
+      window.open(waUrl, '_blank');
     } catch (err: any) {
-      setError(err?.message || 'Gagal terhubung ke sistem booking.');
+      const errorMsg = err?.message || 'Gagal terhubung ke sistem booking.';
+      setError(errorMsg);
+      alert(`Gagal membuat pesanan: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -275,8 +316,7 @@ export default function BookingModal({
               {/* Action Buttons: WhatsApp Admin + Selesai */}
               {(() => {
                 const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6285831041464';
-                const formattedTotalNumber = (createdBooking.estimated_total || estimatedTotal).toLocaleString('id-ID');
-                const waMessage = `Halo Admin Creative Hub, saya mau konfirmasi pesanan dengan nomor tiket ${createdBooking.ticket_code} atas nama ${createdBooking.client_name} untuk talent ${createdBooking.talent_name}. Total tagihan: Rp ${formattedTotalNumber}.`;
+                const waMessage = generateStructuredWhatsAppMessage(createdBooking);
                 const waLink = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(waMessage)}`;
 
                 return (
