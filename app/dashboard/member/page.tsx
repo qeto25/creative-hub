@@ -33,6 +33,8 @@ import {
   MessageCircle,
   Calendar,
   CheckCircle2,
+  Eye,
+  X,
 } from 'lucide-react';
 import { MOCK_PROFILES, MOCK_PORTFOLIOS, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Portfolio, Booking, BookingStatus } from '@/lib/types';
@@ -40,11 +42,11 @@ import { uploadAsset, validateImageFile } from '@/lib/supabase/storage';
 import * as dataLayer from '@/lib/dataLayer';
 import { isDemoMode } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
-import { formatRupiah, parseRupiah } from '@/lib/utils/currency';
+import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
 
-const STUDENT_TOOLS_PRESET = [
+const AVAILABLE_TOOLS = [
   'Canva',
   'CapCut',
   'Alight Motion',
@@ -62,25 +64,52 @@ export default function MemberDashboardPage() {
   const [profile, setProfile] = useState<Profile>(MOCK_PROFILES[0]);
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [selectedBookingForDetail, setSelectedBookingForDetail] = useState<Booking | null>(null);
 
   // Load member data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
     async function loadMemberData() {
+      setIsVerifyingAuth(true);
       try {
         let targetId = MOCK_PROFILES[0].id;
         if (!isDemoMode()) {
-          try {
-            const supabase = createClient();
-            const { data: userData } = await supabase.auth.getUser();
-            if (userData?.user?.id) {
-              targetId = userData.user.id;
-            }
-          } catch (e) {
-            // ignore
+          const supabase = createClient();
+          const { data: userData, error: authErr } = await supabase.auth.getUser();
+          if (authErr || !userData?.user) {
+            window.location.href = '/login?redirect=/dashboard/member';
+            return;
           }
+
+          // Cek role: jika Owner, arahkan ke dashboard owner
+          const metaRole = userData.user.user_metadata?.role;
+          const userEmail = userData.user.email?.toLowerCase() || '';
+          if (metaRole === 'owner' || userEmail === 'grown@creativehub.id' || userEmail.includes('owner')) {
+            window.location.href = '/dashboard/owner';
+            return;
+          }
+
+          targetId = userData.user.id;
+        } else {
+          // Demo Mode: periksa sesi demo lokal
+          const saved = localStorage.getItem('creativehub_user_session');
+          if (!saved) {
+            window.location.href = '/login?redirect=/dashboard/member';
+            return;
+          }
+          const parsed = JSON.parse(saved);
+          if (parsed.role === 'owner') {
+            window.location.href = '/dashboard/owner';
+            return;
+          }
+          targetId = parsed.user_id || MOCK_PROFILES[0].id;
         }
 
-        const dbProfile = await dataLayer.getProfileByIdOrSlug(targetId);
+        let dbProfile = await dataLayer.getProfileByIdOrSlug(targetId);
+        if (!dbProfile) {
+          dbProfile = MOCK_PROFILES.find((p) => p.id === targetId) || MOCK_PROFILES[0];
+        }
 
         if (dbProfile) {
           setProfile(dbProfile);
@@ -114,21 +143,25 @@ export default function MemberDashboardPage() {
           setSourceFilePrice(sPrice);
           setSourceFilePriceInput(formatRupiah(sPrice));
 
-          // Load portfolios & bookings via DataLayer
+          // Load portfolios & bookings HANYA untuk profile milik member ini
           const [fetchedPortfolios, fetchedBookings] = await Promise.all([
             dataLayer.getPortfolios({ profileId: dbProfile.id }),
             dataLayer.getBookings({ profileId: dbProfile.id }),
           ]);
 
           if (fetchedPortfolios) {
-            setPortfolios(fetchedPortfolios);
+            setPortfolios(fetchedPortfolios.filter((p) => p.profile_id === dbProfile.id));
           }
           if (fetchedBookings) {
-            setBookings(fetchedBookings);
+            setBookings(fetchedBookings.filter((b) => b.profile_id === dbProfile.id));
           }
+
+          setIsAuthorized(true);
         }
       } catch (e) {
         console.warn('[MemberDashboardPage] Member fetch note:', e);
+      } finally {
+        setIsVerifyingAuth(false);
       }
     }
     loadMemberData();
@@ -559,6 +592,15 @@ export default function MemberDashboardPage() {
     }
   };
 
+  if (isVerifyingAuth || !isAuthorized) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+        <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Member...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Top Header */}
@@ -764,18 +806,31 @@ export default function MemberDashboardPage() {
                           <span>Target: {b.deadline_date}</span>
                         </div>
                       </div>
-                      <div className="line-clamp-2 text-[11px] text-zinc-300 bg-zinc-950/60 p-1.5 rounded border border-zinc-800/40">
-                        <span className="text-zinc-500 font-semibold">Brief: </span>
+                      <div className="line-clamp-2 text-[11px] text-zinc-300 bg-zinc-950/60 p-2 rounded border border-zinc-800/60">
+                        <span className="text-zinc-400 font-semibold">Brief: </span>
                         {b.project_brief}
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedBookingForDetail(b)}
+                          className="inline-flex items-center gap-1 text-amber-400 font-bold hover:text-amber-300 transition"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Lihat Detail Brief</span>
+                        </button>
+                        <span className="text-[11px] text-zinc-400 font-medium">
+                          Total: {formatRupiahDisplay(b.estimated_total)}
+                        </span>
                       </div>
                     </div>
 
                     {/* Baris 3: Footer Kartu Sejajar - Hak Talent (75%) & Tombol Aksi */}
-                    <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60 gap-2">
+                    <div className="flex items-center justify-between pt-1.5 border-t border-zinc-800/80 gap-2">
                       <div>
-                        <span className="text-[10px] text-zinc-500 block">Hak Talent (75%)</span>
-                        <span className="text-xs font-bold text-emerald-400">
-                          {formatRupiah(talentShare)}
+                        <span className="text-[10px] text-zinc-400 block font-medium">Hak Talent (75%)</span>
+                        <span className="text-xs sm:text-sm font-bold text-emerald-400">
+                          {formatRupiahDisplay(talentShare)}
                         </span>
                       </div>
 
@@ -900,9 +955,11 @@ export default function MemberDashboardPage() {
                       {/* Hak Talent: w-[18%] whitespace-nowrap */}
                       <td className="w-[18%] py-3 px-3.5 whitespace-nowrap">
                         <div>
-                          <span className="font-bold text-emerald-400 block text-xs">{formatRupiah(talentShare)}</span>
-                          <span className="text-[10px] text-zinc-400">
-                            Total: {formatRupiah(b.estimated_total)}
+                          <span className="font-bold text-emerald-400 block text-xs">
+                            {formatRupiahDisplay(talentShare)}
+                          </span>
+                          <span className="text-[10px] text-zinc-400 block mt-0.5">
+                            Total: {formatRupiahDisplay(b.estimated_total)}
                           </span>
                         </div>
                       </td>
@@ -1442,7 +1499,7 @@ export default function MemberDashboardPage() {
 
             {/* Presets Badges */}
             <div className="flex flex-wrap gap-2 pt-1">
-              {STUDENT_TOOLS_PRESET.map((tool) => {
+              {AVAILABLE_TOOLS.map((tool: string) => {
                 const isSelected = selectedTools.includes(tool);
                 return (
                   <button
@@ -1759,6 +1816,72 @@ export default function MemberDashboardPage() {
           </div>
         )}
       </div>
+      )}
+
+      {/* MODAL DETAIL BRIEF PESANAN (MOBILE & DESKTOP) */}
+      {selectedBookingForDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div>
+                <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                  {selectedBookingForDetail.ticket_code}
+                </span>
+                <h3 className="text-base font-bold text-white mt-1.5">{selectedBookingForDetail.client_name}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedBookingForDetail(null)}
+                className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="text-[11px] font-semibold text-zinc-400 block">Brief Lengkap Pengerjaan:</label>
+                <div className="mt-1.5 p-3.5 rounded-2xl bg-zinc-900/80 text-zinc-200 border border-zinc-800 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                  {selectedBookingForDetail.project_brief}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-[10px] text-zinc-400 block font-medium">Target Deadline</span>
+                  <span className="text-xs font-bold text-white mt-0.5 block">{selectedBookingForDetail.deadline_date}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-[10px] text-zinc-400 block font-medium">Hak Talent (75%)</span>
+                  <span className="text-xs font-bold text-emerald-400 mt-0.5 block">
+                    {formatRupiahDisplay(selectedBookingForDetail.talent_fee ?? Math.round((selectedBookingForDetail.estimated_total || 0) * 0.75))}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-[10px] text-zinc-400 block font-medium">Total Nilai Proyek</span>
+                  <span className="text-xs font-bold text-white mt-0.5 block">{formatRupiahDisplay(selectedBookingForDetail.estimated_total)}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-[10px] text-zinc-400 block font-medium">Uang Muka (DP)</span>
+                  <span className="text-xs font-bold text-amber-400 mt-0.5 block">{formatRupiahDisplay(selectedBookingForDetail.dp_amount)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-zinc-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedBookingForDetail(null)}
+                className="px-5 py-2.5 text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl transition cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* TOAST NOTIFIKASI LOGOUT */}

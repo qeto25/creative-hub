@@ -43,17 +43,20 @@ export default function HomePage() {
     loadData();
   }, []);
 
-  const publishedProfiles = profiles.filter((p) => !p.is_tester);
+  const publishedProfiles = profiles.filter((p) => !p.is_tester && p.role !== 'owner');
 
   const filteredProfiles = selectedSkill === 'Semua'
     ? publishedProfiles
     : publishedProfiles.filter((p) => p.skills.some((s) => s.toLowerCase().includes(selectedSkill.toLowerCase())));
 
-  // Portofolio teratas untuk preview kolektif
-  const featuredPortfolios = portfolios.slice(0, 4).map((port) => ({
-    ...port,
-    profile: port.profile || publishedProfiles.find((p) => p.id === port.profile_id),
-  }));
+  // Portofolio teratas untuk preview kolektif (hanya talent yang telah dipublikasikan)
+  const featuredPortfolios = portfolios
+    .filter((port) => publishedProfiles.some((p) => p.id === port.profile_id))
+    .slice(0, 4)
+    .map((port) => ({
+      ...port,
+      profile: port.profile || publishedProfiles.find((p) => p.id === port.profile_id),
+    }));
 
   return (
     <div className="space-y-24 pb-20 overflow-hidden">

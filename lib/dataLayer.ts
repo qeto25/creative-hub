@@ -160,6 +160,13 @@ export async function getPortfolios(options?: {
     if (options?.category && options.category !== 'Semua') {
       result = result.filter((p) => p.category.toLowerCase() === options.category!.toLowerCase());
     }
+    // Filter out draft/tester portfolios if general showcase
+    if (!options?.profileId) {
+      result = result.filter((p) => {
+        const prof = snapshot.profiles.find((pr) => pr.id === p.profile_id);
+        return !prof?.is_tester && prof?.role !== 'owner';
+      });
+    }
     // Populate profile attribution
     return result.map((port) => ({
       ...port,
@@ -170,7 +177,7 @@ export async function getPortfolios(options?: {
   // Live Supabase
   try {
     const supabase = createClient();
-    let query = supabase.from('portfolios').select('*, profile:profiles(id, full_name, slug, avatar_url, is_working)');
+    let query = supabase.from('portfolios').select('*, profile:profiles(id, full_name, slug, avatar_url, is_working, is_tester)');
     if (options?.profileId) {
       query = query.eq('profile_id', options.profileId);
     }
@@ -184,7 +191,11 @@ export async function getPortfolios(options?: {
       console.warn('[DataLayer] Live portfolios fetch error:', error.message);
       return [];
     }
-    return (data as Portfolio[]) || [];
+    let list = (data as any[]) || [];
+    if (!options?.profileId) {
+      list = list.filter((p) => !p.profile?.is_tester);
+    }
+    return list as Portfolio[];
   } catch (err) {
     console.error('[DataLayer] Live portfolios exception:', err);
     return [];

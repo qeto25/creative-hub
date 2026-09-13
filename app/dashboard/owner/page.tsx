@@ -42,6 +42,8 @@ import * as dataLayer from '@/lib/dataLayer';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
 import { createClient } from '@/lib/supabase/client';
+import { isDemoMode } from '@/lib/config';
+import { formatRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 
 export default function OwnerDashboardPage() {
   const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance'>('members');
@@ -51,6 +53,8 @@ export default function OwnerDashboardPage() {
   const [bookingSearchQuery, setBookingSearchQuery] = useState('');
   const [financeSearchQuery, setFinanceSearchQuery] = useState('');
   const [logoutToast, setLogoutToast] = useState(false);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -65,25 +69,63 @@ export default function OwnerDashboardPage() {
     }, 1000);
   };
 
-  // Load bookings & profiles via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
+  // Verifikasi wewenang Owner dan load bookings & profiles via unified Data Layer
   useEffect(() => {
-    async function loadData() {
+    async function verifyOwnerAndLoadData() {
+      setIsVerifyingAuth(true);
       try {
-        const [liveBookings, liveProfiles] = await Promise.all([
-          dataLayer.getBookings(),
-          dataLayer.getProfiles({ includeTesters: true }),
-        ]);
-        if (liveBookings) {
-          setBookings(liveBookings);
+        let isOwner = false;
+        if (!isDemoMode()) {
+          const supabase = createClient();
+          const { data: userData, error: authErr } = await supabase.auth.getUser();
+          if (authErr || !userData?.user) {
+            window.location.href = '/login?redirect=/dashboard/owner';
+            return;
+          }
+          const metaRole = userData.user.user_metadata?.role;
+          const userEmail = userData.user.email?.toLowerCase() || '';
+          if (metaRole === 'owner' || userEmail === 'grown@creativehub.id' || userEmail.includes('owner')) {
+            isOwner = true;
+          } else {
+            // Bukan owner -> alihkan ke dashboard member
+            window.location.href = '/dashboard/member';
+            return;
+          }
+        } else {
+          const saved = localStorage.getItem('creativehub_user_session');
+          if (!saved) {
+            window.location.href = '/login?redirect=/dashboard/owner';
+            return;
+          }
+          const parsed = JSON.parse(saved);
+          if (parsed.role === 'owner') {
+            isOwner = true;
+          } else {
+            window.location.href = '/dashboard/member';
+            return;
+          }
         }
-        if (liveProfiles) {
-          setProfiles(liveProfiles);
+
+        if (isOwner) {
+          setIsAuthorized(true);
+          const [liveBookings, liveProfiles] = await Promise.all([
+            dataLayer.getBookings(),
+            dataLayer.getProfiles({ includeTesters: true }),
+          ]);
+          if (liveBookings) {
+            setBookings(liveBookings);
+          }
+          if (liveProfiles) {
+            setProfiles(liveProfiles);
+          }
         }
       } catch (err) {
-        console.warn('Owner fetch note:', err);
+        console.warn('Owner auth/fetch note:', err);
+      } finally {
+        setIsVerifyingAuth(false);
       }
     }
-    loadData();
+    verifyOwnerAndLoadData();
   }, []);
 
   // Update Booking Status
@@ -473,6 +515,15 @@ export default function OwnerDashboardPage() {
         );
     }
   };
+
+  if (isVerifyingAuth || !isAuthorized) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+        <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Owner Agensi...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-10">
@@ -866,11 +917,11 @@ export default function OwnerDashboardPage() {
                         <div>
                           {p.forced_price !== null && p.forced_price !== undefined ? (
                             <>
-                              <span className="font-bold text-zinc-500 line-through text-[11px] block">{formatRupiah(p.base_price || 0)}</span>
-                              <span className="font-bold text-red-400 text-xs">Penalti: {formatRupiah(p.forced_price)}</span>
+                              <span className="font-bold text-zinc-500 line-through text-[11px] block">{formatRupiahDisplay(p.base_price || 0)}</span>
+                              <span className="font-bold text-red-400 text-xs">Penalti: {formatRupiahDisplay(p.forced_price)}</span>
                             </>
                           ) : (
-                            <span className="font-bold text-amber-400">{formatRupiah(p.base_price || 0)}</span>
+                            <span className="font-bold text-amber-400">{formatRupiahDisplay(p.base_price || 0)}</span>
                           )}
                           <div className="text-[10px] text-zinc-400">
                             DP: <strong className="text-zinc-200">{p.dp_percentage}%</strong>
@@ -1261,7 +1312,7 @@ export default function OwnerDashboardPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider">Total Omset Masuk (100%)</span>
                 <Banknote className="h-4 w-4 text-emerald-400" />
               </div>
-              <p className="text-2xl font-extrabold text-white mt-2">{formatRupiah(totalRevenue)}</p>
+              <p className="text-2xl font-extrabold text-white mt-2">{formatRupiahDisplay(totalRevenue)}</p>
               <span className="text-[11px] text-zinc-500">{validBookings.length} Pesanan Aktif & Selesai</span>
             </div>
 
@@ -1270,7 +1321,7 @@ export default function OwnerDashboardPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider">Hak Seluruh Talent (75%)</span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400">75%</span>
               </div>
-              <p className="text-2xl font-extrabold text-emerald-400 mt-2">{formatRupiah(totalTalentShare)}</p>
+              <p className="text-2xl font-extrabold text-emerald-400 mt-2">{formatRupiahDisplay(totalTalentShare)}</p>
               <span className="text-[11px] text-emerald-500/80 font-medium">Alokasi Bersih Kreator Pelajar</span>
             </div>
 
@@ -1279,7 +1330,7 @@ export default function OwnerDashboardPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider">Akumulasi Kas Agensi (25%)</span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">25%+</span>
               </div>
-              <p className="text-2xl font-extrabold text-amber-400 mt-2">{formatRupiah(totalHubShare)}</p>
+              <p className="text-2xl font-extrabold text-amber-400 mt-2">{formatRupiahDisplay(totalHubShare)}</p>
               <span className="text-[11px] text-zinc-500">Operasional & Kas Bersama (+Penyesuaian)</span>
             </div>
 
@@ -1288,7 +1339,7 @@ export default function OwnerDashboardPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider">Sisa Belum Ditransfer</span>
                 <Clock className="h-4 w-4 text-yellow-400" />
               </div>
-              <p className="text-2xl font-extrabold text-yellow-400 mt-2">{formatRupiah(totalUnpaidTalentShare)}</p>
+              <p className="text-2xl font-extrabold text-yellow-400 mt-2">{formatRupiahDisplay(totalUnpaidTalentShare)}</p>
               <span className="text-[11px] text-yellow-500/80 font-medium">{unpaidBookingsCount} order menunggu transfer</span>
             </div>
           </div>
@@ -1366,7 +1417,7 @@ export default function OwnerDashboardPage() {
                     <div className="pt-2 border-t border-zinc-800/80 grid grid-cols-2 gap-2 text-xs bg-zinc-950/40 p-2 rounded-lg border border-zinc-800/40">
                       <div>
                         <span className="text-[10px] text-zinc-500 uppercase font-medium">Hak Talent (75%)</span>
-                        <p className="text-sm font-extrabold text-emerald-400">{formatRupiah(talentShare)}</p>
+                        <p className="text-sm font-extrabold text-emerald-400">{formatRupiahDisplay(talentShare)}</p>
                       </div>
                       <div>
                         <div className="flex items-center justify-between">
@@ -1382,13 +1433,13 @@ export default function OwnerDashboardPage() {
                             <Edit2 className="w-3 h-3" />
                           </button>
                         </div>
-                        <p className="text-sm font-extrabold text-amber-400">{formatRupiah(hubShare)}</p>
+                        <p className="text-sm font-extrabold text-amber-400">{formatRupiahDisplay(hubShare)}</p>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between">
                       <span className="text-[11px] text-zinc-400">
-                        Total: <strong className="text-white">{formatRupiah(b.estimated_total)}</strong>
+                        Total: <strong className="text-white">{formatRupiahDisplay(b.estimated_total)}</strong>
                       </span>
                       <button
                         onClick={() => handleTogglePayout(b.id)}
@@ -1440,14 +1491,14 @@ export default function OwnerDashboardPage() {
                           {b.client_name}
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap font-semibold text-white">
-                          {formatRupiah(b.estimated_total)}
+                          {formatRupiahDisplay(b.estimated_total)}
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap font-extrabold text-emerald-400 text-sm">
-                          {formatRupiah(talentShare)}
+                          {formatRupiahDisplay(talentShare)}
                         </td>
                         <td className="px-4 py-3.5 whitespace-nowrap font-medium text-amber-400">
                           <div className="flex items-center gap-1.5">
-                            <span>{formatRupiah(hubShare)}</span>
+                            <span>{formatRupiahDisplay(hubShare)}</span>
                             {isCustomKas && (
                               <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 py-0.2 rounded font-normal">
                                 Manual

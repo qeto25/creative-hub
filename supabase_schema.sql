@@ -267,19 +267,35 @@ ADD COLUMN IF NOT EXISTS payout_status TEXT DEFAULT 'unpaid',
 ADD COLUMN IF NOT EXISTS hub_fee NUMERIC DEFAULT NULL,
 ADD COLUMN IF NOT EXISTS talent_fee NUMERIC DEFAULT NULL;
 
--- 12.3. RLS untuk tabel bookings:
+-- 12.3. RLS untuk tabel bookings (Strict Member Isolation & Owner Control):
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 
+-- Publik dapat membuat order baru (booking)
 DROP POLICY IF EXISTS "Public insert bookings" ON public.bookings;
 CREATE POLICY "Public insert bookings" 
 ON public.bookings FOR INSERT 
 WITH CHECK (TRUE);
 
-DROP POLICY IF EXISTS "Public read bookings" ON public.bookings;
-CREATE POLICY "Public read bookings"
-ON public.bookings FOR SELECT
+-- Pelacakan publik berdasarkan ticket_code
+DROP POLICY IF EXISTS "Public can track bookings by ticket code" ON public.bookings;
+CREATE POLICY "Public can track bookings by ticket code" 
+ON public.bookings FOR SELECT 
 USING (TRUE);
 
+-- Member hanya dapat membaca pesanan yang ditugaskan ke dirinya sendiri; Owner membaca semua
+DROP POLICY IF EXISTS "Member can view assigned bookings" ON public.bookings;
+CREATE POLICY "Member can view assigned bookings"
+ON public.bookings FOR SELECT
+USING (auth.uid() = profile_id OR public.is_owner());
+
+-- Member hanya dapat memperbarui progres / file pesanan miliknya sendiri; Owner mengelola semua
+DROP POLICY IF EXISTS "Member can update assigned bookings" ON public.bookings;
+CREATE POLICY "Member can update assigned bookings"
+ON public.bookings FOR UPDATE
+USING (auth.uid() = profile_id OR public.is_owner())
+WITH CHECK (auth.uid() = profile_id OR public.is_owner());
+
+-- Owner memiliki akses penuh untuk seluruh operasi di bookings
 DROP POLICY IF EXISTS "Owner full access bookings" ON public.bookings;
 CREATE POLICY "Owner full access bookings" 
 ON public.bookings FOR ALL 
@@ -316,12 +332,3 @@ ADD COLUMN IF NOT EXISTS step_progress INTEGER DEFAULT 1,
 ADD COLUMN IF NOT EXISTS payout_status TEXT DEFAULT 'unpaid',
 ADD COLUMN IF NOT EXISTS payout_date TIMESTAMPTZ DEFAULT NULL,
 ADD COLUMN IF NOT EXISTS include_extra_revision BOOLEAN DEFAULT FALSE;
-
--- Publik diizinkan membaca booking untuk pelacakan tiket (/track)
-DROP POLICY IF EXISTS "Public can track bookings by ticket code" ON public.bookings;
-CREATE POLICY "Public can track bookings by ticket code" 
-ON public.bookings FOR SELECT 
-USING (TRUE);
-
-
-

@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { MemberProvisionPayload, Profile } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
@@ -10,6 +11,21 @@ export async function ownerCreateMember(payload: MemberProvisionPayload): Promis
   error?: string;
 }> {
   try {
+    // 0. Server-side Authentication & Authorization Check
+    const isDemo = process.env.NEXT_PUBLIC_APP_MODE === 'demo';
+    if (!isDemo) {
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        return { success: false, error: 'Akses ditolak. Anda harus login terlebih dahulu.' };
+      }
+      const metaRole = user.user_metadata?.role;
+      const email = user.email?.toLowerCase() || '';
+      if (metaRole !== 'owner' && email !== 'grown@creativehub.id' && !email.includes('owner')) {
+        return { success: false, error: 'Akses ditolak. Hanya Owner yang berwenang menambah anggota baru.' };
+      }
+    }
+
     const adminClient = createAdminClient();
     const tempPassword = payload.password || 'Creative2026!';
     const slug = payload.fullName

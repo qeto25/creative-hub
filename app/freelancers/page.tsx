@@ -21,7 +21,7 @@ export default function FreelancersDirectoryPage() {
     async function fetchProfiles() {
       try {
         const fetched = await dataLayer.getProfiles({ includeTesters: false });
-        setProfiles(fetched);
+        setProfiles((fetched || []).filter((p) => !p.is_tester && p.role !== 'owner'));
       } catch (err) {
         console.warn('[FreelancersPage] DataLayer fetch error:', err);
       } finally {
