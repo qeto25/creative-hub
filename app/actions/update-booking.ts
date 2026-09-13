@@ -48,3 +48,34 @@ export async function updateBookingStepAction(params: {
     return { success: false, error: err?.message || 'Terjadi kesalahan sistem saat update pesanan.' };
   }
 }
+
+/**
+ * Server Action: Update Payout Status (Tandai Selesai / Batal Selesai Transfer ke Talent)
+ */
+export async function updateBookingPayoutAction(params: {
+  bookingId: string;
+  payoutStatus: 'paid' | 'unpaid';
+  payoutDate?: string | null;
+}): Promise<{ success: boolean; booking?: Booking | null; error?: string }> {
+  try {
+    const updated = await dataLayer.updateBooking(params.bookingId, {
+      payout_status: params.payoutStatus,
+      payout_date: params.payoutDate,
+    });
+
+    if (!updated) {
+      return { success: false, error: 'Gagal memperbarui status transfer payout.' };
+    }
+
+    try {
+      revalidatePath('/dashboard/owner');
+      revalidatePath('/dashboard/member');
+    } catch {
+      // Abaikan jika dipanggil di luar konteks request
+    }
+
+    return { success: true, booking: updated };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Terjadi kesalahan sistem saat update payout.' };
+  }
+}

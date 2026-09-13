@@ -39,7 +39,7 @@ import OwnerMemberEditModal from '@/components/OwnerMemberEditModal';
 import DisciplineModal from '@/components/DisciplineModal';
 import BookingDetailModal from '@/components/BookingDetailModal';
 import { ownerCreateMember } from '@/app/actions/owner-create-member';
-import { updateBookingStepAction } from '@/app/actions/update-booking';
+import { updateBookingStepAction, updateBookingPayoutAction } from '@/app/actions/update-booking';
 import * as dataLayer from '@/lib/dataLayer';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
@@ -247,10 +247,14 @@ export default function OwnerDashboardPage() {
     );
 
     try {
-      await dataLayer.updateBooking(bookingId, {
-        payout_status: newStatus,
-        payout_date: newDate,
+      const res = await updateBookingPayoutAction({
+        bookingId,
+        payoutStatus: newStatus,
+        payoutDate: newDate,
       });
+      if (!res.success) {
+        console.warn('Payout update fallback note:', res.error);
+      }
     } catch (err) {
       console.warn('Payout update fallback note:', err);
     }

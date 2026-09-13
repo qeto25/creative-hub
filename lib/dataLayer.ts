@@ -1,6 +1,6 @@
 import { isDemoMode } from '@/lib/config';
 import { getDemoSnapshot, saveDemoSnapshot } from '@/lib/mockData';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, createPublicClient } from '@/lib/supabase/client';
 import { Profile, Portfolio, Review, Booking, BookingStatus } from '@/lib/types';
 
 /**
@@ -71,7 +71,7 @@ export async function getProfiles(options?: {
 
   // Live Supabase
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     let query = supabase.from('profiles').select('*');
     if (!options?.includeTesters) {
       query = query.eq('is_tester', false);
@@ -84,10 +84,15 @@ export async function getProfiles(options?: {
     }
 
     // Dynamic hire_count synchronization: ambil data bookings dan hitung pesanan berstatus selesai
-    const { data: allBookings } = await supabase
+    // Menggunakan kolom profile_id dan status (selesai/completed) secara aman tanpa kolom spekulatif
+    const { data: allBookings, error: bErr } = await supabase
       .from('bookings')
-      .select('profile_id, status, step_progress')
-      .or('status.ilike.%Selesai%,status.eq.Tahap 5: Selesai,status.eq.completed,step_progress.eq.5');
+      .select('profile_id, status')
+      .or('status.eq.completed,status.ilike.%Selesai%');
+
+    if (bErr) {
+      console.warn('[DataLayer] Bookings count query note:', bErr.message);
+    }
 
     const completedMap: Record<string, number> = {};
     (allBookings || []).forEach((b) => {
@@ -129,7 +134,7 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
 
   // Live Supabase
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -145,9 +150,9 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
     // Dynamic hire_count synchronization for single profile
     const { data: bookingsForTalent } = await supabase
       .from('bookings')
-      .select('profile_id, status, step_progress')
+      .select('profile_id, status')
       .eq('profile_id', data.id)
-      .or('status.ilike.%Selesai%,status.eq.Tahap 5: Selesai,status.eq.completed,step_progress.eq.5');
+      .or('status.eq.completed,status.ilike.%Selesai%');
 
     const completed = (bookingsForTalent || []).filter(isBookingCompleted).length;
 
@@ -250,7 +255,7 @@ export async function getPortfolios(options?: {
 
   // Live Supabase
   try {
-    const supabase = createClient();
+    const supabase = createPublicClient();
     let query = supabase.from('portfolios').select('*, profile:profiles(id, full_name, slug, avatar_url, is_working, is_tester)');
     if (options?.profileId) {
       query = query.eq('profile_id', options.profileId);
@@ -503,7 +508,11 @@ export async function getBookings(options?: {
       console.warn('[DataLayer] Live bookings fetch error:', error.message);
       return [];
     }
-    return (data as Booking[]) || [];
+    return ((data as any[]) || []).map((b) => ({
+      ...b,
+      step_progress: b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1),
+      payout_status: b.payout_status || 'unpaid',
+    })) as Booking[];
   } catch (err) {
     console.error('[DataLayer] Live bookings exception:', err);
     return [];
@@ -676,59 +685,77 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
   // Live Supabase
   try {
     const supabase = createClient();
-    // 1. Ambil data booking sebelumnya untuk mengecek transisi status
+    // 1. Ambil data booking sebelumnya untuk mengecek transisi status (hanya query kolom standar)
     const { data: prevBooking } = await supabase
       .from('bookings')
-      .select('profile_id, status, step_progress')
+      .select('profile_id, status')
       .eq('id', id)
       .maybeSingle();
 
-    const wasCompleted = isBookingCompleted(prevBooking);
-    const isNowCompleted = isBookingCompleted({ status: updates.status, step_progress: updates.step_progress });
+    // Jika step_progress diset ke 5 atau status memuat selesai, pastikan status diset ke completed
+    const updatesToApply: Record<string, any> = { ...updates };
+    if (updates.step_progress === 5 && !updates.status) {
+      updatesToApply.status = 'completed';
+    }
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('bookings')
-      .update(updates)
+      .update(updatesToApply)
       .eq('id', id)
       .select()
       .maybeSingle();
+
+    // Fallback cerdas: Jika tabel di Supabase belum memiliki kolom ekstensi (step_progress, payout_status, dll)
+    if (error && (error.code === '42703' || error.message?.includes('column') || error.message?.includes('does not exist'))) {
+      console.warn('[DataLayer] Kolom ekstensi belum ada di Supabase, fallback ke kolom inti:', error.message);
+      const coreUpdates: Record<string, any> = {};
+      if (updatesToApply.status !== undefined) coreUpdates.status = updatesToApply.status;
+      if (updatesToApply.client_name !== undefined) coreUpdates.client_name = updatesToApply.client_name;
+      if (updatesToApply.client_whatsapp !== undefined) coreUpdates.client_whatsapp = updatesToApply.client_whatsapp;
+      if (updatesToApply.deadline_date !== undefined) coreUpdates.deadline_date = updatesToApply.deadline_date;
+      if (updatesToApply.project_brief !== undefined) coreUpdates.project_brief = updatesToApply.project_brief;
+      if (updatesToApply.estimated_total !== undefined) coreUpdates.estimated_total = updatesToApply.estimated_total;
+      if (updatesToApply.dp_amount !== undefined) coreUpdates.dp_amount = updatesToApply.dp_amount;
+      if (updatesToApply.profile_id !== undefined) coreUpdates.profile_id = updatesToApply.profile_id;
+
+      const fallbackRes = await supabase
+        .from('bookings')
+        .update(coreUpdates)
+        .eq('id', id)
+        .select()
+        .maybeSingle();
+
+      data = fallbackRes.data;
+      error = fallbackRes.error;
+    }
 
     if (error) {
       console.error('[DataLayer] Live update booking error:', error.message);
       return null;
     }
 
-    // 2. Increment hire_count di tabel profiles jika baru selesai (profile_id = profile.id)
-    const targetProfileId = prevBooking?.profile_id;
-    if (targetProfileId && !wasCompleted && isNowCompleted) {
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('hire_count')
-        .eq('id', targetProfileId)
-        .maybeSingle();
+    // 2. Sinkronisasi hire_count di tabel profiles secara idempoten & atomic
+    const targetProfileId = prevBooking?.profile_id || (data as any)?.profile_id || updates.profile_id;
+    if (targetProfileId) {
+      const { count } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', targetProfileId)
+        .or('status.eq.completed,status.ilike.%Selesai%');
 
-      if (prof) {
+      if (count !== null && count !== undefined) {
         await supabase
           .from('profiles')
-          .update({ hire_count: (prof.hire_count || 0) + 1 })
-          .eq('id', targetProfileId);
-      }
-    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && !isBookingCompleted({ status: updates.status })) {
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('hire_count')
-        .eq('id', targetProfileId)
-        .maybeSingle();
-
-      if (prof) {
-        await supabase
-          .from('profiles')
-          .update({ hire_count: Math.max(0, (prof.hire_count || 0) - 1) })
+          .update({ hire_count: count })
           .eq('id', targetProfileId);
       }
     }
 
-    return (data as Booking) || null;
+    return {
+      ...(data as any),
+      step_progress: updates.step_progress || (data?.status === 'completed' ? 5 : 1),
+      payout_status: updates.payout_status || (data as any)?.payout_status || 'unpaid',
+    } as Booking;
   } catch (err) {
     console.error('[DataLayer] Live update booking exception:', err);
     return null;
