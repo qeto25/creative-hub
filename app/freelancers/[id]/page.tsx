@@ -238,14 +238,14 @@ export default function FreelancerDetailPage() {
                 className="h-full w-full object-cover object-top"
               />
               {/* Live Indicator & Hired Badge on Top */}
-              <div className="absolute top-4 inset-x-4 flex justify-between items-center z-10">
-                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md shadow-lg ${statusMeta.badgeClass}`}>
-                  <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dotClass}`}></span>
-                  <span>{statusMeta.label}</span>
+              <div className="absolute top-4 inset-x-4 flex justify-between items-center gap-2 z-10">
+                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md shadow-lg min-w-0 max-w-[65%] ${statusMeta.badgeClass}`}>
+                  <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${statusMeta.dotClass}`}></span>
+                  <span className="truncate">{statusMeta.label}</span>
                 </div>
-                <div className="text-xs bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-700/80 font-medium text-zinc-200 inline-flex items-center gap-1.5 shadow-lg">
-                  <Briefcase className="h-3.5 w-3.5 text-amber-400" />
-                  <span>{profile.hire_count || 0}x Hired</span>
+                <div className="shrink-0 whitespace-nowrap text-xs bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-700/80 font-semibold text-zinc-100 inline-flex items-center gap-1.5 shadow-lg">
+                  <Briefcase className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                  <span className="whitespace-nowrap font-semibold">{profile.hire_count || 0}x Hired</span>
                 </div>
               </div>
             </div>

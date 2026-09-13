@@ -33,6 +33,7 @@ import {
   MessageCircle,
   Calendar,
   CheckCircle2,
+  XCircle,
   Eye,
   X,
 } from 'lucide-react';
@@ -171,6 +172,9 @@ export default function MemberDashboardPage() {
 
   // Handle Member Step Updates (Pemisahan Wewenang MODUL 4)
   const handleMemberUpdateStep = async (bookingId: string, targetStep: 2 | 3 | 5) => {
+    const target = bookings.find((b) => b.id === bookingId);
+    if (!target || target.status === 'cancelled') return;
+
     let newStatus: BookingStatus = 'in_progress';
     if (targetStep === 3) newStatus = 'in_review';
     if (targetStep === 5) newStatus = 'completed';
@@ -278,14 +282,23 @@ export default function MemberDashboardPage() {
       return;
     }
 
+    // Set preview gambar lokal seketika agar cepat & tidak lag
+    const localPreview = URL.createObjectURL(file);
+    setNewMediaUrl(localPreview);
+
     setIsUploadingPortfolioThumb(true);
-    const { url, error } = await uploadAsset(file, 'portfolios');
-    if (error || !url) {
-      setUploadError(error || 'Gagal mengunggah thumbnail portofolio.');
-    } else {
-      setNewMediaUrl(url);
+    try {
+      const { url, error } = await uploadAsset(file, 'portfolios');
+      if (error || !url) {
+        setUploadError(error || 'Gagal mengunggah thumbnail portofolio.');
+      } else {
+        setNewMediaUrl(url);
+      }
+    } catch (err: any) {
+      setUploadError(err?.message || 'Gagal mengunggah gambar.');
+    } finally {
+      setIsUploadingPortfolioThumb(false);
     }
-    setIsUploadingPortfolioThumb(false);
   };
 
   // Set Availability Status (Segmented Pill Buttons)
@@ -559,7 +572,18 @@ export default function MemberDashboardPage() {
   const handleAddPortfolio = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLockedOrSuspended) return;
-    if (!newTitle.trim() || !newMediaUrl.trim()) return;
+    if (!newTitle.trim()) {
+      alert('Harap isi judul proyek portofolio.');
+      return;
+    }
+    if (isUploadingPortfolioThumb) {
+      alert('Gambar sedang diunggah, silakan tunggu beberapa detik.');
+      return;
+    }
+    if (!newMediaUrl.trim()) {
+      alert('Harap pilih file gambar atau masukkan tautan URL thumbnail portofolio.');
+      return;
+    }
 
     const newItem: Portfolio = {
       id: `p-${Date.now()}`,
@@ -774,7 +798,10 @@ export default function MemberDashboardPage() {
               </div>
             ) : (
               bookings.map((b) => {
-                const step = b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
+                const isCancelled = b.status === 'cancelled';
+                const step = isCancelled
+                  ? 0
+                  : b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
                 const talentShare = b.talent_fee ?? Math.round((b.estimated_total || 0) * 0.75);
 
                 return (
@@ -788,7 +815,9 @@ export default function MemberDashboardPage() {
                         {b.ticket_code}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                        step === 5
+                        isCancelled
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          : step === 5
                           ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                           : step === 4
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
@@ -798,7 +827,9 @@ export default function MemberDashboardPage() {
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                           : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                       }`}>
-                        {step === 5
+                        {isCancelled
+                          ? 'Dibatalkan'
+                          : step === 5
                           ? 'Tahap 5: Selesai'
                           : step === 4
                           ? 'Tahap 4: Pelunasan 70%'
@@ -848,7 +879,12 @@ export default function MemberDashboardPage() {
                       </div>
 
                       {/* Tombol Aksi Ringkas */}
-                      {step === 1 && (
+                      {isCancelled && (
+                        <span className="text-xs font-bold text-red-400 inline-flex items-center gap-1 shrink-0">
+                          <XCircle className="w-3.5 h-3.5" /> Dibatalkan
+                        </span>
+                      )}
+                      {!isCancelled && step === 1 && (
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 2)}
@@ -857,7 +893,7 @@ export default function MemberDashboardPage() {
                           Mulai Draf →
                         </button>
                       )}
-                      {step === 2 && (
+                      {!isCancelled && step === 2 && (
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 3)}
@@ -866,12 +902,12 @@ export default function MemberDashboardPage() {
                           Kirim Revisi →
                         </button>
                       )}
-                      {step === 3 && (
+                      {!isCancelled && step === 3 && (
                         <span className="text-xs italic text-blue-400 font-medium shrink-0">
                           Verifikasi Owner
                         </span>
                       )}
-                      {step === 4 && (
+                      {!isCancelled && step === 4 && (
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 5)}
@@ -880,7 +916,7 @@ export default function MemberDashboardPage() {
                           Selesaikan →
                         </button>
                       )}
-                      {step === 5 && (
+                      {!isCancelled && step === 5 && (
                         <span className="text-xs font-bold text-emerald-400 inline-flex items-center gap-1 shrink-0">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Selesai
                         </span>
@@ -916,7 +952,10 @@ export default function MemberDashboardPage() {
               </thead>
               <tbody className="divide-y divide-zinc-800/60">
                 {bookings.map((b) => {
-                  const step = b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
+                  const isCancelled = b.status === 'cancelled';
+                  const step = isCancelled
+                    ? 0
+                    : b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
                   const talentShare = b.talent_fee ?? Math.round((b.estimated_total || 0) * 0.75);
 
                   return (
@@ -943,7 +982,9 @@ export default function MemberDashboardPage() {
                           <span>{b.deadline_date}</span>
                         </div>
                         <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          step === 5
+                          isCancelled
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : step === 5
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             : step === 4
                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
@@ -953,7 +994,9 @@ export default function MemberDashboardPage() {
                             ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                             : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                         }`}>
-                          {step === 5
+                          {isCancelled
+                            ? 'Dibatalkan'
+                            : step === 5
                             ? 'Tahap 5: Selesai'
                             : step === 4
                             ? 'Tahap 4: Pelunasan'
@@ -980,7 +1023,12 @@ export default function MemberDashboardPage() {
                       {/* Aksi Progres: w-[25%] text-right pr-4 */}
                       <td className="w-[25%] py-3 px-3.5 text-right pr-4">
                         <div className="flex items-center justify-end">
-                          {step === 1 && (
+                          {isCancelled && (
+                            <span className="text-red-400 font-bold text-xs inline-flex items-center gap-1 whitespace-nowrap">
+                              <XCircle className="w-3.5 h-3.5" /> Dibatalkan
+                            </span>
+                          )}
+                          {!isCancelled && step === 1 && (
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 2)}
@@ -989,7 +1037,7 @@ export default function MemberDashboardPage() {
                               Mulai Draf →
                             </button>
                           )}
-                          {step === 2 && (
+                          {!isCancelled && step === 2 && (
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 3)}
@@ -998,12 +1046,12 @@ export default function MemberDashboardPage() {
                               Kirim Revisi →
                             </button>
                           )}
-                          {step === 3 && (
+                          {!isCancelled && step === 3 && (
                             <span className="text-xs text-blue-400 font-medium whitespace-nowrap italic">
                               Verifikasi Owner
                             </span>
                           )}
-                          {step === 4 && (
+                          {!isCancelled && step === 4 && (
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 5)}
@@ -1012,7 +1060,7 @@ export default function MemberDashboardPage() {
                               Selesaikan →
                             </button>
                           )}
-                          {step === 5 && (
+                          {!isCancelled && step === 5 && (
                             <span className="text-emerald-400 font-bold text-xs inline-flex items-center gap-1 whitespace-nowrap">
                               <CheckCircle2 className="w-3.5 h-3.5" /> Selesai
                             </span>
@@ -1721,10 +1769,10 @@ export default function MemberDashboardPage() {
                         isLockedOrSuspended ? 'opacity-50 cursor-not-allowed' : 'hover:border-amber-400 hover:text-amber-400 cursor-pointer'
                       }`}>
                         <Upload className="h-3.5 w-3.5" />
-                        <span>Pilih File Gambar</span>
+                        <span>{isUploadingPortfolioThumb ? 'Mengunggah...' : 'Pilih File Gambar'}</span>
                         <input
                           type="file"
-                          accept="image/jpeg,image/png,image/webp"
+                          accept="image/jpeg,image/png,image/webp,image/jpg,image/gif"
                           disabled={isLockedOrSuspended || isUploadingPortfolioThumb}
                           onChange={handlePortfolioFileChange}
                           className="hidden"
@@ -1734,17 +1782,30 @@ export default function MemberDashboardPage() {
                       <span className="text-[11px] text-zinc-500 text-center sm:text-left">atau tempel tautan:</span>
                     </div>
 
+                    {isUploadingPortfolioThumb && (
+                      <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                        <span>Sedang mengunggah gambar ke server...</span>
+                      </div>
+                    )}
+
+                    {uploadError && (
+                      <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{uploadError}</span>
+                      </div>
+                    )}
+
                     <input
                       type="url"
-                      required
                       disabled={isLockedOrSuspended}
-                      placeholder="Contoh: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe..."
+                      placeholder="Contoh: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe... (atau upload file di atas)"
                       value={newMediaUrl}
                       onChange={(e) => setNewMediaUrl(e.target.value)}
                       className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <p className="text-[10px] text-zinc-500">
-                      Format didukung: JPG, PNG, WebP (Maks. 2MB). Disarankan rasio landscape 16:9 agar proporsional.
+                      Format didukung: JPG, PNG, WebP (Maks. 5MB). Disarankan rasio landscape 16:9 agar proporsional.
                     </p>
                   </div>
                 </div>

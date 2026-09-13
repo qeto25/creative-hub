@@ -78,24 +78,24 @@ export default function FreelancerCard({
           )}
 
           {/* BADGE ATAS FOTO: STATUS (KIRI) & TOTAL ORDER (KANAN) */}
-          <div className="absolute top-3 inset-x-3 flex justify-between items-center z-10">
+          <div className="absolute top-3 inset-x-3 flex justify-between items-center gap-2 z-10">
             {/* Status Kiri */}
             {isSuspended ? (
-              <div className="inline-flex items-center gap-1 rounded-full border border-red-500/70 bg-red-950/90 px-2 py-0.5 text-[10px] font-bold text-red-300 shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse"></span>
-                <span>Tidak tersedia sementara</span>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-red-500/70 bg-red-950/90 px-2.5 py-1 text-[10px] font-bold text-red-300 shadow-sm min-w-0 max-w-[62%]">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400 animate-pulse"></span>
+                <span className="truncate">Tidak tersedia sementara</span>
               </div>
             ) : (
-              <div className={`inline-flex items-center gap-1.5 rounded-full border backdrop-blur-md px-2 py-0.5 text-[10px] font-medium ${statusMeta.badgeClass}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${statusMeta.dotClass}`}></span>
-                <span>{statusMeta.label}</span>
+              <div className={`inline-flex items-center gap-1.5 rounded-full border backdrop-blur-md px-2.5 py-1 text-[10px] font-medium min-w-0 max-w-[62%] shadow-sm ${statusMeta.badgeClass}`}>
+                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusMeta.dotClass}`}></span>
+                <span className="truncate">{statusMeta.label}</span>
               </div>
             )}
 
             {/* Total Order Kanan */}
-            <div className="text-[10px] bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-zinc-700/60 font-medium text-zinc-200 inline-flex items-center gap-1">
-              <Briefcase className="h-2.5 w-2.5 text-amber-400" />
-              <span>{`${count || 0}x Hired`}</span>
+            <div className="shrink-0 whitespace-nowrap text-[10px] font-semibold bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-full border border-zinc-700/70 text-zinc-100 inline-flex items-center gap-1.5 shadow-sm">
+              <Briefcase className="h-3 w-3 text-amber-400 shrink-0" />
+              <span className="whitespace-nowrap font-semibold">{count || 0}x Hired</span>
             </div>
           </div>
 

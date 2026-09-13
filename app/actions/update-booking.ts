@@ -28,19 +28,17 @@ export async function updateBookingStepAction(params: {
       return { success: false, error: 'Gagal memperbarui data pesanan.' };
     }
 
-    // Revalidate paths jika pesanan selesai agar counter dan kartu talent langsung sinkron
-    if (dataLayer.isBookingCompleted({ status: updates.status, step_progress: updates.step_progress })) {
-      try {
-        revalidatePath('/');
-        revalidatePath('/freelancers');
-        if (updated.profile_id) {
-          revalidatePath(`/freelancers/${updated.profile_id}`);
-        }
-        revalidatePath('/dashboard/owner');
-        revalidatePath('/dashboard/member');
-      } catch {
-        // Abaikan jika dipanggil di luar konteks request
+    // Revalidate paths agar perubahan status (selesai, cancelled, dll.) langsung sinkron di public dan dashboard
+    try {
+      revalidatePath('/');
+      revalidatePath('/freelancers');
+      if (updated.profile_id) {
+        revalidatePath(`/freelancers/${updated.profile_id}`);
       }
+      revalidatePath('/dashboard/owner');
+      revalidatePath('/dashboard/member');
+    } catch {
+      // Abaikan jika dipanggil di luar konteks request
     }
 
     return { success: true, booking: updated };

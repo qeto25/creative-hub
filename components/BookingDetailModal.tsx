@@ -43,17 +43,20 @@ export default function BookingDetailModal({
     setCurrentStatus(newStatus);
 
     const isCompleted = dataLayer.isBookingCompleted({ status: newStatus });
+    const isCancelled = newStatus === 'cancelled';
+    const targetStep = isCompleted ? 5 : isCancelled ? 1 : (booking.step_progress || 1);
+
     const updated: Booking = {
       ...booking,
       status: newStatus,
-      ...(isCompleted ? { step_progress: 5 } : {}),
+      step_progress: targetStep,
     };
 
     try {
       await updateBookingStepAction({
         bookingId: booking.id,
         status: newStatus,
-        stepProgress: isCompleted ? 5 : undefined,
+        stepProgress: targetStep,
       });
     } catch (err) {
       console.warn('BookingDetailModal update note:', err);
