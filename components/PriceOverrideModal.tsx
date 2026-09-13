@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, DollarSign, Percent, Check, Loader2 } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
+import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 
 interface PriceOverrideModalProps {
   isOpen: boolean;
@@ -19,7 +20,8 @@ export default function PriceOverrideModal({
   profile,
   onUpdated,
 }: PriceOverrideModalProps) {
-  const [basePrice, setBasePrice] = useState<number>(profile?.base_price || 500000);
+  const [basePrice, setBasePrice] = useState<number>(profile?.base_price || 50000);
+  const [basePriceInput, setBasePriceInput] = useState<string>(formatRupiah(profile?.base_price || 50000));
   const [dpPercentage, setDpPercentage] = useState<number>(profile?.dp_percentage || 30);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +29,9 @@ export default function PriceOverrideModal({
   // Update form states when profile changes
   React.useEffect(() => {
     if (profile) {
-      setBasePrice(profile.base_price || 0);
+      const price = profile.base_price || 0;
+      setBasePrice(price);
+      setBasePriceInput(formatRupiah(price));
       setDpPercentage(profile.dp_percentage || 30);
     }
   }, [profile]);
@@ -114,21 +118,24 @@ export default function PriceOverrideModal({
                 Tarif Dasar / Mulai Dari (IDR)
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400 text-xs font-bold">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-400 text-xs font-bold">
                   Rp
                 </div>
                 <input
-                  type="number"
-                  min="0"
-                  step="50000"
+                  type="text"
                   required
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(Number(e.target.value))}
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  placeholder="Contoh: 50.000"
+                  value={basePriceInput}
+                  onChange={(e) => {
+                    const formatted = formatRupiah(e.target.value);
+                    setBasePriceInput(formatted);
+                    setBasePrice(parseRupiah(formatted));
+                  }}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm font-semibold text-white focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </div>
               <p className="mt-1 text-[11px] text-zinc-500">
-                Format: {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(basePrice)}
+                Nilai tersimpan: <span className="text-zinc-300 font-semibold">{formatRupiahDisplay(basePrice)}</span>
               </p>
             </div>
 
@@ -159,13 +166,13 @@ export default function PriceOverrideModal({
               <div className="flex justify-between items-center">
                 <span>Nilai DP Klien:</span>
                 <span className="font-bold text-amber-400">
-                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(calculatedDp)}
+                  {formatRupiahDisplay(calculatedDp)}
                 </span>
               </div>
               <div className="flex justify-between items-center mt-1 text-[11px] text-zinc-400">
                 <span>Sisa Pelunasan:</span>
                 <span>
-                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(basePrice - calculatedDp)}
+                  {formatRupiahDisplay(basePrice - calculatedDp)}
                 </span>
               </div>
             </div>

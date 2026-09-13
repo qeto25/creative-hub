@@ -24,12 +24,12 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span className="flex items-center gap-1">
-                <Shield className="h-3.5 w-3.5 text-amber-400" /> Guaranteed Quality
+                <Shield className="h-3.5 w-3.5 text-amber-400" /> Kualitas Terkurasi
               </span>
               <span>•</span>
-              <span>Verified Super Talents</span>
+              <span>Talent Terverifikasi</span>
               <span>•</span>
-              <span>Secure DP Escrow</span>
+              <span>Sistem DP Amanah</span>
             </div>
           </div>
 
@@ -65,25 +65,39 @@ export default function Footer() {
             <p className="text-xs text-zinc-400 leading-relaxed">
               Butuh kurasi khusus tim kreatif untuk proyek skala besar atau retainers? Hubungi tim kurator kami.
             </p>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex items-center gap-2 text-zinc-300">
-                <Mail className="h-3.5 w-3.5 text-amber-400" />
-                <span>concierge@creativehub.id</span>
-              </div>
-              <div className="flex items-center gap-2 text-zinc-300">
-                <Phone className="h-3.5 w-3.5 text-amber-400" />
-                <span>+62 812-3456-7890</span>
-              </div>
+            <div className="space-y-2 text-xs">
+              <a
+                href="mailto:grown@creativehub.id"
+                className="flex items-center gap-2 text-zinc-300 hover:text-amber-400 transition-colors"
+              >
+                <Mail className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                <span>grown@creativehub.id</span>
+              </a>
+              <a
+                href="https://wa.me/6281234567891?text=Halo%20Admin%20Creative%20Hub,%20saya%20ingin%20konsultasi%20proyek"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-zinc-300 hover:text-emerald-400 transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <span>+62 812-3456-7891 (WhatsApp Resmi)</span>
+              </a>
             </div>
           </div>
         </div>
 
         <div className="mt-12 border-t border-zinc-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <p>© {new Date().getFullYear()} CREATIVE HUB Collective. All rights reserved.</p>
-          <div className="flex gap-6">
-            <span className="hover:text-zinc-400 cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-zinc-400 cursor-pointer">Terms of Service</span>
-            <span className="hover:text-zinc-400 cursor-pointer">Escrow Guarantee</span>
+          <div className="flex flex-wrap gap-6">
+            <Link href="/privacy" className="hover:text-amber-400 transition-colors">
+              Kebijakan Privasi
+            </Link>
+            <Link href="/terms" className="hover:text-amber-400 transition-colors">
+              Syarat & Ketentuan
+            </Link>
+            <Link href="/terms#dp-amanah" className="hover:text-amber-400 transition-colors">
+              Sistem DP Amanah
+            </Link>
           </div>
         </div>
       </div>

@@ -28,6 +28,7 @@ import * as dataLayer from '@/lib/dataLayer';
 import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import ReviewModal from '@/components/ReviewModal';
 import BookingModal from '@/components/BookingModal';
+import { getTalentStatus } from '@/lib/utils/status';
 
 export default function FreelancerDetailPage() {
   const params = useParams();
@@ -37,6 +38,15 @@ export default function FreelancerDetailPage() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [activeMediaFilter, setActiveMediaFilter] = useState<'all' | 'image' | 'video'>('all');
+  const [copiedShare, setCopiedShare] = useState(false);
+
+  // Interactive DP Calculator State: initialized safely with fallback
+  const [customProjectCost, setCustomProjectCost] = useState<number>(20000);
+  const [costInput, setCostInput] = useState<string>('20.000');
 
   // Load data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
@@ -61,11 +71,46 @@ export default function FreelancerDetailPage() {
     fetchLiveData();
   }, [profileId]);
 
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [activeMediaFilter, setActiveMediaFilter] = useState<'all' | 'image' | 'video'>('all');
+  // Sync customProjectCost if base_price or forced_price changes
+  useEffect(() => {
+    if (!profile) return;
+    const cost = profile.forced_price !== null && profile.forced_price !== undefined
+      ? profile.forced_price
+      : (profile.base_price || 20000);
+    setCustomProjectCost(cost);
+    setCostInput(formatRupiah(cost));
+  }, [profile?.base_price, profile?.forced_price]);
 
-  // Status & Suspension
+  const filteredPortfolios = useMemo(() => {
+    if (activeMediaFilter === 'all') return portfolios;
+    return portfolios.filter((p) => p.media_type === activeMediaFilter);
+  }, [portfolios, activeMediaFilter]);
+
+  const handleNewReview = (newReview: Review) => {
+    setReviews((prev) => [newReview, ...prev]);
+  };
+
+  const handleShare = async () => {
+    if (!profile) return;
+    const shareData = {
+      title: `${profile.full_name} - Creative Hub`,
+      text: `Lihat profil kreator ${profile.full_name} di Creative Hub!`,
+      url: typeof window !== 'undefined' ? window.location.href : '',
+    };
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // user cancelled share
+      }
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2000);
+    }
+  };
+
+  // Status & Suspension Guards (Called AFTER all hooks)
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -90,58 +135,22 @@ export default function FreelancerDetailPage() {
   }
 
   const isSuspended = !!profile.is_suspended;
-  const isResting = profile.availability_status === 'resting' || profile.is_available === false;
-  const isBusy = profile.availability_status === 'busy' || (!profile.availability_status && profile.is_working);
+  const statusMeta = getTalentStatus({
+    availabilityStatus: profile.availability_status,
+    isWorking: profile.is_working,
+    isAvailable: profile.is_available,
+    isSuspended: profile.is_suspended,
+  });
+  const isResting = statusMeta.key === 'resting';
+  const isBusy = statusMeta.key === 'busy';
   const hasForcedPrice = profile.forced_price !== null && profile.forced_price !== undefined;
   const effectiveBasePrice = hasForcedPrice ? profile.forced_price! : (profile.base_price || 20000);
   const formattedBasePrice = hasForcedPrice && profile.forced_price === 0
     ? 'Rp 0 (Kompensasi)'
     : formatRupiahDisplay(effectiveBasePrice);
 
-  // Interactive DP Calculator State: Default to effectiveBasePrice
-  const [customProjectCost, setCustomProjectCost] = useState<number>(() => effectiveBasePrice);
-  const [costInput, setCostInput] = useState<string>(() => formatRupiah(effectiveBasePrice));
-  const [copiedShare, setCopiedShare] = useState(false);
-
-  // Sync customProjectCost if base_price or forced_price changes
-  useEffect(() => {
-    const cost = profile.forced_price !== null && profile.forced_price !== undefined
-      ? profile.forced_price
-      : (profile.base_price || 20000);
-    setCustomProjectCost(cost);
-    setCostInput(formatRupiah(cost));
-  }, [profile.base_price, profile.forced_price]);
-
   const calculatedDp = Math.round((customProjectCost * (profile.dp_percentage || 30)) / 100);
   const calculatedRemaining = customProjectCost - calculatedDp;
-
-  const handleShare = async () => {
-    const shareData = {
-      title: `${profile.full_name} - Creative Hub`,
-      text: `Lihat profil kreator ${profile.full_name} di Creative Hub!`,
-      url: typeof window !== 'undefined' ? window.location.href : '',
-    };
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        // user cancelled share
-      }
-    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopiedShare(true);
-      setTimeout(() => setCopiedShare(false), 2000);
-    }
-  };
-
-  const filteredPortfolios = useMemo(() => {
-    if (activeMediaFilter === 'all') return portfolios;
-    return portfolios.filter((p) => p.media_type === activeMediaFilter);
-  }, [portfolios, activeMediaFilter]);
-
-  const handleNewReview = (newReview: Review) => {
-    setReviews((prev) => [newReview, ...prev]);
-  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-12 pb-24 sm:pb-8">
@@ -192,30 +201,10 @@ export default function FreelancerDetailPage() {
               />
               {/* Live Indicator on Top */}
               <div className="absolute top-4 left-4 z-10">
-                {isSuspended ? (
-                  <div className="inline-flex items-center gap-2 rounded-full border border-red-500/70 bg-red-950/90 px-3.5 py-1.5 text-xs font-bold text-red-300 backdrop-blur-md shadow-lg shadow-red-950/50">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-400 animate-pulse"></span>
-                    <span>⛔ Akun Ditangguhkan</span>
-                  </div>
-                ) : isResting ? (
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-zinc-950/90 px-3.5 py-1.5 text-xs font-semibold text-amber-300 backdrop-blur-md">
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
-                    <span>🟡 Sedang Ujian / Rehat</span>
-                  </div>
-                ) : isBusy ? (
-                  <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/50 bg-zinc-950/90 px-3.5 py-1.5 text-xs font-semibold text-blue-400 backdrop-blur-md shadow-[0_0_12px_rgba(59,130,246,0.3)]">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></span>
-                    </span>
-                    <span>🔵 Ada Job Aktif</span>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-zinc-950/80 px-3.5 py-1.5 text-xs font-medium text-emerald-300 backdrop-blur-md">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                    <span>🟢 Siap Terima Order</span>
-                  </div>
-                )}
+                <div className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-lg ${statusMeta.badgeClass}`}>
+                  <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dotClass}`}></span>
+                  <span>{statusMeta.label}</span>
+                </div>
               </div>
             </div>
 
@@ -743,7 +732,7 @@ export default function FreelancerDetailPage() {
             disabled
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-bold text-zinc-400 cursor-not-allowed border border-amber-500/30"
           >
-            <span>Sedang Ujian / Rehat</span>
+            <span>{statusMeta.label}</span>
           </button>
         ) : (
           <button

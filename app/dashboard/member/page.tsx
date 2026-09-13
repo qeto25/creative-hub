@@ -41,6 +41,8 @@ import * as dataLayer from '@/lib/dataLayer';
 import { isDemoMode } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { formatRupiah, parseRupiah } from '@/lib/utils/currency';
+import { getTalentStatus } from '@/lib/utils/status';
+import EmptyState from '@/components/EmptyState';
 
 const STUDENT_TOOLS_PRESET = [
   'Canva',
@@ -192,6 +194,53 @@ export default function MemberDashboardPage() {
   const [pricingSaveSuccess, setPricingSaveSuccess] = useState(false);
   const [isSavingPricing, setIsSavingPricing] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Segmented Save States (Issue 8: Pisahkan form menjadi bagian-bagian kecil)
+  const [isSavingIdentity, setIsSavingIdentity] = useState(false);
+  const [identitySaveSuccess, setIdentitySaveSuccess] = useState(false);
+  const [isSavingSkills, setIsSavingSkills] = useState(false);
+  const [skillsSaveSuccess, setSkillsSaveSuccess] = useState(false);
+
+  // Logout state (Issue 12: Toast logout jelas)
+  const [logoutToast, setLogoutToast] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (e) {
+      // ignore
+    }
+    setLogoutToast(true);
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 1000);
+  };
+
+  // Portfolio file upload state (Issue 9)
+  const [isUploadingPortfolioThumb, setIsUploadingPortfolioThumb] = useState(false);
+
+  const handlePortfolioFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLockedOrSuspended) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setUploadError(validation.error || 'File tidak valid.');
+      return;
+    }
+
+    setIsUploadingPortfolioThumb(true);
+    const { url, error } = await uploadAsset(file, 'portfolios');
+    if (error || !url) {
+      setUploadError(error || 'Gagal mengunggah thumbnail portofolio.');
+    } else {
+      setNewMediaUrl(url);
+    }
+    setIsUploadingPortfolioThumb(false);
+  };
 
   // Set Availability Status (Segmented Pill Buttons)
   const handleSetAvailabilityStatus = async (newStatus: 'available' | 'busy' | 'resting') => {
@@ -397,6 +446,69 @@ export default function MemberDashboardPage() {
     }
   };
 
+  // Save Identity Changes (Card 1: Profil Publik & Identitas)
+  const handleSaveIdentity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLockedOrSuspended) return;
+    setIsSavingIdentity(true);
+    setUploadError(null);
+
+    const updatePayload = {
+      bio,
+      whatsapp_number: whatsapp,
+      avatar_url: avatarUrl,
+      cover_url: coverUrl,
+    };
+
+    setProfile((prev) => ({
+      ...prev,
+      ...updatePayload,
+    }));
+
+    try {
+      await dataLayer.updateProfile(profile.id, updatePayload);
+      setIdentitySaveSuccess(true);
+      setTimeout(() => setIdentitySaveSuccess(false), 3000);
+    } catch (err) {
+      console.warn('Update identity note:', err);
+    } finally {
+      setIsSavingIdentity(false);
+    }
+  };
+
+  // Save Skills & Deliverables Changes (Card 3: Keahlian & Ketentuan Kerja)
+  const handleSaveSkills = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLockedOrSuspended) return;
+    setIsSavingSkills(true);
+    setUploadError(null);
+
+    const deliverablesArray = deliverablesInput.split(',').map((d) => d.trim()).filter(Boolean);
+
+    const updatePayload = {
+      tools: selectedTools,
+      turnaround_time: turnaroundTime,
+      deliverables: deliverablesArray,
+      free_revisions: Number(freeRevisions),
+      revision_notes: revisionNotes,
+    };
+
+    setProfile((prev) => ({
+      ...prev,
+      ...updatePayload,
+    }));
+
+    try {
+      await dataLayer.updateProfile(profile.id, updatePayload);
+      setSkillsSaveSuccess(true);
+      setTimeout(() => setSkillsSaveSuccess(false), 3000);
+    } catch (err) {
+      console.warn('Update skills note:', err);
+    } finally {
+      setIsSavingSkills(false);
+    }
+  };
+
   // Add Portfolio Item
   const handleAddPortfolio = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -471,13 +583,14 @@ export default function MemberDashboardPage() {
           >
             <span>Lihat Profil Publik</span>
           </Link>
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs font-semibold text-red-300 hover:bg-red-500/20 hover:border-red-400 transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
-            <span>Keluar</span>
-          </Link>
+            <span>Keluar Akun</span>
+          </button>
         </div>
       </div>
 
@@ -509,19 +622,21 @@ export default function MemberDashboardPage() {
         </div>
       )}
 
-      {/* NAVIGASI TAB DASHBOARD (HORIZONTAL SCROLL ON MOBILE) */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-zinc-800">
+      {/* NAVIGASI TAB DASHBOARD (RESPONSIVE GRID PADA MOBILE & DESKTOP) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2 border-b border-zinc-800">
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-all ${
             activeTab === 'orders'
               ? 'bg-amber-500 text-zinc-950 font-bold shadow-gold-glow'
               : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
           }`}
         >
-          <Layers className="h-4 w-4 shrink-0" />
-          <span>Pesanan Masuk & Progres</span>
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 shrink-0" />
+            <span>Pesanan Masuk & Progres</span>
+          </div>
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
               activeTab === 'orders'
@@ -536,27 +651,31 @@ export default function MemberDashboardPage() {
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-all ${
             activeTab === 'profile'
               ? 'bg-amber-500 text-zinc-950 font-bold shadow-gold-glow'
               : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
           }`}
         >
-          <User className="h-4 w-4 shrink-0" />
-          <span>Profil & Tarif Pelajar</span>
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 shrink-0" />
+            <span>Profil & Tarif Pelajar</span>
+          </div>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('portfolio')}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-all ${
             activeTab === 'portfolio'
               ? 'bg-amber-500 text-zinc-950 font-bold shadow-gold-glow'
               : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
           }`}
         >
-          <Briefcase className="h-4 w-4 shrink-0" />
-          <span>Portofolio Karya</span>
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4 shrink-0" />
+            <span>Portofolio Karya</span>
+          </div>
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
               activeTab === 'portfolio'
@@ -859,7 +978,7 @@ export default function MemberDashboardPage() {
 
           {/* 3 Segmented Pill Buttons */}
           <div className="grid grid-cols-1 gap-2 p-1.5 bg-zinc-950/90 border border-zinc-800 rounded-2xl">
-            {/* 1. Siap Terima Order */}
+            {/* 1. Tersedia menerima order */}
             <button
               type="button"
               disabled={isLockedOrSuspended}
@@ -872,14 +991,14 @@ export default function MemberDashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${availabilityStatus === 'available' ? 'bg-white' : 'bg-emerald-500'}`} />
-                <span>🟢 Siap Terima Order</span>
+                <span>🟢 Tersedia menerima order</span>
               </div>
               {availabilityStatus === 'available' && (
                 <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-md text-white font-semibold">Aktif</span>
               )}
             </button>
 
-            {/* 2. Sedang Ada Job */}
+            {/* 2. Sedang mengerjakan pesanan */}
             <button
               type="button"
               disabled={isLockedOrSuspended}
@@ -892,14 +1011,14 @@ export default function MemberDashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${availabilityStatus === 'busy' ? 'bg-white' : 'bg-blue-500'}`} />
-                <span>🔵 Sedang Ada Job</span>
+                <span>🔵 Sedang mengerjakan pesanan</span>
               </div>
               {availabilityStatus === 'busy' && (
                 <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-md text-white font-semibold">Aktif</span>
               )}
             </button>
 
-            {/* 3. Rehat / Pekan Ujian */}
+            {/* 3. Tidak tersedia sementara (Rehat/Ujian) */}
             <button
               type="button"
               disabled={isLockedOrSuspended}
@@ -912,7 +1031,7 @@ export default function MemberDashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${availabilityStatus === 'resting' ? 'bg-white' : 'bg-amber-500'}`} />
-                <span>🟡 Rehat / Pekan Ujian</span>
+                <span>🟡 Tidak tersedia sementara (Rehat/Ujian)</span>
               </div>
               {availabilityStatus === 'resting' && (
                 <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-md text-white font-semibold">Aktif</span>
@@ -926,10 +1045,10 @@ export default function MemberDashboardPage() {
               <div className="space-y-1">
                 <div className="font-bold text-emerald-400 flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                  Status: Siap Terima Order
+                  Status: Tersedia menerima order
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Tombol Hire di profil publik menyala aktif. Klien dapat langsung memesan layanan Anda.
+                  Tombol pesan di profil publik menyala aktif. Calon klien dapat langsung memesan layanan Anda.
                 </p>
               </div>
             )}
@@ -937,10 +1056,10 @@ export default function MemberDashboardPage() {
               <div className="space-y-1">
                 <div className="font-bold text-blue-400 flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
-                  Status: Ada Job Aktif
+                  Status: Sedang mengerjakan pesanan
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Indikator antrean sedang berjalan. Klien tetap dapat booking dengan pemberitahuan slot sedang padat.
+                  Indikator antrean aktif. Klien tetap dapat booking dengan pemberitahuan slot sedang padat.
                 </p>
               </div>
             )}
@@ -948,10 +1067,10 @@ export default function MemberDashboardPage() {
               <div className="space-y-1">
                 <div className="font-bold text-amber-300 flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-amber-400"></span>
-                  Status: Sedang Ujian / Rehat
+                  Status: Tidak tersedia sementara
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Badge ujian aktif di profil publik. Tombol Hire dinonaktifkan sementara agar Anda fokus istirahat/ujian.
+                  Badge rehat/ujian aktif di profil publik. Tombol booking dinonaktifkan sementara agar Anda fokus belajar.
                 </p>
               </div>
             )}
@@ -1121,18 +1240,26 @@ export default function MemberDashboardPage() {
         </div>
       </div>
 
-      {/* 2. FORM PROFIL & SOFTWARE MASTERY PELAJAR */}
+      {/* 2. KARTU PROFIL PUBLIK & IDENTITAS */}
       <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-2xl">
-        <h3 className="text-lg font-bold text-white mb-5">Pembaruan Profil, Banner, & Software Mastery</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-white">Profil Publik & Identitas Kreator</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Atur foto profil, banner showcase, bio singkat, dan kontak internal koordinasi order.
+            </p>
+          </div>
+          <span className="text-[11px] text-zinc-500">Bagian 1 dari 2</span>
+        </div>
 
-        {saveSuccess && (
+        {identitySaveSuccess && (
           <div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 text-xs font-bold text-emerald-400 flex items-center gap-2">
             <Check className="h-4 w-4" />
-            <span>Seluruh perubahan profil dan software mastery berhasil disimpan!</span>
+            <span>Perubahan profil publik & identitas berhasil disimpan!</span>
           </div>
         )}
 
-        <form onSubmit={handleSaveProfile} className="space-y-6">
+        <form onSubmit={handleSaveIdentity} className="space-y-6">
           {/* Avatar & Cover Banner Upload Preview */}
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
             {/* Avatar Photo */}
@@ -1218,8 +1345,87 @@ export default function MemberDashboardPage() {
             </div>
           </div>
 
+          {/* Bio & Internal WhatsApp */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                Biografi Singkat / Deskripsi Keahlian
+              </label>
+              <textarea
+                rows={4}
+                required
+                disabled={isLockedOrSuspended}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                  Nomor WhatsApp Member (Internal Agensi)
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="628123456789"
+                  disabled={isLockedOrSuspended}
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <p className="mt-1 text-[11px] text-zinc-500">
+                  Untuk koordinasi penugasan order dari Admin Agensi (terproteksi, tidak dipublikasikan ke publik).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800">
+            <button
+              type="submit"
+              disabled={isSavingIdentity || isLockedOrSuspended}
+              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isSavingIdentity ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Menyimpan Identitas...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  <span>Simpan Profil & Identitas</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* 3. KARTU KEAHLIAN, TOOLS & KETENTUAN PENGERJAAN */}
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-white">Keahlian, Tools & Ketentuan Pengerjaan</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Software yang Anda kuasai, format deliverable file akhir, estimasi durasi, dan jatah revisi gratis.
+            </p>
+          </div>
+          <span className="text-[11px] text-zinc-500">Bagian 2 dari 2</span>
+        </div>
+
+        {skillsSaveSuccess && (
+          <div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 text-xs font-bold text-emerald-400 flex items-center gap-2">
+            <Check className="h-4 w-4" />
+            <span>Pengaturan keahlian & ketentuan kerja berhasil disimpan!</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSaveSkills} className="space-y-6">
           {/* Software & Tools Mastery: Interactive Pelajar Badges */}
-          <div className="pt-4 border-t border-zinc-800 space-y-3">
+          <div className="space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300">
@@ -1277,78 +1483,42 @@ export default function MemberDashboardPage() {
                 type="button"
                 disabled={isLockedOrSuspended}
                 onClick={handleAddCustomTool}
-                className="rounded-xl border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-xs font-semibold text-zinc-200 hover:border-amber-400 hover:text-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-xl border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-xs font-semibold text-zinc-200 hover:border-amber-400 hover:text-amber-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Tambah
               </button>
             </div>
           </div>
 
-          {/* Bio & Internal WhatsApp */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
+          {/* Durasi, Deliverables & Revision Rules */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                Biografi Singkat / Deskripsi Keahlian
-              </label>
-              <textarea
-                rows={4}
-                required
-                disabled={isLockedOrSuspended}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                  Nomor WhatsApp Member (Internal Agensi)
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="628123456789"
-                  disabled={isLockedOrSuspended}
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <p className="mt-1 text-[11px] text-zinc-500">
-                  Untuk koordinasi order dari Admin Agensi, tidak dipublikasikan ke umum.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                  Estimasi Durasi Pengerjaan
-                </label>
-                <input
-                  type="text"
-                  placeholder="2-3 Hari Kerja"
-                  disabled={isLockedOrSuspended}
-                  value={turnaroundTime}
-                  onChange={(e) => setTurnaroundTime(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Deliverables & Revision Rules */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                Format Deliverables File Akhir (Pisahkan dengan koma)
+                Estimasi Durasi Pengerjaan
               </label>
               <input
                 type="text"
-                placeholder="Editable PPTX, High-Res PDF, Gambar PNG Tiap Slide"
+                placeholder="2-3 Hari Kerja"
+                disabled={isLockedOrSuspended}
+                value={turnaroundTime}
+                onChange={(e) => setTurnaroundTime(e.target.value)}
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                Format Deliverables File Akhir
+              </label>
+              <input
+                type="text"
+                placeholder="Editable PPTX, High-Res PDF"
                 disabled={isLockedOrSuspended}
                 value={deliverablesInput}
                 onChange={(e) => setDeliverablesInput(e.target.value)}
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              <p className="text-[10px] text-zinc-500 mt-1">Pisahkan dengan koma</p>
             </div>
 
             <div>
@@ -1363,24 +1533,25 @@ export default function MemberDashboardPage() {
                 onChange={(e) => setFreeRevisions(Number(e.target.value))}
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              <p className="text-[10px] text-zinc-500 mt-1">Revisi minor teks/warna</p>
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800">
             <button
               type="submit"
-              disabled={isSavingProfile || isLockedOrSuspended}
-              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSavingSkills || isLockedOrSuspended}
+              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {isSavingProfile ? (
+              {isSavingSkills ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Menyimpan...</span>
+                  <span>Menyimpan Keahlian...</span>
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  <span>Simpan Perubahan Profil</span>
+                  <span>Simpan Keahlian & Ketentuan Kerja</span>
                 </>
               )}
             </button>
@@ -1444,18 +1615,71 @@ export default function MemberDashboardPage() {
                   <option value="UI Designer">UI / Poster Desain</option>
                 </select>
               </div>
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-semibold text-zinc-300 mb-1">URL Gambar / Video Thumbnail</label>
-                <input
-                  type="url"
-                  required
-                  disabled={isLockedOrSuspended}
-                  placeholder="https://images.unsplash.com/..."
-                  value={newMediaUrl}
-                  onChange={(e) => setNewMediaUrl(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+              <div className="sm:col-span-2 space-y-2">
+                <label className="block text-[11px] font-semibold text-zinc-300">
+                  Thumbnail Portofolio (Upload Gambar atau Masukkan URL)
+                </label>
+
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  {/* Live Thumbnail Preview Box */}
+                  <div className="relative h-28 w-44 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center">
+                    {newMediaUrl ? (
+                      <img
+                        src={newMediaUrl}
+                        alt="Preview thumbnail"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80';
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-zinc-500 text-[10px] p-2 text-center">
+                        <ImageIcon className="h-6 w-6 text-zinc-600 mb-1" />
+                        <span>Preview Gambar</span>
+                      </div>
+                    )}
+                    {isUploadingPortfolioThumb && (
+                      <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                        <Loader2 className="h-5 w-5 text-amber-400 animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2 w-full">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <label className={`inline-flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-zinc-200 transition-colors ${
+                        isLockedOrSuspended ? 'opacity-50 cursor-not-allowed' : 'hover:border-amber-400 hover:text-amber-400 cursor-pointer'
+                      }`}>
+                        <Upload className="h-3.5 w-3.5" />
+                        <span>Pilih File Gambar</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          disabled={isLockedOrSuspended || isUploadingPortfolioThumb}
+                          onChange={handlePortfolioFileChange}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <span className="text-[11px] text-zinc-500 text-center sm:text-left">atau tempel tautan:</span>
+                    </div>
+
+                    <input
+                      type="url"
+                      required
+                      disabled={isLockedOrSuspended}
+                      placeholder="Contoh: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe..."
+                      value={newMediaUrl}
+                      onChange={(e) => setNewMediaUrl(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <p className="text-[10px] text-zinc-500">
+                      Format didukung: JPG, PNG, WebP (Maks. 2MB). Disarankan rasio landscape 16:9 agar proporsional.
+                    </p>
+                  </div>
+                </div>
               </div>
+
               <div className="sm:col-span-2">
                 <label className="block text-[11px] font-semibold text-zinc-300 mb-1">Deskripsi Singkat Proyek</label>
                 <textarea
@@ -1479,7 +1703,7 @@ export default function MemberDashboardPage() {
               <button
                 type="submit"
                 disabled={isLockedOrSuspended}
-                className="rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Tambahkan
               </button>
@@ -1487,44 +1711,62 @@ export default function MemberDashboardPage() {
           </form>
         )}
 
-        {/* Grid List Portofolio */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {portfolios.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col justify-between"
-            >
-              <div className="relative h-40 w-full overflow-hidden bg-zinc-900">
-                <img
-                  src={item.media_url}
-                  alt={item.title}
-                  className="h-full w-full object-cover"
-                />
-                <span className="absolute top-2.5 left-2.5 rounded-lg bg-zinc-950/80 px-2.5 py-1 text-[10px] font-bold text-amber-400 backdrop-blur-md">
-                  {item.category}
-                </span>
-              </div>
-              <div className="p-4 space-y-2">
-                <h4 className="text-xs font-bold text-white line-clamp-1">{item.title}</h4>
-                {item.description && (
-                  <p className="text-[11px] text-zinc-400 line-clamp-2">{item.description}</p>
-                )}
-                <div className="pt-2 flex justify-end">
-                  <button
-                    type="button"
-                    disabled={isLockedOrSuspended}
-                    onClick={() => handleDeletePortfolio(item.id)}
-                    className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    title={isLockedOrSuspended ? 'Akun terkunci' : 'Hapus portofolio'}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+        {/* Grid List Portofolio atau Empty State */}
+        {portfolios.length === 0 ? (
+          <EmptyState
+            title="Belum Ada Portofolio Karya"
+            description="Tambahkan sampel karya pertama Anda untuk meningkatkan kepercayaan calon klien dan mendongkrak peluang order."
+            actionText="Tambah Portofolio Sekarang"
+            onAction={() => setIsAddingPortfolio(true)}
+            icon={Briefcase}
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {portfolios.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col justify-between"
+              >
+                <div className="relative h-40 w-full overflow-hidden bg-zinc-900">
+                  <img
+                    src={item.media_url}
+                    alt={item.title}
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute top-2.5 left-2.5 rounded-lg bg-zinc-950/80 px-2.5 py-1 text-[10px] font-bold text-amber-400 backdrop-blur-md">
+                    {item.category}
+                  </span>
+                </div>
+                <div className="p-4 space-y-2">
+                  <h4 className="text-xs font-bold text-white line-clamp-1">{item.title}</h4>
+                  {item.description && (
+                    <p className="text-[11px] text-zinc-400 line-clamp-2">{item.description}</p>
+                  )}
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      disabled={isLockedOrSuspended}
+                      onClick={() => handleDeletePortfolio(item.id)}
+                      className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      title={isLockedOrSuspended ? 'Akun terkunci' : 'Hapus portofolio'}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+      )}
+
+      {/* TOAST NOTIFIKASI LOGOUT */}
+      {logoutToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+          <span>Anda berhasil keluar. Mengalihkan ke halaman login...</span>
+        </div>
       )}
     </div>
   );

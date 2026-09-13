@@ -216,33 +216,28 @@ function TrackContent() {
             )}
           </button>
 
-          {/* Quick Demo Shortcuts */}
-          <div className="pt-2 border-t border-zinc-800/80 flex flex-wrap items-center justify-between text-[11px] text-zinc-500 gap-2">
-            <span>Contoh tiket & 4 digit WA untuk simulasi:</span>
-            <div className="flex items-center gap-3">
+          {/* Panduan Format Tiket */}
+          <div className="pt-3 border-t border-zinc-800/80 space-y-1.5 text-[11px] text-zinc-500">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-zinc-400 font-medium">Contoh format penulisan tiket:</span>
               <button
                 type="button"
                 onClick={() => {
                   setTicketInput('#CH-2609-4821');
                   setWaLast4Input('5432');
-                  performSearch('#CH-2609-4821', '5432');
+                  setErrorMessage(null);
                 }}
-                className="font-mono text-amber-400 hover:underline"
+                className="font-mono text-amber-400/90 hover:text-amber-300 hover:underline inline-flex items-center gap-1.5 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800"
+                title="Klik untuk mengisi contoh format"
               >
-                #CH-2609-4821 (WA: 5432)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTicketInput('#CH-2609-8269');
-                  setWaLast4Input('7890');
-                  performSearch('#CH-2609-8269', '7890');
-                }}
-                className="font-mono text-amber-400 hover:underline"
-              >
-                #CH-2609-8269 (WA: 7890)
+                <span>#CH-2609-4821</span>
+                <span className="text-zinc-500">•</span>
+                <span>WA: 5432</span>
               </button>
             </div>
+            <p className="text-[10px] text-zinc-500 italic">
+              * Kode di atas hanya contoh format tiket. Masukkan kode tiket resmi yang tercantum pada konfirmasi pemesanan Anda.
+            </p>
           </div>
         </form>
       </div>

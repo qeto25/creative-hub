@@ -130,8 +130,8 @@ export default function HomePage() {
                 <Trophy className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Top 1% Talent</p>
-                <p className="text-xs text-zinc-500">Lolos kurasi ketat portofolio</p>
+                <p className="text-sm font-bold text-white">Talent Terkurasi</p>
+                <p className="text-xs text-zinc-500">Seleksi portofolio & keahlian</p>
               </div>
             </div>
 
@@ -140,8 +140,8 @@ export default function HomePage() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">DP Escrow Safe</p>
-                <p className="text-xs text-zinc-500">Jaminan dana hingga approval</p>
+                <p className="text-sm font-bold text-white">Sistem DP Transparan</p>
+                <p className="text-xs text-zinc-500">Alur komitmen pengerjaan teratur</p>
               </div>
             </div>
 
@@ -150,8 +150,8 @@ export default function HomePage() {
                 <Zap className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Live Availability</p>
-                <p className="text-xs text-zinc-500">Monitor status kerja real-time</p>
+                <p className="text-sm font-bold text-white">Status Kerja Terbuka</p>
+                <p className="text-xs text-zinc-500">Pantau ketersediaan real-time</p>
               </div>
             </div>
 
@@ -160,8 +160,8 @@ export default function HomePage() {
                 <Award className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">4.9+ Star Average</p>
-                <p className="text-xs text-zinc-500">Dari 150+ review terverifikasi</p>
+                <p className="text-sm font-bold text-white">Portofolio Diverifikasi</p>
+                <p className="text-xs text-zinc-500">Karya asli kurasi kolektif</p>
               </div>
             </div>
           </div>
@@ -294,7 +294,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-base font-bold text-white">Pilih & Cek Ketersediaan</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Lihat portofolio talent dan periksa indikator live status "Sedang Mengerjakan Job" atau "Tersedia" sebelum memulai kontak.
+                Lihat portofolio talent dan periksa indikator status "Tersedia menerima order" atau "Sedang mengerjakan pesanan" sebelum memulai kontak.
               </p>
             </div>
 
@@ -314,7 +314,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-base font-bold text-white">DP & Kickoff Project</h3>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Kunci jadwal kerja talent dengan transfer DP sesuai persentase yang disepakati, talent akan mengaktifkan status "Sedang Mengerjakan Job".
+                Kunci jadwal kerja talent dengan transfer DP sesuai ketentuan, talent akan mengaktifkan status "Sedang mengerjakan pesanan".
               </p>
             </div>
           </div>

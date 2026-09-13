@@ -6,6 +6,7 @@ import { Search, Filter, SlidersHorizontal, Users, Sparkles, CheckCircle2 } from
 import { Profile } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
 import FreelancerCard from '@/components/FreelancerCard';
+import EmptyState from '@/components/EmptyState';
 
 export default function FreelancersDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,8 +107,8 @@ export default function FreelancersDirectoryPage() {
               className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
             >
               <option value="all">Semua Status Ketersediaan</option>
-              <option value="available">Tersedia (Siap Job Baru)</option>
-              <option value="working">Sedang Mengerjakan Job</option>
+              <option value="available">Tersedia menerima order</option>
+              <option value="working">Sedang mengerjakan pesanan</option>
             </select>
           </div>
 
@@ -170,22 +171,17 @@ export default function FreelancersDirectoryPage() {
             ))}
           </div>
         ) : filteredProfiles.length === 0 ? (
-          <div className="py-16 text-center rounded-3xl border border-zinc-800 bg-zinc-900/50 p-8 space-y-3">
-            <p className="text-zinc-400 text-sm">
-              Tidak ada talent yang cocok dengan filter pencarian Anda.
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setStatusFilter('all');
-                setSelectedSkill('Semua');
-                setMaxPrice(100000);
-              }}
-              className="text-xs text-amber-400 hover:underline font-semibold"
-            >
-              Reset Semua Filter
-            </button>
-          </div>
+          <EmptyState
+            title="Tidak Ada Talent Ditemukan"
+            description="Tidak ada talent yang sesuai dengan kriteria filter atau pencarian Anda."
+            actionText="Reset Semua Filter"
+            onAction={() => {
+              setSearchQuery('');
+              setStatusFilter('all');
+              setSelectedSkill('Semua');
+              setMaxPrice(100000);
+            }}
+          />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {filteredProfiles.map((profile) => (

@@ -39,6 +39,9 @@ import BookingDetailModal from '@/components/BookingDetailModal';
 import DisciplineModal from '@/components/DisciplineModal';
 import { ownerCreateMember } from '@/app/actions/owner-create-member';
 import * as dataLayer from '@/lib/dataLayer';
+import { getTalentStatus } from '@/lib/utils/status';
+import EmptyState from '@/components/EmptyState';
+import { createClient } from '@/lib/supabase/client';
 
 export default function OwnerDashboardPage() {
   const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance'>('members');
@@ -47,6 +50,20 @@ export default function OwnerDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [bookingSearchQuery, setBookingSearchQuery] = useState('');
   const [financeSearchQuery, setFinanceSearchQuery] = useState('');
+  const [logoutToast, setLogoutToast] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (e) {
+      // ignore
+    }
+    setLogoutToast(true);
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 1000);
+  };
 
   // Load bookings & profiles via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
   useEffect(() => {
@@ -481,13 +498,14 @@ export default function OwnerDashboardPage() {
             <span>Tambah Member Baru</span>
           </button>
 
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs font-semibold text-red-300 hover:bg-red-500/20 hover:border-red-400 transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
-            <span>Keluar</span>
-          </Link>
+            <span>Keluar Akun</span>
+          </button>
         </div>
       </div>
 
@@ -499,7 +517,7 @@ export default function OwnerDashboardPage() {
             <Users className="h-4 w-4 text-amber-400" />
           </div>
           <p className="text-2xl font-extrabold text-white mt-2">{totalMembers}</p>
-          <span className="text-[11px] text-zinc-500">{activeWorkingMembers} Sedang Job • {testerProfiles} Draft</span>
+          <span className="text-[11px] text-zinc-500">{activeWorkingMembers} Sedang Mengerjakan • {testerProfiles} Peninjauan</span>
         </div>
 
         <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
@@ -522,11 +540,11 @@ export default function OwnerDashboardPage() {
 
         <div className="rounded-2xl border border-purple-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
           <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Tester Profiles</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Tahap Peninjauan</span>
             <Sparkles className="h-4 w-4 text-purple-400" />
           </div>
           <p className="text-2xl font-extrabold text-purple-300 mt-2">{testerProfiles}</p>
-          <span className="text-[11px] text-purple-400/80">Draft mode preview</span>
+          <span className="text-[11px] text-purple-400/80">Profil belum dipublikasikan</span>
         </div>
       </div>
 
@@ -652,28 +670,29 @@ export default function OwnerDashboardPage() {
 
                     {/* Live Status Badge (Single Indicator Dot) & Edit Button di Pojok Kanan Atas */}
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => toggleWorkingStatus(p.id)}
-                        className="focus:outline-none"
-                        title="Toggle status kerja talent"
-                      >
-                        {p.is_suspended || p.availability_status === 'resting' ? (
-                          <span className="inline-flex items-center rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-bold text-yellow-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 mr-1.5"></span>
-                            Rehat
-                          </span>
-                        ) : p.is_working ? (
-                          <span className="inline-flex items-center rounded-full border border-blue-500/40 bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse mr-1.5"></span>
-                            Ada Job
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
-                            Siap Order
-                          </span>
-                        )}
-                      </button>
+                      {(() => {
+                        const statusMeta = getTalentStatus(p);
+                        return (
+                          <button
+                            onClick={() => toggleWorkingStatus(p.id)}
+                            className="focus:outline-none"
+                            title="Klik untuk ubah ketersediaan order"
+                          >
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                              statusMeta.variant === 'warning'
+                                ? 'border-yellow-500/40 bg-yellow-500/10 text-yellow-400'
+                                : statusMeta.variant === 'info'
+                                ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
+                                : statusMeta.variant === 'danger'
+                                ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                                : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotColor} mr-1.5 ${statusMeta.pulse ? 'animate-pulse' : ''}`}></span>
+                              {statusMeta.label}
+                            </span>
+                          </button>
+                        );
+                      })()}
 
                       <button
                         onClick={() => handleOpenFullEdit(p)}
@@ -816,23 +835,29 @@ export default function OwnerDashboardPage() {
 
                     {/* Live Working Toggle */}
                     <td className="py-3.5 px-4">
-                      <button
-                        onClick={() => toggleWorkingStatus(p.id)}
-                        className="flex items-center gap-2 focus:outline-none"
-                        title="Toggle status kerja"
-                      >
-                        {p.is_working ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-400">
-                            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Sedang Job
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-[11px] font-medium text-zinc-400">
-                            <span className="h-2 w-2 rounded-full bg-zinc-500"></span>
-                            Tersedia
-                          </span>
-                        )}
-                      </button>
+                      {(() => {
+                        const statusMeta = getTalentStatus(p);
+                        return (
+                          <button
+                            onClick={() => toggleWorkingStatus(p.id)}
+                            className="flex items-center gap-2 focus:outline-none"
+                            title="Klik untuk ubah status ketersediaan"
+                          >
+                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                              statusMeta.variant === 'warning'
+                                ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                                : statusMeta.variant === 'info'
+                                ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
+                                : statusMeta.variant === 'danger'
+                                ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                                : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                            }`}>
+                              <span className={`h-2 w-2 rounded-full ${statusMeta.dotColor} ${statusMeta.pulse ? 'animate-pulse' : ''}`}></span>
+                              {statusMeta.label}
+                            </span>
+                          </button>
+                        );
+                      })()}
                     </td>
 
                     {/* Price & DP */}
@@ -861,7 +886,7 @@ export default function OwnerDashboardPage() {
                       </div>
                     </td>
 
-                    {/* Tester switch */}
+                    {/* Review / Published switch */}
                     <td className="py-3.5 px-4">
                       <button
                         onClick={() => toggleTesterStatus(p.id)}
@@ -870,8 +895,9 @@ export default function OwnerDashboardPage() {
                             ? 'border border-purple-500/40 bg-purple-500/10 text-purple-300'
                             : 'border border-zinc-800 bg-zinc-950 text-zinc-500'
                         }`}
+                        title="Klik untuk ubah visibilitas publik talent"
                       >
-                        {p.is_tester ? 'Tester (Hidden)' : 'Publik Live'}
+                        {p.is_tester ? 'Dalam Peninjauan (Hidden)' : 'Publik Live'}
                       </button>
                     </td>
 
@@ -1607,7 +1633,7 @@ export default function OwnerDashboardPage() {
                   </div>
                 </div>
 
-                {/* Tester Switch */}
+                {/* Peninjauan / Publish Switch */}
                 <div className="flex items-center gap-3 pt-2">
                   <input
                     type="checkbox"
@@ -1617,7 +1643,7 @@ export default function OwnerDashboardPage() {
                     className="h-4 w-4 rounded accent-amber-400"
                   />
                   <label htmlFor="isTesterCheck" className="text-xs text-zinc-300 cursor-pointer">
-                    Simpan sebagai <strong>Tester / Draft Profile</strong> (tersembunyi dari publik)
+                    Simpan sebagai <strong>Member Dalam Peninjauan</strong> (belum dipublikasikan ke publik)
                   </label>
                 </div>
 
@@ -1963,6 +1989,14 @@ export default function OwnerDashboardPage() {
         profile={selectedProfileForDiscipline}
         onSaved={handleProfileUpdated}
       />
+
+      {/* TOAST NOTIFIKASI LOGOUT */}
+      {logoutToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3">
+          <CheckCircle className="h-4 w-4 text-emerald-400" />
+          <span>Anda berhasil keluar. Mengalihkan ke halaman login...</span>
+        </div>
+      )}
     </div>
   );
 }

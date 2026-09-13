@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Sparkles, FolderKanban } from 'lucide-react';
 import { Portfolio } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
+import EmptyState from '@/components/EmptyState';
 import ProjectCard from '@/components/ProjectCard';
 
 const CATEGORIES = [
@@ -74,12 +75,34 @@ export default function ProjectsPage() {
         ))}
       </div>
 
-      {/* Projects Grid: Dense 3-4 Columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {filteredPortfolios.map((portfolio) => (
-          <ProjectCard key={portfolio.id} portfolio={portfolio} />
-        ))}
-      </div>
+      {/* Projects Grid or Empty State */}
+      {loading ? (
+        <div className="min-h-[40vh] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs text-zinc-400">Memuat arsip karya kolektif...</p>
+          </div>
+        </div>
+      ) : filteredPortfolios.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {filteredPortfolios.map((portfolio) => (
+            <ProjectCard key={portfolio.id} portfolio={portfolio} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={FolderKanban}
+          title={
+            selectedCategory !== 'Semua'
+              ? `Belum Ada Portofolio untuk Kategori "${selectedCategory}"`
+              : 'Belum Ada Proyek yang Dipublikasikan'
+          }
+          description="Portofolio kolektif sedang dalam proses kurasi berkala oleh para kreator. Jelajahi profil talent kami untuk melihat keahlian mereka dan berkonsultasi langsung."
+          actionText="Jelajahi Direktori Talent"
+          actionHref="/freelancers"
+          className="my-12"
+        />
+      )}
     </div>
   );
 }

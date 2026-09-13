@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Star, Briefcase, Sparkles, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import { formatRupiahDisplay } from '@/lib/utils/currency';
+import { getTalentStatus } from '@/lib/utils/status';
 
 interface FreelancerCardProps {
   profile: Profile;
@@ -17,7 +18,12 @@ export default function FreelancerCard({ profile }: FreelancerCardProps) {
   const hasForcedPrice = profile.forced_price !== null && profile.forced_price !== undefined;
   const effectivePrice = hasForcedPrice ? profile.forced_price! : (profile.base_price || 20000);
   const formattedPrice = formatRupiahDisplay(effectivePrice);
-  const currentStatus = profile.availability_status || (profile.is_available === false ? 'resting' : profile.is_working ? 'busy' : 'available');
+  const statusMeta = getTalentStatus({
+    availabilityStatus: profile.availability_status,
+    isWorking: profile.is_working,
+    isAvailable: profile.is_available,
+    isSuspended: profile.is_suspended,
+  });
 
   return (
     <Link href={`/freelancers/${profile.id}`} className="block h-full group focus:outline-none">
@@ -72,23 +78,10 @@ export default function FreelancerCard({ profile }: FreelancerCardProps) {
                 <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse"></span>
                 <span>⛔ Skors</span>
               </div>
-            ) : currentStatus === 'resting' ? (
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-black/60 backdrop-blur-md px-2 py-0.5 text-[10px] font-semibold text-amber-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                <span>Ujian/Rehat</span>
-              </div>
-            ) : currentStatus === 'busy' ? (
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/50 bg-black/60 backdrop-blur-md px-2 py-0.5 text-[10px] font-semibold text-blue-400">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex h-full w-full rounded-full bg-blue-500"></span>
-                </span>
-                <span>Ada Job Aktif</span>
-              </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-black/60 backdrop-blur-md px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                <span>Siap Order</span>
+              <div className={`inline-flex items-center gap-1.5 rounded-full border backdrop-blur-md px-2 py-0.5 text-[10px] font-medium ${statusMeta.badgeClass}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${statusMeta.dotClass}`}></span>
+                <span>{statusMeta.shortLabel}</span>
               </div>
             )}
 
