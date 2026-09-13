@@ -17,6 +17,13 @@ export const INITIAL_MOCK_DATA: DatabaseSnapshot = {
 
 const DEMO_STORAGE_KEY = 'creativehub_demo_snapshot_v1';
 
+let memorySnapshot: DatabaseSnapshot = {
+  profiles: [...INITIAL_MOCK_DATA.profiles],
+  portfolios: [...INITIAL_MOCK_DATA.portfolios],
+  reviews: [...INITIAL_MOCK_DATA.reviews],
+  bookings: [...INITIAL_MOCK_DATA.bookings],
+};
+
 // Mengambil snapshot data aktif untuk mode demo (dengan persistence di browser jika ada)
 export function getDemoSnapshot(): DatabaseSnapshot {
   if (typeof window !== 'undefined') {
@@ -33,15 +40,21 @@ export function getDemoSnapshot(): DatabaseSnapshot {
     }
   }
   return {
-    profiles: [...INITIAL_MOCK_DATA.profiles],
-    portfolios: [...INITIAL_MOCK_DATA.portfolios],
-    reviews: [...INITIAL_MOCK_DATA.reviews],
-    bookings: [...INITIAL_MOCK_DATA.bookings],
+    profiles: [...memorySnapshot.profiles],
+    portfolios: [...memorySnapshot.portfolios],
+    reviews: [...memorySnapshot.reviews],
+    bookings: [...memorySnapshot.bookings],
   };
 }
 
-// Menyimpan pembaruan snapshot demo ke browser (tanpa menyentuh Supabase)
+// Menyimpan pembaruan snapshot demo (memori server & localStorage browser)
 export function saveDemoSnapshot(snapshot: DatabaseSnapshot): void {
+  memorySnapshot = {
+    profiles: [...snapshot.profiles],
+    portfolios: [...snapshot.portfolios],
+    reviews: [...snapshot.reviews],
+    bookings: [...snapshot.bookings],
+  };
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(snapshot));

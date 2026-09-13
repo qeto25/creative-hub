@@ -36,9 +36,10 @@ import { MOCK_PROFILES, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Booking, BookingStatus } from '@/lib/types';
 import PriceOverrideModal from '@/components/PriceOverrideModal';
 import OwnerMemberEditModal from '@/components/OwnerMemberEditModal';
-import BookingDetailModal from '@/components/BookingDetailModal';
 import DisciplineModal from '@/components/DisciplineModal';
+import BookingDetailModal from '@/components/BookingDetailModal';
 import { ownerCreateMember } from '@/app/actions/owner-create-member';
+import { updateBookingStepAction } from '@/app/actions/update-booking';
 import * as dataLayer from '@/lib/dataLayer';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
@@ -169,12 +170,28 @@ export default function OwnerDashboardPage() {
 
   // Update Booking Status
   const handleUpdateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
+    const isCompleted = newStatus === 'completed';
+    const step = isCompleted ? 5 : undefined;
+
     setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
+      prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus, ...(step ? { step_progress: step } : {}) } : b))
     );
 
+    if (isCompleted) {
+      const targetB = bookings.find((b) => b.id === bookingId);
+      if (targetB?.profile_id) {
+        setProfiles((prev) =>
+          prev.map((p) => (p.id === targetB.profile_id ? { ...p, hire_count: (p.hire_count || 0) + 1 } : p))
+        );
+      }
+    }
+
     try {
-      await dataLayer.updateBooking(bookingId, { status: newStatus });
+      await updateBookingStepAction({
+        bookingId,
+        status: newStatus,
+        stepProgress: step,
+      });
     } catch (err) {
       console.warn('Status update note:', err);
     }
@@ -193,9 +210,19 @@ export default function OwnerDashboardPage() {
       prev.map((b) => (b.id === bookingId ? { ...b, step_progress: step, status: newStatus } : b))
     );
 
+    if (step === 5) {
+      const targetB = bookings.find((b) => b.id === bookingId);
+      if (targetB?.profile_id) {
+        setProfiles((prev) =>
+          prev.map((p) => (p.id === targetB.profile_id ? { ...p, hire_count: (p.hire_count || 0) + 1 } : p))
+        );
+      }
+    }
+
     try {
-      await dataLayer.updateBooking(bookingId, {
-        step_progress: step,
+      await updateBookingStepAction({
+        bookingId,
+        stepProgress: step,
         status: newStatus,
       });
     } catch (err) {

@@ -39,6 +39,7 @@ import {
 import { MOCK_PROFILES, MOCK_PORTFOLIOS, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Portfolio, Booking, BookingStatus } from '@/lib/types';
 import { uploadAsset, validateImageFile } from '@/lib/supabase/storage';
+import { updateBookingStepAction } from '@/app/actions/update-booking';
 import * as dataLayer from '@/lib/dataLayer';
 import { isDemoMode } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
@@ -109,7 +110,7 @@ export default function MemberDashboardPage() {
 
         let dbProfile = await dataLayer.getProfileByIdOrSlug(targetId);
         if (!dbProfile) {
-          dbProfile = MOCK_PROFILES.find((p) => p.id === targetId) || MOCK_PROFILES[0];
+          dbProfile = MOCK_PROFILES.find((p: Profile) => p.id === targetId) || MOCK_PROFILES[0];
         }
 
         if (dbProfile) {
@@ -180,9 +181,17 @@ export default function MemberDashboardPage() {
       )
     );
 
+    if (targetStep === 5) {
+      setProfile((prev) => ({
+        ...prev,
+        hire_count: (prev.hire_count || 0) + 1,
+      }));
+    }
+
     try {
-      await dataLayer.updateBooking(bookingId, {
-        step_progress: targetStep,
+      await updateBookingStepAction({
+        bookingId,
+        stepProgress: targetStep,
         status: newStatus,
       });
     } catch (e) {

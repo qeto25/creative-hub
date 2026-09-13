@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, User, MessageSquare, Check, Sparkles, FileText, CheckCircle2 } from 'lucide-react';
 import { Booking, BookingStatus } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
+import { updateBookingStepAction } from '@/app/actions/update-booking';
 
 interface BookingDetailModalProps {
   isOpen: boolean;
@@ -41,10 +42,19 @@ export default function BookingDetailModal({
     setUpdating(true);
     setCurrentStatus(newStatus);
 
-    const updated = { ...booking, status: newStatus };
+    const isCompleted = newStatus === 'completed';
+    const updated: Booking = {
+      ...booking,
+      status: newStatus,
+      ...(isCompleted ? { step_progress: 5 } : {}),
+    };
 
     try {
-      await dataLayer.updateBooking(booking.id, { status: newStatus });
+      await updateBookingStepAction({
+        bookingId: booking.id,
+        status: newStatus,
+        stepProgress: isCompleted ? 5 : undefined,
+      });
     } catch (err) {
       console.warn('BookingDetailModal update note:', err);
     }

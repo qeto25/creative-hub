@@ -237,11 +237,15 @@ export default function FreelancerDetailPage() {
                 alt={profile.full_name}
                 className="h-full w-full object-cover object-top"
               />
-              {/* Live Indicator on Top */}
-              <div className="absolute top-4 left-4 z-10">
-                <div className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-lg ${statusMeta.badgeClass}`}>
+              {/* Live Indicator & Hired Badge on Top */}
+              <div className="absolute top-4 inset-x-4 flex justify-between items-center z-10">
+                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md shadow-lg ${statusMeta.badgeClass}`}>
                   <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dotClass}`}></span>
                   <span>{statusMeta.label}</span>
+                </div>
+                <div className="text-xs bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-700/80 font-medium text-zinc-200 inline-flex items-center gap-1.5 shadow-lg">
+                  <Briefcase className="h-3.5 w-3.5 text-amber-400" />
+                  <span>{profile.hire_count || 0}x Hired</span>
                 </div>
               </div>
             </div>
@@ -323,7 +327,7 @@ export default function FreelancerDetailPage() {
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-zinc-800">
                   <div className="rounded-xl bg-zinc-950/60 p-3.5 border border-zinc-800/80">
                     <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Total Hired</span>
-                    <p className="text-lg font-bold text-white mt-0.5">{profile.hire_count || 0}x Diselesaikan</p>
+                    <p className="text-lg font-bold text-white mt-0.5">{profile.hire_count || 0}x Hired</p>
                   </div>
 
                   <div className="rounded-xl bg-zinc-950/60 p-3.5 border border-zinc-800/80">

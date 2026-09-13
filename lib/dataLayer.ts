@@ -40,7 +40,18 @@ export async function getProfiles(options?: {
       const s = options.skill.toLowerCase();
       result = result.filter((p) => p.skills.some((sk) => sk.toLowerCase().includes(s)));
     }
-    return result;
+    // Dynamic hire_count computation from completed bookings
+    return result.map((p) => {
+      const completedCount = snapshot.bookings.filter(
+        (b) =>
+          (b.profile_id === p.id || (b as any).talent_id === p.id) &&
+          (b.status === 'completed' || (b.status as any) === 'selesai' || b.step_progress === 5)
+      ).length;
+      return {
+        ...p,
+        hire_count: Math.max(p.hire_count || 0, completedCount),
+      };
+    });
   }
 
   // Live Supabase
@@ -56,10 +67,27 @@ export async function getProfiles(options?: {
       console.warn('[DataLayer] Error fetching profiles from Supabase:', error.message);
       return [];
     }
+
+    // Dynamic hire_count synchronization from completed bookings
+    const { data: completedBookings } = await supabase
+      .from('bookings')
+      .select('profile_id, status, step_progress')
+      .or('status.eq.completed,status.eq.selesai,step_progress.eq.5');
+
+    const completedMap: Record<string, number> = {};
+    (completedBookings || []).forEach((b) => {
+      const pId = b.profile_id || (b as any).talent_id;
+      if (pId) {
+        completedMap[pId] = (completedMap[pId] || 0) + 1;
+      }
+    });
+
     let result = ((data as any[]) || []).map((p) => ({
       ...p,
       is_available: p.availability_status !== 'resting' && p.is_available !== false,
+      hire_count: Math.max(p.hire_count || 0, completedMap[p.id] || 0),
     })) as Profile[];
+
     if (options?.skill && options.skill !== 'Semua') {
       const s = options.skill.toLowerCase();
       result = result.filter((p) => p.skills?.some((sk) => sk.toLowerCase().includes(s)));
@@ -75,7 +103,16 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
   if (isDemoMode()) {
     const snapshot = getDemoSnapshot();
     const found = snapshot.profiles.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
-    return found || null;
+    if (!found) return null;
+    const completedCount = snapshot.bookings.filter(
+      (b) =>
+        (b.profile_id === found.id || (b as any).talent_id === found.id) &&
+        (b.status === 'completed' || (b.status as any) === 'selesai' || b.step_progress === 5)
+    ).length;
+    return {
+      ...found,
+      hire_count: Math.max(found.hire_count || 0, completedCount),
+    };
   }
 
   // Live Supabase
@@ -92,9 +129,20 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
       return null;
     }
     if (!data) return null;
+
+    // Dynamic hire_count synchronization for single profile
+    const { data: completedBookings } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('profile_id', data.id)
+      .or('status.eq.completed,status.eq.selesai,step_progress.eq.5');
+
+    const completed = completedBookings?.length || 0;
+
     return {
       ...data,
       is_available: data.availability_status !== 'resting' && data.is_available !== false,
+      hire_count: Math.max(data.hire_count || 0, completed),
     } as Profile;
   } catch (err) {
     console.error('[DataLayer] Live profile fetch exception:', err);
@@ -106,13 +154,27 @@ export async function updateProfile(id: string, updates: Partial<Profile>): Prom
   if (isDemoMode()) {
     const snapshot = getDemoSnapshot();
     let updatedProfile: Profile | null = null;
+    let found = false;
     snapshot.profiles = snapshot.profiles.map((p) => {
       if (p.id === id) {
+        found = true;
         updatedProfile = { ...p, ...updates, updated_at: new Date().toISOString() };
         return updatedProfile;
       }
       return p;
     });
+    if (!found && updates.full_name) {
+      updatedProfile = {
+        id,
+        full_name: updates.full_name,
+        slug: updates.slug || id,
+        role: updates.role || 'member',
+        skills: updates.skills || [],
+        ...updates,
+        created_at: new Date().toISOString(),
+      } as Profile;
+      snapshot.profiles.push(updatedProfile);
+    }
     saveDemoSnapshot(snapshot);
     return updatedProfile;
   }
@@ -565,6 +627,10 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
   if (isDemoMode()) {
     const snapshot = getDemoSnapshot();
     let updatedBooking: Booking | null = null;
+    const prevBooking = snapshot.bookings.find((b) => b.id === id);
+    const wasCompleted = prevBooking?.status === 'completed' || (prevBooking?.status as any) === 'selesai' || prevBooking?.step_progress === 5;
+    const isNowCompleted = updates.status === 'completed' || (updates.status as any) === 'selesai' || updates.step_progress === 5;
+
     snapshot.bookings = snapshot.bookings.map((b) => {
       if (b.id === id) {
         updatedBooking = { ...b, ...updates };
@@ -572,6 +638,25 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
       }
       return b;
     });
+
+    // Otomatis update hire_count di tabel profiles talent terkait
+    const targetProfileId = prevBooking?.profile_id || (prevBooking as any)?.talent_id;
+    if (targetProfileId && !wasCompleted && isNowCompleted) {
+      snapshot.profiles = snapshot.profiles.map((p) => {
+        if (p.id === targetProfileId) {
+          return { ...p, hire_count: (p.hire_count || 0) + 1 };
+        }
+        return p;
+      });
+    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && updates.status !== 'completed') {
+      snapshot.profiles = snapshot.profiles.map((p) => {
+        if (p.id === targetProfileId) {
+          return { ...p, hire_count: Math.max(0, (p.hire_count || 0) - 1) };
+        }
+        return p;
+      });
+    }
+
     saveDemoSnapshot(snapshot);
     return updatedBooking;
   }
@@ -579,6 +664,16 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
   // Live Supabase
   try {
     const supabase = createClient();
+    // 1. Ambil data booking sebelumnya untuk mengecek transisi status
+    const { data: prevBooking } = await supabase
+      .from('bookings')
+      .select('profile_id, status, step_progress')
+      .eq('id', id)
+      .maybeSingle();
+
+    const wasCompleted = prevBooking?.status === 'completed' || (prevBooking?.status as any) === 'selesai' || prevBooking?.step_progress === 5;
+    const isNowCompleted = updates.status === 'completed' || (updates.status as any) === 'selesai' || updates.step_progress === 5;
+
     const { data, error } = await supabase
       .from('bookings')
       .update(updates)
@@ -590,6 +685,37 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
       console.error('[DataLayer] Live update booking error:', error.message);
       return null;
     }
+
+    // 2. Increment hire_count di tabel profiles jika baru selesai
+    const targetProfileId = prevBooking?.profile_id;
+    if (targetProfileId && !wasCompleted && isNowCompleted) {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('hire_count')
+        .eq('id', targetProfileId)
+        .maybeSingle();
+
+      if (prof) {
+        await supabase
+          .from('profiles')
+          .update({ hire_count: (prof.hire_count || 0) + 1 })
+          .eq('id', targetProfileId);
+      }
+    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && updates.status !== 'completed') {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('hire_count')
+        .eq('id', targetProfileId)
+        .maybeSingle();
+
+      if (prof) {
+        await supabase
+          .from('profiles')
+          .update({ hire_count: Math.max(0, (prof.hire_count || 0) - 1) })
+          .eq('id', targetProfileId);
+      }
+    }
+
     return (data as Booking) || null;
   } catch (err) {
     console.error('[DataLayer] Live update booking exception:', err);
