@@ -42,7 +42,7 @@ export default function BookingDetailModal({
     setUpdating(true);
     setCurrentStatus(newStatus);
 
-    const isCompleted = newStatus === 'completed';
+    const isCompleted = dataLayer.isBookingCompleted({ status: newStatus });
     const updated: Booking = {
       ...booking,
       status: newStatus,

@@ -170,7 +170,7 @@ export default function OwnerDashboardPage() {
 
   // Update Booking Status
   const handleUpdateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
-    const isCompleted = newStatus === 'completed';
+    const isCompleted = dataLayer.isBookingCompleted({ status: newStatus });
     const step = isCompleted ? 5 : undefined;
 
     setBookings((prev) =>
@@ -476,6 +476,13 @@ export default function OwnerDashboardPage() {
     setBookings((prev) =>
       prev.map((b) => (b.id === updated.id ? updated : b))
     );
+    if (dataLayer.isBookingCompleted(updated) && updated.profile_id) {
+      setProfiles((prev) =>
+        prev.map((p) =>
+          p.id === updated.profile_id ? { ...p, hire_count: (p.hire_count || 0) + 1 } : p
+        )
+      );
+    }
   };
 
   const handleCreateMember = async (e: React.FormEvent) => {

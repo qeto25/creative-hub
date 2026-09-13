@@ -29,10 +29,10 @@ export async function updateBookingStepAction(params: {
     }
 
     // Revalidate paths jika pesanan selesai agar counter dan kartu talent langsung sinkron
-    if (updates.status === 'completed' || (updates.status as any) === 'selesai' || updates.step_progress === 5) {
+    if (dataLayer.isBookingCompleted({ status: updates.status, step_progress: updates.step_progress })) {
       try {
-        revalidatePath('/freelancers');
         revalidatePath('/');
+        revalidatePath('/freelancers');
         if (updated.profile_id) {
           revalidatePath(`/freelancers/${updated.profile_id}`);
         }

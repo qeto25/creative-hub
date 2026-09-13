@@ -23,8 +23,25 @@ function generateUUID(): string {
 }
 
 // ============================================================================
-// 1. PROFILES DATA ACCESS
+// 1. PROFILES DATA ACCESS & HIRED SYNCHRONIZATION
 // ============================================================================
+
+/**
+ * Helper validasi apakah suatu pesanan berstatus selesai:
+ * - Relasi tabel: profile_id = profile.id
+ * - Nomor tiket: ticket_code
+ * - Status selesai: mengandung kata 'Selesai' (misal: 'Tahap 5: Selesai', 'Selesai')
+ *   ATAU status 'completed' ATAU step_progress === 5.
+ */
+export function isBookingCompleted(b?: {
+  status?: string | null;
+  step_progress?: number | null;
+} | null): boolean {
+  if (!b) return false;
+  if (b.step_progress === 5) return true;
+  const s = String(b.status || '').trim().toLowerCase();
+  return s === 'completed' || s.includes('selesai');
+}
 
 export async function getProfiles(options?: {
   includeTesters?: boolean;
@@ -40,12 +57,10 @@ export async function getProfiles(options?: {
       const s = options.skill.toLowerCase();
       result = result.filter((p) => p.skills.some((sk) => sk.toLowerCase().includes(s)));
     }
-    // Dynamic hire_count computation from completed bookings
+    // Dynamic hire_count computation: profile_id = profile.id DAN status mengandung kata 'Selesai' / 'completed'
     return result.map((p) => {
       const completedCount = snapshot.bookings.filter(
-        (b) =>
-          (b.profile_id === p.id || (b as any).talent_id === p.id) &&
-          (b.status === 'completed' || (b.status as any) === 'selesai' || b.step_progress === 5)
+        (b) => b.profile_id === p.id && isBookingCompleted(b)
       ).length;
       return {
         ...p,
@@ -68,17 +83,15 @@ export async function getProfiles(options?: {
       return [];
     }
 
-    // Dynamic hire_count synchronization from completed bookings
-    const { data: completedBookings } = await supabase
+    // Dynamic hire_count synchronization: ambil data bookings dan hitung pesanan berstatus selesai
+    const { data: allBookings } = await supabase
       .from('bookings')
-      .select('profile_id, status, step_progress')
-      .or('status.eq.completed,status.eq.selesai,step_progress.eq.5');
+      .select('profile_id, status, step_progress');
 
     const completedMap: Record<string, number> = {};
-    (completedBookings || []).forEach((b) => {
-      const pId = b.profile_id || (b as any).talent_id;
-      if (pId) {
-        completedMap[pId] = (completedMap[pId] || 0) + 1;
+    (allBookings || []).forEach((b) => {
+      if (b.profile_id && isBookingCompleted(b)) {
+        completedMap[b.profile_id] = (completedMap[b.profile_id] || 0) + 1;
       }
     });
 
@@ -105,9 +118,7 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
     const found = snapshot.profiles.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
     if (!found) return null;
     const completedCount = snapshot.bookings.filter(
-      (b) =>
-        (b.profile_id === found.id || (b as any).talent_id === found.id) &&
-        (b.status === 'completed' || (b.status as any) === 'selesai' || b.step_progress === 5)
+      (b) => b.profile_id === found.id && isBookingCompleted(b)
     ).length;
     return {
       ...found,
@@ -131,13 +142,12 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
     if (!data) return null;
 
     // Dynamic hire_count synchronization for single profile
-    const { data: completedBookings } = await supabase
+    const { data: bookingsForTalent } = await supabase
       .from('bookings')
-      .select('id')
-      .eq('profile_id', data.id)
-      .or('status.eq.completed,status.eq.selesai,step_progress.eq.5');
+      .select('profile_id, status, step_progress')
+      .eq('profile_id', data.id);
 
-    const completed = completedBookings?.length || 0;
+    const completed = (bookingsForTalent || []).filter(isBookingCompleted).length;
 
     return {
       ...data,
@@ -628,8 +638,8 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
     const snapshot = getDemoSnapshot();
     let updatedBooking: Booking | null = null;
     const prevBooking = snapshot.bookings.find((b) => b.id === id);
-    const wasCompleted = prevBooking?.status === 'completed' || (prevBooking?.status as any) === 'selesai' || prevBooking?.step_progress === 5;
-    const isNowCompleted = updates.status === 'completed' || (updates.status as any) === 'selesai' || updates.step_progress === 5;
+    const wasCompleted = isBookingCompleted(prevBooking);
+    const isNowCompleted = isBookingCompleted({ status: updates.status, step_progress: updates.step_progress });
 
     snapshot.bookings = snapshot.bookings.map((b) => {
       if (b.id === id) {
@@ -639,8 +649,8 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
       return b;
     });
 
-    // Otomatis update hire_count di tabel profiles talent terkait
-    const targetProfileId = prevBooking?.profile_id || (prevBooking as any)?.talent_id;
+    // Otomatis update hire_count di tabel profiles talent terkait (profile_id = profile.id)
+    const targetProfileId = prevBooking?.profile_id;
     if (targetProfileId && !wasCompleted && isNowCompleted) {
       snapshot.profiles = snapshot.profiles.map((p) => {
         if (p.id === targetProfileId) {
@@ -648,7 +658,7 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
         }
         return p;
       });
-    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && updates.status !== 'completed') {
+    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && !isBookingCompleted({ status: updates.status })) {
       snapshot.profiles = snapshot.profiles.map((p) => {
         if (p.id === targetProfileId) {
           return { ...p, hire_count: Math.max(0, (p.hire_count || 0) - 1) };
@@ -671,8 +681,8 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
       .eq('id', id)
       .maybeSingle();
 
-    const wasCompleted = prevBooking?.status === 'completed' || (prevBooking?.status as any) === 'selesai' || prevBooking?.step_progress === 5;
-    const isNowCompleted = updates.status === 'completed' || (updates.status as any) === 'selesai' || updates.step_progress === 5;
+    const wasCompleted = isBookingCompleted(prevBooking);
+    const isNowCompleted = isBookingCompleted({ status: updates.status, step_progress: updates.step_progress });
 
     const { data, error } = await supabase
       .from('bookings')
@@ -686,7 +696,7 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
       return null;
     }
 
-    // 2. Increment hire_count di tabel profiles jika baru selesai
+    // 2. Increment hire_count di tabel profiles jika baru selesai (profile_id = profile.id)
     const targetProfileId = prevBooking?.profile_id;
     if (targetProfileId && !wasCompleted && isNowCompleted) {
       const { data: prof } = await supabase
@@ -701,7 +711,7 @@ export async function updateBooking(id: string, updates: Partial<Booking>): Prom
           .update({ hire_count: (prof.hire_count || 0) + 1 })
           .eq('id', targetProfileId);
       }
-    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && updates.status !== 'completed') {
+    } else if (targetProfileId && wasCompleted && !isNowCompleted && updates.status && !isBookingCompleted({ status: updates.status })) {
       const { data: prof } = await supabase
         .from('profiles')
         .select('hire_count')

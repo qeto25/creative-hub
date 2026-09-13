@@ -127,6 +127,47 @@ async function main() {
     throw new Error(`Expected directory hire_count to become 1, but got ${zeroInList?.hire_count}`);
   }
 
+  // 7. Pengujian khusus: Status 'Tahap 5: Selesai'
+  console.log('\n--- Test 3: Status "Tahap 5: Selesai" ---');
+  const createSelesaiBooking = await dataLayer.createBooking({
+    profileId: zeroTalent.id,
+    talentName: zeroTalent.full_name,
+    clientName: 'Klien Kedua',
+    clientWhatsapp: '628222333444',
+    deadlineDate: '2026-10-20',
+    projectBrief: 'Order kedua testing status Tahap 5: Selesai',
+    includeSourceFile: false,
+    isRushOrder: false,
+    estimatedTotal: 40000,
+    dpAmount: 12000,
+  });
+
+  if (!createSelesaiBooking.success || !createSelesaiBooking.booking) {
+    throw new Error('Gagal membuat booking untuk test selesai');
+  }
+
+  console.log(`Created booking: ${createSelesaiBooking.booking.ticket_code} (ticket_code) with profile_id: ${createSelesaiBooking.booking.profile_id}`);
+
+  // Selesaikan order dengan status eksplisit 'Tahap 5: Selesai'
+  await updateBookingStepAction({
+    bookingId: createSelesaiBooking.booking.id,
+    stepProgress: 5,
+    status: 'Tahap 5: Selesai' as any,
+  });
+
+  const afterSelesai = await dataLayer.getProfileByIdOrSlug(zeroTalent.id);
+  console.log(`afterSelesai hire_count (single profile): ${afterSelesai?.hire_count}`);
+  if (afterSelesai?.hire_count !== 2) {
+    throw new Error(`Expected hire_count to become 2, but got ${afterSelesai?.hire_count}`);
+  }
+
+  const listAfterSelesai = await dataLayer.getProfiles({ includeTesters: true });
+  const talentInList = listAfterSelesai.find((p) => p.id === zeroTalent.id);
+  console.log(`afterSelesai hire_count (in directory list): ${talentInList?.hire_count}`);
+  if (talentInList?.hire_count !== 2) {
+    throw new Error(`Expected directory hire_count to become 2, but got ${talentInList?.hire_count}`);
+  }
+
   console.log('\n✅ SEMUA PENGUJIAN SINKRONISASI COUNTER HIRED BERHASIL (PASSED)!');
 }
 
