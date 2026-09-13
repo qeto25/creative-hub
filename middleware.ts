@@ -66,7 +66,8 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDemo = process.env.NEXT_PUBLIC_APP_MODE === 'demo';
+  const appMode = (process.env.NEXT_PUBLIC_APP_MODE || 'demo').toLowerCase().trim();
+  const isDemo = appMode === 'demo';
   let role: 'owner' | 'member' | null = null;
 
   if (user) {
@@ -79,11 +80,13 @@ export async function middleware(request: NextRequest) {
       role = 'member';
     }
   } else if (isDemo) {
-    // Mode demo: cek cookie session lokal jika tidak ada user Supabase
-    const sessionCookie = request.cookies.get('creativehub_user_session')?.value;
-    if (sessionCookie) {
+    // Mode demo: cek cookie session HttpOnly server khusus demo jika tidak ada user Supabase
+    const demoCookie =
+      request.cookies.get('creativehub_demo_session')?.value ||
+      request.cookies.get('creativehub_user_session')?.value;
+    if (demoCookie) {
       try {
-        const parsed = JSON.parse(decodeURIComponent(sessionCookie));
+        const parsed = JSON.parse(decodeURIComponent(demoCookie));
         if (parsed?.role === 'owner' || parsed?.role === 'member') {
           role = parsed.role;
         }

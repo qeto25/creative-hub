@@ -7,6 +7,7 @@ import { Sparkles, User, Lock, LogIn, Shield, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthSession } from '@/lib/context/AuthContext';
 import { isDemoMode } from '@/lib/config';
+import { loginDemoAction } from '@/app/actions/demo-auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,23 +42,14 @@ export default function LoginPage() {
       if (error) {
         // Hanya berikan fallback demo login jika aplikasi BERJALAN di mode demo
         if (!isLive) {
-          if (resolvedEmail.includes('owner') || rawInput.toLowerCase() === 'grown') {
-            login({
-              role: 'owner',
-              user_id: 'demo-owner-id',
-              name: 'Owner Grown (Demo)',
-              email: resolvedEmail,
-            });
-            router.push('/dashboard/owner');
-            return;
-          } else {
-            login({
-              role: 'member',
-              user_id: 'demo-member-id',
-              name: 'Creative Member (Demo)',
-              email: resolvedEmail,
-            });
-            router.push('/dashboard/member');
+          const demoRole: 'owner' | 'member' =
+            resolvedEmail.includes('owner') || rawInput.toLowerCase() === 'grown' ? 'owner' : 'member';
+          const res = await loginDemoAction(demoRole);
+          if (res.success && res.redirectUrl) {
+            if (res.session) {
+              login(res.session);
+            }
+            window.location.href = res.redirectUrl;
             return;
           }
         }
@@ -118,24 +110,44 @@ export default function LoginPage() {
   };
 
   // Quick Demo Access Buttons (Hanya aktif di mode Demo)
-  const loginAsOwnerDemo = () => {
-    login({
-      role: 'owner',
-      user_id: 'demo-owner-id',
-      name: 'Owner Grown (Demo)',
-      email: 'grown@creativehub.id',
-    });
-    router.push('/dashboard/owner');
+  const loginAsOwnerDemo = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const res = await loginDemoAction('owner');
+      if (res.success && res.redirectUrl) {
+        if (res.session) {
+          login(res.session);
+        }
+        window.location.href = res.redirectUrl;
+      } else {
+        setErrorMessage(res.error || 'Gagal masuk sebagai Demo Owner.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Gagal masuk mode demo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loginAsMemberDemo = () => {
-    login({
-      role: 'member',
-      user_id: 'demo-member-id',
-      name: 'Devan Putra (Demo)',
-      email: 'devan@creativehub.id',
-    });
-    router.push('/dashboard/member');
+  const loginAsMemberDemo = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const res = await loginDemoAction('member');
+      if (res.success && res.redirectUrl) {
+        if (res.session) {
+          login(res.session);
+        }
+        window.location.href = res.redirectUrl;
+      } else {
+        setErrorMessage(res.error || 'Gagal masuk sebagai Demo Member.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Gagal masuk mode demo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

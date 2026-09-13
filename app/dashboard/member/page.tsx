@@ -45,6 +45,7 @@ import { createClient } from '@/lib/supabase/client';
 import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
+import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
 
 const AVAILABLE_TOOLS = [
   'Canva',
@@ -92,18 +93,17 @@ export default function MemberDashboardPage() {
 
           targetId = userData.user.id;
         } else {
-          // Demo Mode: periksa sesi demo lokal
-          const saved = localStorage.getItem('creativehub_user_session');
-          if (!saved) {
+          // Demo Mode: periksa sesi demo dari server action (HttpOnly cookie)
+          const demoSession = await getDemoSessionAction();
+          if (!demoSession) {
             window.location.href = '/login?redirect=/dashboard/member';
             return;
           }
-          const parsed = JSON.parse(saved);
-          if (parsed.role === 'owner') {
+          if (demoSession.role === 'owner') {
             window.location.href = '/dashboard/owner';
             return;
           }
-          targetId = parsed.user_id || MOCK_PROFILES[0].id;
+          targetId = demoSession.user_id || MOCK_PROFILES[0].id;
         }
 
         let dbProfile = await dataLayer.getProfileByIdOrSlug(targetId);
@@ -239,6 +239,9 @@ export default function MemberDashboardPage() {
 
   const handleLogout = async () => {
     try {
+      if (isDemoMode()) {
+        await logoutDemoAction();
+      }
       const supabase = createClient();
       await supabase.auth.signOut();
     } catch (e) {

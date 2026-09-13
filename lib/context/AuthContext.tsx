@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { isDemoMode } from '@/lib/config';
+import { logoutDemoAction } from '@/app/actions/demo-auth';
 
 export interface UserSession {
   role: 'owner' | 'member';
@@ -90,6 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem(SESSION_KEY);
       document.cookie = `${SESSION_KEY}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      if (isDemoMode()) {
+        await logoutDemoAction();
+      }
       const supabase = createClient();
       await supabase.auth.signOut();
     } catch (e) {

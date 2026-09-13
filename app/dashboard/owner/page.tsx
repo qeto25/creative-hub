@@ -44,6 +44,7 @@ import EmptyState from '@/components/EmptyState';
 import { createClient } from '@/lib/supabase/client';
 import { isDemoMode } from '@/lib/config';
 import { formatRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
+import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
 
 export default function OwnerDashboardPage() {
   const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance'>('members');
@@ -58,6 +59,9 @@ export default function OwnerDashboardPage() {
 
   const handleLogout = async () => {
     try {
+      if (isDemoMode()) {
+        await logoutDemoAction();
+      }
       const supabase = createClient();
       await supabase.auth.signOut();
     } catch (e) {
@@ -92,13 +96,13 @@ export default function OwnerDashboardPage() {
             return;
           }
         } else {
-          const saved = localStorage.getItem('creativehub_user_session');
-          if (!saved) {
+          // Demo Mode: periksa sesi demo dari server action (HttpOnly cookie)
+          const demoSession = await getDemoSessionAction();
+          if (!demoSession) {
             window.location.href = '/login?redirect=/dashboard/owner';
             return;
           }
-          const parsed = JSON.parse(saved);
-          if (parsed.role === 'owner') {
+          if (demoSession.role === 'owner') {
             isOwner = true;
           } else {
             window.location.href = '/dashboard/member';
