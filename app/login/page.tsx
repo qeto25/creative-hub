@@ -151,9 +151,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 relative">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 relative overflow-hidden w-full">
+      {/* Background glow - constrained to prevent mobile horizontal scroll */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none max-w-full" />
 
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Header */}
@@ -172,7 +172,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form Card */}
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-8 backdrop-blur-xl shadow-2xl space-y-6">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
           {errorMessage && (
             <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-400 font-medium">
               {errorMessage}

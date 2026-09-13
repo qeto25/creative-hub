@@ -76,12 +76,12 @@ export default function FreelancerCard({ profile }: FreelancerCardProps) {
             {isSuspended ? (
               <div className="inline-flex items-center gap-1 rounded-full border border-red-500/70 bg-red-950/90 px-2 py-0.5 text-[10px] font-bold text-red-300 shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse"></span>
-                <span>⛔ Skors</span>
+                <span>Tidak tersedia sementara</span>
               </div>
             ) : (
               <div className={`inline-flex items-center gap-1.5 rounded-full border backdrop-blur-md px-2 py-0.5 text-[10px] font-medium ${statusMeta.badgeClass}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${statusMeta.dotClass}`}></span>
-                <span>{statusMeta.shortLabel}</span>
+                <span>{statusMeta.label}</span>
               </div>
             )}
 

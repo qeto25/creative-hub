@@ -40,8 +40,8 @@ export function getTalentStatus(options?: {
   if (isSuspended) {
     return {
       key: 'suspended',
-      label: 'Akun Ditangguhkan',
-      shortLabel: 'Skorsing',
+      label: 'Tidak tersedia sementara',
+      shortLabel: 'Tidak tersedia sementara',
       variant: 'danger',
       badgeClass: 'border-red-500/60 bg-red-950/80 text-red-300',
       dotClass: 'bg-red-400 animate-pulse',
@@ -54,7 +54,7 @@ export function getTalentStatus(options?: {
     return {
       key: 'resting',
       label: 'Tidak tersedia sementara',
-      shortLabel: 'Tidak Tersedia',
+      shortLabel: 'Tidak tersedia sementara',
       variant: 'warning',
       badgeClass: 'border-amber-500/50 bg-amber-950/50 text-amber-300',
       dotClass: 'bg-amber-400',
@@ -67,7 +67,7 @@ export function getTalentStatus(options?: {
     return {
       key: 'busy',
       label: 'Sedang mengerjakan pesanan',
-      shortLabel: 'Ada Pesanan',
+      shortLabel: 'Sedang mengerjakan pesanan',
       variant: 'info',
       badgeClass: 'border-blue-500/50 bg-blue-950/50 text-blue-300',
       dotClass: 'bg-blue-400 animate-pulse',
@@ -79,7 +79,7 @@ export function getTalentStatus(options?: {
   return {
     key: 'available',
     label: 'Tersedia menerima order',
-    shortLabel: 'Tersedia',
+    shortLabel: 'Tersedia menerima order',
     variant: 'success',
     badgeClass: 'border-emerald-500/50 bg-emerald-950/50 text-emerald-300',
     dotClass: 'bg-emerald-400',

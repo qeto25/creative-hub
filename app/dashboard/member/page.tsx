@@ -1078,7 +1078,7 @@ export default function MemberDashboardPage() {
               )}
             </button>
 
-            {/* 3. Tidak tersedia sementara (Rehat/Ujian) */}
+            {/* 3. Tidak tersedia sementara */}
             <button
               type="button"
               disabled={isLockedOrSuspended}
@@ -1091,7 +1091,7 @@ export default function MemberDashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${availabilityStatus === 'resting' ? 'bg-white' : 'bg-amber-500'}`} />
-                <span>🟡 Tidak tersedia sementara (Rehat/Ujian)</span>
+                <span>🟡 Tidak tersedia sementara</span>
               </div>
               {availabilityStatus === 'resting' && (
                 <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-md text-white font-semibold">Aktif</span>
@@ -1108,18 +1108,18 @@ export default function MemberDashboardPage() {
                   Status: Tersedia menerima order
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Tombol pesan di profil publik menyala aktif. Calon klien dapat langsung memesan layanan Anda.
+                  Profil Anda tampil aktif dengan badge hijau di direktori utama. Klien dapat langsung mengisi formulir booking.
                 </p>
               </div>
             )}
             {availabilityStatus === 'busy' && (
               <div className="space-y-1">
                 <div className="font-bold text-blue-400 flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
+                  <span className="h-2 w-2 rounded-full bg-blue-400"></span>
                   Status: Sedang mengerjakan pesanan
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Indikator antrean aktif. Klien tetap dapat booking dengan pemberitahuan slot sedang padat.
+                  Profil menampilkan badge sibuk biru untuk memberi tahu klien bahwa pengerjaan mungkin butuh antrean.
                 </p>
               </div>
             )}
@@ -1130,7 +1130,7 @@ export default function MemberDashboardPage() {
                   Status: Tidak tersedia sementara
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Badge rehat/ujian aktif di profil publik. Tombol booking dinonaktifkan sementara agar Anda fokus belajar.
+                  Status tidak tersedia sementara aktif di profil publik. Tombol booking dinonaktifkan sementara.
                 </p>
               </div>
             )}

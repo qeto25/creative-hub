@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server';
 import { MemberProvisionPayload, Profile } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
+import { getDemoSessionAction } from '@/app/actions/demo-auth';
+
 export async function ownerCreateMember(payload: MemberProvisionPayload): Promise<{
   success: boolean;
   profile?: Profile;
@@ -22,6 +24,11 @@ export async function ownerCreateMember(payload: MemberProvisionPayload): Promis
       const metaRole = user.user_metadata?.role;
       const email = user.email?.toLowerCase() || '';
       if (metaRole !== 'owner' && email !== 'grown@creativehub.id' && !email.includes('owner')) {
+        return { success: false, error: 'Akses ditolak. Hanya Owner yang berwenang menambah anggota baru.' };
+      }
+    } else {
+      const demoSession = await getDemoSessionAction();
+      if (!demoSession || demoSession.role !== 'owner') {
         return { success: false, error: 'Akses ditolak. Hanya Owner yang berwenang menambah anggota baru.' };
       }
     }

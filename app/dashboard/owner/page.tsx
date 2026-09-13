@@ -778,9 +778,9 @@ export default function OwnerDashboardPage() {
                     <div className="flex flex-col">
                       <span className="font-mono font-bold text-xs text-amber-400">
                         {p.forced_price !== null && p.forced_price !== undefined ? (
-                          <span className="text-red-400">{formatRupiah(p.forced_price)}</span>
+                          <span className="text-red-400">{formatRupiahDisplay(p.forced_price)}</span>
                         ) : (
-                          formatRupiah(p.base_price || 0)
+                          formatRupiahDisplay(p.base_price || 0)
                         )}
                       </span>
                       <span className="text-[10px] text-zinc-400 font-normal">

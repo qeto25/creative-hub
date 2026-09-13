@@ -10,7 +10,7 @@ import EmptyState from '@/components/EmptyState';
 
 export default function FreelancersDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'working' | 'available'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'working' | 'available' | 'resting'>('all');
   const [selectedSkill, setSelectedSkill] = useState<string>('Semua');
   const [maxPrice, setMaxPrice] = useState<number>(100000);
   const [loading, setLoading] = useState<boolean>(true);
@@ -53,7 +53,9 @@ export default function FreelancersDirectoryPage() {
           ? true
           : statusFilter === 'working'
           ? profile.is_working === true
-          : profile.is_working === false;
+          : statusFilter === 'resting'
+          ? profile.availability_status === 'resting' || profile.is_available === false
+          : profile.is_working === false && profile.availability_status !== 'resting' && profile.is_available !== false;
 
       // 3. Skill Filter
       const matchSkill =
@@ -109,6 +111,7 @@ export default function FreelancersDirectoryPage() {
               <option value="all">Semua Status Ketersediaan</option>
               <option value="available">Tersedia menerima order</option>
               <option value="working">Sedang mengerjakan pesanan</option>
+              <option value="resting">Tidak tersedia sementara</option>
             </select>
           </div>
 

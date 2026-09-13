@@ -340,21 +340,13 @@ export default function FreelancerDetailPage() {
 
               {/* BOOKING TRIGGER MODAL BUTTON */}
               <div className="pt-6 border-t border-zinc-800 flex flex-col sm:flex-row gap-4 items-center">
-                {isSuspended ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="w-full sm:w-auto flex-1 flex items-center justify-center gap-3 rounded-2xl bg-zinc-900/90 border border-red-500/40 px-8 py-4 text-sm font-bold text-zinc-500 cursor-not-allowed"
-                  >
-                    <span>⛔ Talent Tidak Tersedia (Akun Ditangguhkan)</span>
-                  </button>
-                ) : isResting ? (
+                {isSuspended || isResting ? (
                   <button
                     type="button"
                     disabled
                     className="w-full sm:w-auto flex-1 flex items-center justify-center gap-3 rounded-2xl bg-zinc-900/90 border border-amber-500/40 px-8 py-4 text-sm font-bold text-zinc-400 cursor-not-allowed"
                   >
-                    <span>🟡 Talent Sedang Ujian / Rehat</span>
+                    <span>🟡 Tidak tersedia sementara</span>
                   </button>
                 ) : (
                   <button
@@ -756,21 +748,13 @@ export default function FreelancerDetailPage() {
             {isSuspended ? 'Nonaktif' : formattedBasePrice}
           </span>
         </div>
-        {isSuspended ? (
-          <button
-            type="button"
-            disabled
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed border border-red-500/30"
-          >
-            <span>Talent Tidak Tersedia</span>
-          </button>
-        ) : isResting ? (
+        {isSuspended || isResting ? (
           <button
             type="button"
             disabled
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-bold text-zinc-400 cursor-not-allowed border border-amber-500/30"
           >
-            <span>{statusMeta.label}</span>
+            <span>Tidak tersedia sementara</span>
           </button>
         ) : (
           <button
