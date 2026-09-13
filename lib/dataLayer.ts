@@ -86,7 +86,8 @@ export async function getProfiles(options?: {
     // Dynamic hire_count synchronization: ambil data bookings dan hitung pesanan berstatus selesai
     const { data: allBookings } = await supabase
       .from('bookings')
-      .select('profile_id, status, step_progress');
+      .select('profile_id, status, step_progress')
+      .or('status.ilike.%Selesai%,status.eq.Tahap 5: Selesai,status.eq.completed,step_progress.eq.5');
 
     const completedMap: Record<string, number> = {};
     (allBookings || []).forEach((b) => {
@@ -145,7 +146,8 @@ export async function getProfileByIdOrSlug(idOrSlug: string): Promise<Profile | 
     const { data: bookingsForTalent } = await supabase
       .from('bookings')
       .select('profile_id, status, step_progress')
-      .eq('profile_id', data.id);
+      .eq('profile_id', data.id)
+      .or('status.ilike.%Selesai%,status.eq.Tahap 5: Selesai,status.eq.completed,step_progress.eq.5');
 
     const completed = (bookingsForTalent || []).filter(isBookingCompleted).length;
 

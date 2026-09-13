@@ -11,9 +11,16 @@ import { getTalentStatus } from '@/lib/utils/status';
 
 interface FreelancerCardProps {
   profile: Profile;
+  hiredCount?: number;
+  completedProjects?: number;
 }
 
-export default function FreelancerCard({ profile }: FreelancerCardProps) {
+export default function FreelancerCard({
+  profile,
+  hiredCount,
+  completedProjects,
+}: FreelancerCardProps) {
+  const count = hiredCount ?? completedProjects ?? profile.hire_count ?? 0;
   const isSuspended = !!profile.is_suspended;
   const hasForcedPrice = profile.forced_price !== null && profile.forced_price !== undefined;
   const effectivePrice = hasForcedPrice ? profile.forced_price! : (profile.base_price || 20000);
@@ -88,7 +95,7 @@ export default function FreelancerCard({ profile }: FreelancerCardProps) {
             {/* Total Order Kanan */}
             <div className="text-[10px] bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-zinc-700/60 font-medium text-zinc-200 inline-flex items-center gap-1">
               <Briefcase className="h-2.5 w-2.5 text-amber-400" />
-              <span>{profile.hire_count || 0}x Hired</span>
+              <span>{`${count || 0}x Hired`}</span>
             </div>
           </div>
 
@@ -186,3 +193,5 @@ export default function FreelancerCard({ profile }: FreelancerCardProps) {
     </Link>
   );
 }
+
+export { FreelancerCard as TalentCard };
