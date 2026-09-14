@@ -24,17 +24,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const SESSION_KEY = 'creativehub_user_session';
 
+function safeEncode(val: unknown): string {
+  try {
+    return btoa(encodeURIComponent(JSON.stringify(val)));
+  } catch {
+    return '';
+  }
+}
+
+function safeDecode<T>(val: string | null): T | null {
+  if (!val) return null;
+  try {
+    return JSON.parse(decodeURIComponent(atob(val)));
+  } catch {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return null;
+    }
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<UserSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Cek dari localStorage secara persisten
+    // 1. Cek dari storage
     try {
       const saved = localStorage.getItem(SESSION_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
+        const parsed = safeDecode<UserSession>(saved);
         if (parsed && (parsed.role === 'owner' || parsed.role === 'member')) {
           setSession(parsed);
         }
@@ -62,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: sbSession.user.email,
           };
           setSession(newSession);
-          localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+          localStorage.setItem(SESSION_KEY, safeEncode(newSession));
           document.cookie = `${SESSION_KEY}=${encodeURIComponent(
             JSON.stringify(newSession)
           )}; path=/; max-age=604800; SameSite=Lax`;
@@ -78,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (userSession: UserSession) => {
     setSession(userSession);
     try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(userSession));
+      localStorage.setItem(SESSION_KEY, safeEncode(userSession));
       document.cookie = `${SESSION_KEY}=${encodeURIComponent(
         JSON.stringify(userSession)
       )}; path=/; max-age=604800; SameSite=Lax`;

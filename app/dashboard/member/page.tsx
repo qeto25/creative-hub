@@ -49,6 +49,7 @@ import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
 import { useAuthSession } from '@/lib/context/AuthContext';
+import { sanitizeUrl } from '@/lib/security';
 
 const AVAILABLE_TOOLS = [
   'Canva',
@@ -1387,7 +1388,7 @@ export default function MemberDashboardPage() {
               </label>
               <div className="relative h-48 w-36 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-700 shadow-md">
                 <img
-                  src={avatarUrl}
+                  src={sanitizeUrl(avatarUrl)}
                   alt={profile.full_name}
                   className="h-full w-full object-cover object-top"
                 />
@@ -1420,7 +1421,7 @@ export default function MemberDashboardPage() {
               <div className="relative h-36 w-full rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-700 shadow-md">
                 {coverUrl ? (
                   <img
-                    src={coverUrl}
+                    src={sanitizeUrl(coverUrl)}
                     alt="Cover Banner"
                     className="h-full w-full object-cover"
                   />
@@ -1743,7 +1744,7 @@ export default function MemberDashboardPage() {
                   <div className="relative h-28 w-44 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center">
                     {newMediaUrl ? (
                       <img
-                        src={newMediaUrl}
+                        src={sanitizeUrl(newMediaUrl)}
                         alt="Preview thumbnail"
                         className="h-full w-full object-cover"
                         onError={(e) => {
@@ -1860,7 +1861,7 @@ export default function MemberDashboardPage() {
               >
                 <div className="relative h-40 w-full overflow-hidden bg-zinc-900">
                   <img
-                    src={item.media_url}
+                    src={sanitizeUrl(item.media_url)}
                     alt={item.title}
                     className="h-full w-full object-cover"
                   />

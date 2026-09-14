@@ -48,6 +48,7 @@ import { isDemoMode } from '@/lib/config';
 import { formatRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
 import { useAuthSession } from '@/lib/context/AuthContext';
+import { sanitizeUrl } from '@/lib/security';
 
 export default function OwnerDashboardPage() {
   const { logout } = useAuthSession();
@@ -767,7 +768,7 @@ export default function OwnerDashboardPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img
-                        src={p.avatar_url}
+                        src={sanitizeUrl(p.avatar_url)}
                         alt={p.full_name}
                         className="w-10 h-10 rounded-full object-cover border border-zinc-700 shrink-0"
                       />
@@ -912,7 +913,7 @@ export default function OwnerDashboardPage() {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <img
-                          src={p.avatar_url}
+                          src={sanitizeUrl(p.avatar_url)}
                           alt={p.full_name}
                           className="h-10 w-10 rounded-xl object-cover border border-zinc-700 shrink-0"
                         />
