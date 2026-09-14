@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from '@/lib/context/AuthContext';
+import SecurityGuard from '@/components/SecurityGuard';
 
 export default function RootLayout({
   children,
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark">
       <body className="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col selection:bg-amber-400 selection:text-zinc-950">
+        <SecurityGuard />
         <AuthProvider>
           <Navbar />
           <main className="flex-1">
