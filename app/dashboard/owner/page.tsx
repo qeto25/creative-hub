@@ -1749,7 +1749,7 @@ export default function OwnerDashboardPage() {
                     </label>
                     <input
                       type="number"
-                      step="50000"
+                      step="any"
                       min="0"
                       required
                       value={newBasePrice}
@@ -1878,7 +1878,7 @@ export default function OwnerDashboardPage() {
                       type="number"
                       min="0"
                       max={selectedBookingForKas.estimated_total || 0}
-                      step="1000"
+                      step="any"
                       required
                       value={kasOverrideInput}
                       onChange={(e) => setKasOverrideInput(Number(e.target.value))}

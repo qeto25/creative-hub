@@ -149,7 +149,7 @@ export default function PriceOverrideModal({
                   type="number"
                   min="0"
                   max="100"
-                  step="5"
+                  step="any"
                   required
                   value={dpPercentage}
                   onChange={(e) => setDpPercentage(Number(e.target.value))}

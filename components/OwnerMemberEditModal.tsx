@@ -262,7 +262,7 @@ export default function OwnerMemberEditModal({
                 </label>
                 <input
                   type="number"
-                  step="50000"
+                  step="any"
                   min="0"
                   value={basePrice}
                   onChange={(e) => setBasePrice(Number(e.target.value))}
@@ -332,7 +332,7 @@ export default function OwnerMemberEditModal({
                 </label>
                 <input
                   type="number"
-                  step="10000"
+                  step="any"
                   value={extraRevisionFee}
                   onChange={(e) => setExtraRevisionFee(Number(e.target.value))}
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
@@ -345,7 +345,7 @@ export default function OwnerMemberEditModal({
                 </label>
                 <input
                   type="number"
-                  step="50000"
+                  step="any"
                   value={rushFee}
                   onChange={(e) => setRushFee(Number(e.target.value))}
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
@@ -358,7 +358,7 @@ export default function OwnerMemberEditModal({
                 </label>
                 <input
                   type="number"
-                  step="50000"
+                  step="any"
                   value={sourceFilePrice}
                   onChange={(e) => setSourceFilePrice(Number(e.target.value))}
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
