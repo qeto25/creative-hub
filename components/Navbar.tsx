@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuthSession } from '@/lib/context/AuthContext';
 import { isDemoMode } from '@/lib/config';
+import { SITE_CONFIG } from '@/lib/siteConfig';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -57,7 +58,7 @@ export default function Navbar() {
               </span>
             </div>
             <span className="text-[10px] tracking-wider uppercase text-zinc-400 font-medium -mt-1">
-              Agensi Kreatif Pelajar
+              {SITE_CONFIG.tagline}
             </span>
           </div>
         </Link>

@@ -2,10 +2,42 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { SITE_CONFIG } from '@/lib/siteConfig';
 
 export const metadata: Metadata = {
-  title: 'CREATIVE HUB — Elite Freelancer Agency & Creative Collective',
-  description: 'Kolektif kurasi kreator presentasi, editor video komersial, fotografer produk, dan arsitek UI/UX elit Indonesia dengan jaminan kepuasan dan transparansi DP.',
+  title: {
+    default: `${SITE_CONFIG.name} — Elite Freelancer Agency & Creative Collective`,
+    template: `%s | ${SITE_CONFIG.name}`,
+  },
+  description: SITE_CONFIG.description,
+  metadataBase: new URL(SITE_CONFIG.url),
+  openGraph: {
+    type: 'website',
+    locale: 'id_ID',
+    url: SITE_CONFIG.url,
+    siteName: SITE_CONFIG.name,
+    title: `${SITE_CONFIG.name} — Elite Freelancer Agency & Creative Collective`,
+    description: SITE_CONFIG.description,
+    images: [
+      {
+        url: SITE_CONFIG.ogImage,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_CONFIG.name} — Spesialis Presentasi, Video, Fotografi & UI/UX`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_CONFIG.name} — Elite Freelancer Agency`,
+    description: SITE_CONFIG.description,
+    images: [SITE_CONFIG.ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 import { AuthProvider } from '@/lib/context/AuthContext';

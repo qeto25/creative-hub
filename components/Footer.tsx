@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Sparkles, Shield, Mail, Phone, ArrowUpRight } from 'lucide-react';
+import { SITE_CONFIG, getWhatsAppUrl } from '@/lib/siteConfig';
 
 export default function Footer() {
   return (
@@ -20,7 +21,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-zinc-400 max-w-md leading-relaxed">
-              Kolektif kurasi desainer presentasi, editor video komersial, fotografer produk, dan arsitek UI/UX elit Indonesia. Menghadirkan karya visual berstandar internasional dengan transparansi tarif & komitmen DP terjamin.
+              Kolektif kurasi spesialis presentasi, editor video komersial, fotografer produk, dan arsitek UI/UX elit Indonesia. Menghadirkan karya visual berstandar internasional dengan transparansi tarif &amp; komitmen DP terjamin.
             </p>
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span className="flex items-center gap-1">
@@ -67,20 +68,20 @@ export default function Footer() {
             </p>
             <div className="space-y-2 text-xs">
               <a
-                href="mailto:grown@creativehub.id"
+                href={`mailto:${SITE_CONFIG.email}`}
                 className="flex items-center gap-2 text-zinc-300 hover:text-amber-400 transition-colors"
               >
                 <Mail className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                <span>grown@creativehub.id</span>
+                <span>{SITE_CONFIG.email}</span>
               </a>
               <a
-                href="https://wa.me/6281234567891?text=Halo%20Admin%20Creative%20Hub,%20saya%20ingin%20konsultasi%20proyek"
+                href={getWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-zinc-300 hover:text-emerald-400 transition-colors"
               >
                 <Phone className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                <span>+62 812-3456-7891 (WhatsApp Resmi)</span>
+                <span>WhatsApp Resmi Creative Hub</span>
               </a>
             </div>
           </div>
