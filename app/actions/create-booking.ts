@@ -86,7 +86,7 @@ export async function createBooking(payload: {
 
     // Live Mode: Wajib insert ke Supabase dan WAJIB hentikan proses jika error != null
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: dbInserted, error: insertError } = await supabase
         .from('bookings')
         .insert({

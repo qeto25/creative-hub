@@ -53,7 +53,7 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const ip = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
   const now = Date.now();
 
   // ----------------------------------------------------------------------------

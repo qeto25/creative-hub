@@ -3,9 +3,10 @@ import { getVerifiedProfile } from '@/app/actions/profile';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const result = await getVerifiedProfile(params.id);
+  const { id } = await context.params;
+  const result = await getVerifiedProfile(id);
 
   if (result.isDraft && !result.canViewDraft) {
     return NextResponse.json(
