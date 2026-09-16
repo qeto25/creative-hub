@@ -39,6 +39,7 @@ import OwnerMemberEditModal from '@/components/OwnerMemberEditModal';
 import DisciplineModal from '@/components/DisciplineModal';
 import BookingDetailModal from '@/components/BookingDetailModal';
 import { ownerCreateMember } from '@/app/actions/owner-create-member';
+import { ownerDeleteMember } from '@/app/actions/owner-delete-member';
 import { updateBookingStepAction, updateBookingPayoutAction } from '@/app/actions/update-booking';
 import * as dataLayer from '@/lib/dataLayer';
 import { getTalentStatus } from '@/lib/utils/status';
@@ -429,24 +430,57 @@ export default function OwnerDashboardPage() {
     );
   });
 
+  // State indikator proses hapus member
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+
   // Toggle Tester
-  const toggleTesterStatus = (id: string) => {
+  const toggleTesterStatus = async (id: string) => {
+    const target = profiles.find((p) => p.id === id);
+    if (!target) return;
+    const newTester = !target.is_tester;
     setProfiles((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, is_tester: !p.is_tester } : p))
+      prev.map((p) => (p.id === id ? { ...p, is_tester: newTester } : p))
     );
+    await dataLayer.updateProfile(id, { is_tester: newTester });
   };
 
   // Toggle Working
-  const toggleWorkingStatus = (id: string) => {
+  const toggleWorkingStatus = async (id: string) => {
+    const target = profiles.find((p) => p.id === id);
+    if (!target) return;
+    const newWorking = !target.is_working;
     setProfiles((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, is_working: !p.is_working } : p))
+      prev.map((p) => (p.id === id ? { ...p, is_working: newWorking } : p))
     );
+    await dataLayer.updateProfile(id, { is_working: newWorking });
   };
 
-  // Delete Member
-  const handleDeleteMember = (id: string, name: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus akun member "${name}" dari database?`)) {
+  // Delete Member Permanen (Persisten ke DataLayer localStorage & Supabase Server)
+  const handleDeleteMember = async (id: string, name: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus akun member "${name}" secara permanen? Data member tidak akan muncul lagi setelah halaman di-refresh.`)) {
+      return;
+    }
+
+    try {
+      setDeletingMemberId(id);
+
+      // 1. Hapus dari Data Layer (localStorage demo snapshot di browser & live client)
+      await dataLayer.deleteProfile(id);
+
+      // 2. Hapus via Server Action (Supabase Auth admin & DB jika live, atau server memory snapshot)
+      const res = await ownerDeleteMember(id);
+      if (!res.success && !isDemoMode()) {
+        alert(res.error || 'Gagal menghapus member dari database server.');
+        return;
+      }
+
+      // 3. Update local state
       setProfiles((prev) => prev.filter((p) => p.id !== id));
+    } catch (err: any) {
+      console.error('Error deleting member:', err);
+      alert('Terjadi kesalahan saat menghapus member: ' + (err?.message || 'Coba lagi.'));
+    } finally {
+      setDeletingMemberId(null);
     }
   };
 
@@ -512,6 +546,7 @@ export default function OwnerDashboardPage() {
       });
 
       if (res.success && res.profile) {
+        await dataLayer.createProfile(res.profile);
         setProfiles((prev) => [res.profile!, ...prev]);
         setAddMemberMessage({
           type: 'success',
@@ -1059,10 +1094,19 @@ export default function OwnerDashboardPage() {
 
                         <button
                           onClick={() => handleDeleteMember(p.id, p.full_name)}
-                          className="rounded-lg p-1.5 text-zinc-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-colors"
-                          title="Hapus Member"
+                          disabled={deletingMemberId === p.id}
+                          className={`rounded-lg p-1.5 transition-colors ${
+                            deletingMemberId === p.id
+                              ? 'opacity-50 cursor-not-allowed bg-red-500/10 text-red-400'
+                              : 'text-zinc-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20'
+                          }`}
+                          title="Hapus Member Permanen"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {deletingMemberId === p.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </td>

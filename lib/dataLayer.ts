@@ -222,6 +222,64 @@ export async function updateProfile(id: string, updates: Partial<Profile>): Prom
   }
 }
 
+export async function createProfile(profile: Profile): Promise<Profile | null> {
+  if (isDemoMode()) {
+    const snapshot = getDemoSnapshot();
+    snapshot.profiles = [profile, ...snapshot.profiles.filter((p) => p.id !== profile.id)];
+    saveDemoSnapshot(snapshot);
+    return profile;
+  }
+
+  // Live Supabase
+  try {
+    const supabase = createClient();
+    const { is_available, ...safeProfile } = profile;
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({
+        ...safeProfile,
+        availability_status: is_available === false ? 'resting' : 'available',
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error('[DataLayer] Live create profile error:', error.message);
+      return null;
+    }
+    return (data as Profile) || null;
+  } catch (err) {
+    console.error('[DataLayer] Live profile create exception:', err);
+    return null;
+  }
+}
+
+export async function deleteProfile(id: string): Promise<boolean> {
+  if (isDemoMode()) {
+    const snapshot = getDemoSnapshot();
+    snapshot.profiles = snapshot.profiles.filter((p) => p.id !== id);
+    snapshot.portfolios = snapshot.portfolios.filter((p) => p.profile_id !== id);
+    saveDemoSnapshot(snapshot);
+    return true;
+  }
+
+  // Live Supabase
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.from('profiles').delete().eq('id', id);
+    if (error) {
+      console.error('[DataLayer] Live delete profile error:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[DataLayer] Live profile delete exception:', err);
+    return false;
+  }
+}
+
+
 // ============================================================================
 // 2. PORTFOLIOS DATA ACCESS
 // ============================================================================

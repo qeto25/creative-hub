@@ -6,6 +6,8 @@ import { MemberProvisionPayload, Profile } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
 import { getDemoSessionAction } from '@/app/actions/demo-auth';
+import { isDemoMode } from '@/lib/config';
+import { getDemoSnapshot, saveDemoSnapshot } from '@/lib/mockData';
 
 export async function ownerCreateMember(payload: MemberProvisionPayload): Promise<{
   success: boolean;
@@ -14,7 +16,7 @@ export async function ownerCreateMember(payload: MemberProvisionPayload): Promis
 }> {
   try {
     // 0. Server-side Authentication & Authorization Check
-    const isDemo = process.env.NEXT_PUBLIC_APP_MODE === 'demo';
+    const isDemo = isDemoMode();
     if (!isDemo) {
       const supabase = await createClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -104,6 +106,12 @@ export async function ownerCreateMember(payload: MemberProvisionPayload): Promis
       }
     } catch (e) {
       // Ignored if DB table not connected yet
+    }
+
+    if (isDemo) {
+      const snapshot = getDemoSnapshot();
+      snapshot.profiles = [newProfile, ...snapshot.profiles.filter((p) => p.id !== newProfile.id)];
+      saveDemoSnapshot(snapshot);
     }
 
     revalidatePath('/dashboard/owner');
