@@ -42,7 +42,7 @@ export async function submitReview(payload: {
       };
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     let foundBooking: any = null;
 
     // 1. Cek di tabel bookings Supabase
@@ -126,7 +126,7 @@ export async function submitReview(payload: {
     // 9. Simpan ke Supabase jika dalam Mode Live
     if (!isDemoMode()) {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: insertedReview, error: insertErr } = await supabase
           .from('reviews')
           .insert({

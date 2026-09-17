@@ -68,7 +68,7 @@ export default function BookingDetailModal({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative z-10 my-8 w-full max-w-xl rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 shadow-2xl space-y-6"
+          className="relative z-10 my-8 w-full max-w-xl rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 shadow-xl space-y-6"
         >
           {/* Header */}
           <div className="flex items-start justify-between border-b border-zinc-800 pb-4">

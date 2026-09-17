@@ -34,7 +34,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* KIRI: Logo + Nama Agensi + Status Mode */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -131,17 +131,17 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-2">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] p-2.5 rounded-xl text-zinc-400 hover:bg-zinc-800 hover:text-white"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-zinc-800 bg-zinc-950/95 px-4 py-5 backdrop-blur-xl">
+        <div className="md:hidden border-b border-zinc-800 bg-zinc-950/95 px-4 py-5 backdrop-blur-md">
           <div className="flex flex-col gap-2">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;

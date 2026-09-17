@@ -28,7 +28,7 @@ export default function EmptyState({
       className={`rounded-3xl border border-zinc-800/80 bg-zinc-900/40 p-8 sm:p-12 text-center flex flex-col items-center justify-center max-w-xl mx-auto backdrop-blur-sm shadow-xl ${className}`}
     >
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-800/60 border border-zinc-700/60 text-amber-400 mb-4 shadow-inner">
-        <Icon className="h-8 w-8" />
+        <Icon size={32} />
       </div>
 
       <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{title}</h3>

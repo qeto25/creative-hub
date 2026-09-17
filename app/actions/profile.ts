@@ -32,7 +32,7 @@ export async function getVerifiedProfile(idOrSlug: string): Promise<VerifiedProf
     }
   } else {
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: { user }, error } = await supabase.auth.getUser();
       if (user && !error) {
         const metaRole = user.user_metadata?.role;

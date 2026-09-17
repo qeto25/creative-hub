@@ -154,7 +154,7 @@ function TrackContent() {
       <div className="max-w-2xl mx-auto">
         <form
           onSubmit={handleSearchSubmit}
-          className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md space-y-4"
+          className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-5 sm:p-6 shadow-xl backdrop-blur-md space-y-4"
         >
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
             <ShieldCheck className="w-4 h-4" />
@@ -267,7 +267,7 @@ function TrackContent() {
           className="space-y-8"
         >
           {/* Ringkasan Tiket & Talent */}
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-6 sm:p-8 backdrop-blur-md shadow-2xl">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-6 sm:p-8 backdrop-blur-md shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">

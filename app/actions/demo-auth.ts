@@ -41,7 +41,7 @@ export async function loginDemoAction(role: 'owner' | 'member'): Promise<{
   };
 
   // Simpan dalam HttpOnly cookie di server (tidak bisa dimanipulasi via script klien)
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set('creativehub_demo_session', JSON.stringify(sessionData), {
     path: '/',
     httpOnly: true,
@@ -67,7 +67,7 @@ export async function getDemoSessionAction(): Promise<DemoSessionData | null> {
     return null;
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const rawCookie = cookieStore.get('creativehub_demo_session')?.value;
   if (!rawCookie) {
     return null;
@@ -89,6 +89,6 @@ export async function getDemoSessionAction(): Promise<DemoSessionData | null> {
  * Server Action untuk logout demo
  */
 export async function logoutDemoAction(): Promise<void> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.delete('creativehub_demo_session');
 }

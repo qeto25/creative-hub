@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
@@ -528,8 +529,8 @@ export default function OwnerDashboardPage() {
   if (isVerifyingAuth || !isAuthorized) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
-        <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Owner Agensi...</p>
+        <Loader2 size={32} className="text-amber-400 animate-spin" />
+        <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Owner Grown...</p>
       </div>
     );
   }
@@ -662,7 +663,7 @@ export default function OwnerDashboardPage() {
 
       {/* TAB 1: MEMBERS MANAGEMENT TABLE */}
       {activeTab === 'members' && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl space-y-4 p-6">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-xl space-y-4 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold text-white">Member Roster</h2>
@@ -698,9 +699,11 @@ export default function OwnerDashboardPage() {
                   {/* Baris Atas: Avatar bulat mini, Nama + Rating, Live Status & Tombol Edit Ringkas */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img
+                      <Image
                         src={p.avatar_url}
-                        alt={p.full_name}
+                        alt={p.full_name || 'Avatar'}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full object-cover border border-zinc-700 shrink-0"
                       />
                       <div className="min-w-0">
@@ -843,9 +846,11 @@ export default function OwnerDashboardPage() {
                     {/* Talent */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <img
+                        <Image
                           src={p.avatar_url}
-                          alt={p.full_name}
+                          alt={p.full_name || 'Avatar'}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 rounded-xl object-cover border border-zinc-700 shrink-0"
                         />
                         <div>
@@ -1007,7 +1012,7 @@ export default function OwnerDashboardPage() {
 
       {/* TAB 2: BOOKINGS TABLE */}
       {activeTab === 'bookings' && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl space-y-4 p-6">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-xl space-y-4 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold text-white">Daftar Tiket & Pesanan Klien</h2>
@@ -1365,7 +1370,7 @@ export default function OwnerDashboardPage() {
           </div>
 
           {/* Tabel Payout Tracking */}
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl space-y-4 p-6">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-xl space-y-4 p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-white">Payout Tracking Talent</h2>
@@ -1574,7 +1579,7 @@ export default function OwnerDashboardPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative z-10 w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 shadow-2xl"
+              className="relative z-10 w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 shadow-xl"
             >
               <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div>
@@ -1755,7 +1760,7 @@ export default function OwnerDashboardPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl z-10 space-y-5"
+              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl z-10 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div className="flex items-center gap-2 text-amber-400">
@@ -1870,7 +1875,7 @@ export default function OwnerDashboardPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl z-10 space-y-5"
+              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl z-10 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div className="flex items-center gap-2 text-amber-400">
@@ -2052,7 +2057,7 @@ export default function OwnerDashboardPage() {
 
       {/* TOAST NOTIFIKASI LOGOUT */}
       {logoutToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-3">
           <CheckCircle className="h-4 w-4 text-emerald-400" />
           <span>Anda berhasil keluar. Mengalihkan ke halaman login...</span>
         </div>

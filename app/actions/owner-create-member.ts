@@ -16,7 +16,7 @@ export async function ownerCreateMember(payload: MemberProvisionPayload): Promis
     // 0. Server-side Authentication & Authorization Check
     const isDemo = process.env.NEXT_PUBLIC_APP_MODE === 'demo';
     if (!isDemo) {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         return { success: false, error: 'Akses ditolak. Anda harus login terlebih dahulu.' };

@@ -160,7 +160,7 @@ export default function LoginPage() {
         <div className="text-center space-y-2">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 p-0.5 shadow-gold-glow mb-2">
             <div className="flex h-full w-full items-center justify-center rounded-[14px] bg-zinc-950">
-              <Sparkles className="h-6 w-6 text-amber-400" />
+              <Sparkles size={24} className="text-amber-400" />
             </div>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide">
@@ -172,7 +172,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form Card */}
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-6 sm:p-8 backdrop-blur-md shadow-xl space-y-6">
           {errorMessage && (
             <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-400 font-medium">
               {errorMessage}

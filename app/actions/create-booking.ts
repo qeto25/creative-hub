@@ -70,7 +70,7 @@ export async function createBooking(payload: {
     // Jika mode Demo, JANGAN kirim mutasi ke Supabase asli
     if (!isDemoMode()) {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: dbInserted, error } = await supabase.from('bookings').insert({
           ticket_code: newBooking.ticket_code,
           profile_id: newBooking.profile_id,

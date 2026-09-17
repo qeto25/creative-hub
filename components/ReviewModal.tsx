@@ -94,7 +94,7 @@ export default function ReviewModal({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative z-10 my-4 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900/95 p-4 sm:p-6 backdrop-blur-xl shadow-2xl"
+          className="relative z-10 my-4 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900/95 p-4 sm:p-6 backdrop-blur-md shadow-xl"
         >
           <div className="flex items-start justify-between border-b border-zinc-800 pb-4">
             <div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   User,
@@ -599,7 +600,7 @@ export default function MemberDashboardPage() {
   if (isVerifyingAuth || !isAuthorized) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+        <Loader2 size={32} className="text-amber-400 animate-spin" />
         <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Member...</p>
       </div>
     );
@@ -736,7 +737,7 @@ export default function MemberDashboardPage() {
 
       {/* TAB 1: PESANAN MASUK & PROGRES PENGERJAAN */}
       {activeTab === 'orders' && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md space-y-6 shadow-2xl">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
@@ -1139,7 +1140,7 @@ export default function MemberDashboardPage() {
         </div>
 
         {/* Form Tarif Mandiri Pelajar (Replacing Read-Only Box) */}
-        <div className="lg:col-span-7 rounded-3xl border border-amber-500/40 bg-zinc-900/90 p-5 sm:p-6 backdrop-blur-md shadow-2xl space-y-4">
+        <div className="lg:col-span-7 rounded-3xl border border-amber-500/40 bg-zinc-900/90 p-5 sm:p-6 backdrop-blur-md shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
               <Sparkles className="h-4 w-4" />
@@ -1302,7 +1303,7 @@ export default function MemberDashboardPage() {
       </div>
 
       {/* 2. KARTU PROFIL PUBLIK & IDENTITAS */}
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-2xl">
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4 mb-6">
           <div>
             <h3 className="text-lg font-bold text-white">Profil Publik & Identitas Kreator</h3>
@@ -1329,14 +1330,16 @@ export default function MemberDashboardPage() {
                 Foto Profil (Potret 4:5, maks 2 MB)
               </label>
               <div className="relative h-48 w-36 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-700 shadow-md">
-                <img
+                <Image
                   src={avatarUrl}
-                  alt={profile.full_name}
-                  className="h-full w-full object-cover object-top"
+                  alt={profile.full_name || 'Foto Profil'}
+                  fill
+                  sizes="144px"
+                  className="object-cover object-top"
                 />
                 {isUploadingAvatar && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 text-amber-400 animate-spin" />
+                    <Loader2 size={24} className="text-amber-400 animate-spin" />
                   </div>
                 )}
               </div>
@@ -1362,10 +1365,12 @@ export default function MemberDashboardPage() {
               </label>
               <div className="relative h-36 w-full rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-700 shadow-md">
                 {coverUrl ? (
-                  <img
+                  <Image
                     src={coverUrl}
                     alt="Cover Banner"
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 96vw, 800px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="h-full w-full bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center text-xs text-zinc-500">
@@ -1374,7 +1379,7 @@ export default function MemberDashboardPage() {
                 )}
                 {isUploadingCover && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 text-amber-400 animate-spin" />
+                    <Loader2 size={24} className="text-amber-400 animate-spin" />
                   </div>
                 )}
               </div>
@@ -1466,7 +1471,7 @@ export default function MemberDashboardPage() {
       </div>
 
       {/* 3. KARTU KEAHLIAN, TOOLS & KETENTUAN PENGERJAAN */}
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-2xl">
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4 mb-6">
           <div>
             <h3 className="text-lg font-bold text-white">Keahlian, Tools & Ketentuan Pengerjaan</h3>
@@ -1685,17 +1690,16 @@ export default function MemberDashboardPage() {
                   {/* Live Thumbnail Preview Box */}
                   <div className="relative h-28 w-44 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center">
                     {newMediaUrl ? (
-                      <img
+                      <Image
                         src={newMediaUrl}
                         alt="Preview thumbnail"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80';
-                        }}
+                        fill
+                        sizes="176px"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-zinc-500 text-[10px] p-2 text-center">
-                        <ImageIcon className="h-6 w-6 text-zinc-600 mb-1" />
+                        <ImageIcon size={24} className="text-zinc-600 mb-1" />
                         <span>Preview Gambar</span>
                       </div>
                     )}
@@ -1789,10 +1793,12 @@ export default function MemberDashboardPage() {
                 className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col justify-between"
               >
                 <div className="relative h-40 w-full overflow-hidden bg-zinc-900">
-                  <img
+                  <Image
                     src={item.media_url}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
+                    alt={item.title || 'Portofolio'}
+                    fill
+                    sizes="(max-width: 640px) 96vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
                   />
                   <span className="absolute top-2.5 left-2.5 rounded-lg bg-zinc-950/80 px-2.5 py-1 text-[10px] font-bold text-amber-400 backdrop-blur-md">
                     {item.category}
@@ -1825,7 +1831,7 @@ export default function MemberDashboardPage() {
       {/* MODAL DETAIL BRIEF PESANAN (MOBILE & DESKTOP) */}
       {selectedBookingForDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4 shadow-2xl">
+          <div className="w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4 shadow-xl">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
                 <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
@@ -1890,7 +1896,7 @@ export default function MemberDashboardPage() {
 
       {/* TOAST NOTIFIKASI LOGOUT */}
       {logoutToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-3">
           <CheckCircle2 className="h-4 w-4 text-emerald-400" />
           <span>Anda berhasil keluar. Mengalihkan ke halaman login...</span>
         </div>

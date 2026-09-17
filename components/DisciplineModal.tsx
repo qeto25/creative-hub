@@ -125,7 +125,7 @@ export default function DisciplineModal({ isOpen, onClose, profile, onSaved }: D
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-lg bg-zinc-950 border border-red-900/30 rounded-2xl shadow-2xl overflow-hidden my-6"
+          className="relative w-full max-w-lg bg-zinc-950 border border-red-900/30 rounded-2xl shadow-xl overflow-hidden my-6"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-zinc-800 bg-red-950/20">
