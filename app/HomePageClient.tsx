@@ -271,7 +271,7 @@ export default function HomePageClient() {
           {featuredPortfolios.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 rounded-2xl border border-dashed border-zinc-700/60 bg-zinc-900/30 text-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                <Sparkles className="h-6 w-6 text-amber-400" />
+                <Sparkles size={24} className="text-amber-400" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-zinc-200">Showcase Sedang Dikurasi</p>

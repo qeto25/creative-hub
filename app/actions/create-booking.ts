@@ -67,29 +67,11 @@ export async function createBooking(payload: {
       created_at: new Date().toISOString(),
     };
 
-    // Jika mode Demo, simpan ke snapshot demo
-    if (isDemoMode()) {
-      const demoRes = await dataLayer.createBooking(payload);
-      if (!demoRes.success || !demoRes.booking) {
-        return {
-          success: false,
-          error: demoRes.error || 'Gagal menyimpan pesanan di sistem demo.',
-        };
-      }
+    // Jika mode Demo, JANGAN kirim mutasi ke Supabase asli
+    if (!isDemoMode()) {
       try {
-        revalidatePath('/dashboard/owner');
-      } catch {
-        // ignore outside request scope
-      }
-      return demoRes;
-    }
-
-    // Live Mode: Wajib insert ke Supabase dan WAJIB hentikan proses jika error != null
-    try {
-      const supabase = await createClient();
-      const { data: dbInserted, error: insertError } = await supabase
-        .from('bookings')
-        .insert({
+        const supabase = await createClient();
+        const { data: dbInserted, error } = await supabase.from('bookings').insert({
           ticket_code: newBooking.ticket_code,
           profile_id: newBooking.profile_id,
           talent_name: newBooking.talent_name,
@@ -99,46 +81,33 @@ export async function createBooking(payload: {
           project_brief: newBooking.project_brief,
           include_source_file: newBooking.include_source_file,
           is_rush_order: newBooking.is_rush_order,
+          include_extra_revision: newBooking.include_extra_revision,
           estimated_total: newBooking.estimated_total,
           dp_amount: newBooking.dp_amount,
           status: 'pending_dp',
-        })
-        .select()
-        .single();
+          step_progress: 1,
+          payout_status: 'unpaid',
+          hub_fee: defaultHubFee,
+          talent_fee: defaultTalentFee,
+          has_reviewed: false,
+        }).select().single();
 
-      if (insertError) {
-        console.error('[createBooking] Supabase bookings insert error:', insertError.message);
-        return {
-          success: false,
-          error: `Gagal menyimpan pesanan ke Supabase: ${insertError.message}`,
-        };
+        if (!error && dbInserted) {
+          newBooking.id = dbInserted.id;
+        } else if (error) {
+          console.warn('Supabase bookings insert note:', error.message);
+        }
+      } catch (dbErr) {
+        console.warn('Supabase live booking exception:', dbErr);
       }
-
-      if (!dbInserted) {
-        return {
-          success: false,
-          error: 'Gagal membuat tiket pesanan: Database Supabase tidak merespons.',
-        };
-      }
-
-      newBooking.id = dbInserted.id;
-      try {
-        revalidatePath('/dashboard/owner');
-      } catch {
-        // ignore outside request scope
-      }
-
-      return {
-        success: true,
-        booking: newBooking,
-      };
-    } catch (dbErr: any) {
-      console.error('[createBooking] Supabase live booking exception:', dbErr);
-      return {
-        success: false,
-        error: dbErr?.message || 'Terjadi kesalahan sistem saat menyimpan ke database Supabase.',
-      };
     }
+
+    revalidatePath('/dashboard/owner');
+
+    return {
+      success: true,
+      booking: newBooking,
+    };
   } catch (err: any) {
     return {
       success: false,

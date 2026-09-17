@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   Star,
@@ -131,7 +132,7 @@ export default function FreelancerDetailPage() {
   if (isDraft && !canViewDraft) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/80 p-8 backdrop-blur-md shadow-2xl">
+        <div className="max-w-md w-full text-center space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/80 p-8 backdrop-blur-md shadow-xl">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
             <Clock className="w-6 h-6" />
           </div>
@@ -208,15 +209,18 @@ export default function FreelancerDetailPage() {
       {/* ========================================================================= */}
       <motion.div
         layoutId={`card-${profile.id}`}
-        className="rounded-3xl border border-zinc-800 bg-zinc-900/90 backdrop-blur-xl relative overflow-hidden shadow-2xl"
+        className="rounded-3xl border border-zinc-800 bg-zinc-900/90 backdrop-blur-md relative overflow-hidden shadow-xl"
       >
         {/* BACKGROUND COVER BANNER */}
         <div className="relative h-48 sm:h-64 lg:h-72 w-full overflow-hidden bg-zinc-950">
           {profile.cover_url ? (
-            <img
+            <Image
               src={profile.cover_url}
               alt={`${profile.full_name} Cover`}
-              className="h-full w-full object-cover object-center"
+              fill
+              priority
+              sizes="(max-width: 1200px) 96vw, 1200px"
+              className="object-cover object-center"
             />
           ) : (
             <div className="h-full w-full bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950" />
@@ -230,22 +234,20 @@ export default function FreelancerDetailPage() {
         <div className="relative z-10 px-6 sm:px-8 lg:px-10 pb-10 -mt-24 sm:-mt-28">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Avatar Photo with matching layoutId & mobile compact bounds */}
-            <div className="lg:col-span-4 h-64 sm:h-80 lg:aspect-[4/5] lg:h-auto rounded-2xl overflow-hidden bg-zinc-950 border-2 border-zinc-700/80 relative shadow-2xl">
-              <motion.img
-                layoutId={`avatar-${profile.id}`}
+            <div className="lg:col-span-4 h-64 sm:h-80 lg:aspect-[4/5] lg:h-auto rounded-2xl overflow-hidden bg-zinc-950 border-2 border-zinc-700/80 relative shadow-xl">
+              <Image
                 src={profile.avatar_url}
                 alt={profile.full_name}
-                className="h-full w-full object-cover object-top"
+                fill
+                priority
+                sizes="(max-width: 1024px) 320px, 400px"
+                className="object-cover object-top"
               />
-              {/* Live Indicator & Hired Badge on Top */}
-              <div className="absolute top-4 inset-x-4 flex justify-between items-center gap-2 z-10">
-                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-md shadow-lg min-w-0 max-w-[65%] ${statusMeta.badgeClass}`}>
-                  <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${statusMeta.dotClass}`}></span>
-                  <span className="truncate">{statusMeta.label}</span>
-                </div>
-                <div className="shrink-0 whitespace-nowrap text-xs bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-700/80 font-semibold text-zinc-100 inline-flex items-center gap-1.5 shadow-lg">
-                  <Briefcase className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <span className="whitespace-nowrap font-semibold">{profile.hire_count || 0}x Hired</span>
+              {/* Live Indicator on Top */}
+              <div className="absolute top-4 left-4 z-10">
+                <div className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-md ${statusMeta.badgeClass}`}>
+                  <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dotClass}`}></span>
+                  <span>{statusMeta.label}</span>
                 </div>
               </div>
             </div>
@@ -327,7 +329,7 @@ export default function FreelancerDetailPage() {
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-zinc-800">
                   <div className="rounded-xl bg-zinc-950/60 p-3.5 border border-zinc-800/80">
                     <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Total Hired</span>
-                    <p className="text-lg font-bold text-white mt-0.5">{profile.hire_count || 0}x Hired</p>
+                    <p className="text-lg font-bold text-white mt-0.5">{profile.hire_count || 0}x Diselesaikan</p>
                   </div>
 
                   <div className="rounded-xl bg-zinc-950/60 p-3.5 border border-zinc-800/80">
@@ -383,8 +385,8 @@ export default function FreelancerDetailPage() {
         {/* Box 1: Durasi Pengerjaan & Deliverables */}
         <div className="rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3.5 sm:p-5 backdrop-blur-md space-y-3">
           <div className="flex items-center gap-2.5 text-amber-400">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shrink-0">
-              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <div className="flex min-h-[44px] min-w-[44px] p-2.5 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shrink-0">
+              <Clock size={20} />
             </div>
             <div>
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">Durasi Pengerjaan</span>
@@ -411,8 +413,8 @@ export default function FreelancerDetailPage() {
         {/* Box 2: Kebijakan Revisi */}
         <div className="rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3.5 sm:p-5 backdrop-blur-md space-y-3">
           <div className="flex items-center gap-2.5 text-emerald-400">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 shrink-0">
-              <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
+            <div className="flex min-h-[44px] min-w-[44px] p-2.5 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 shrink-0">
+              <RotateCcw size={20} />
             </div>
             <div>
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">Kebijakan Revisi</span>
@@ -435,8 +437,8 @@ export default function FreelancerDetailPage() {
         {/* Box 3: Add-on Availability */}
         <div className="col-span-2 lg:col-span-1 rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3.5 sm:p-5 backdrop-blur-md space-y-3">
           <div className="flex items-center gap-2.5 text-amber-400">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shrink-0">
-              <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
+            <div className="flex min-h-[44px] min-w-[44px] p-2.5 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shrink-0">
+              <Zap size={20} />
             </div>
             <div>
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-zinc-400 block">Opsi Add-on</span>
@@ -626,9 +628,11 @@ export default function FreelancerDetailPage() {
                 className="group overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 transition-all hover:border-amber-500/40"
               >
                 <div className="relative aspect-video w-full overflow-hidden bg-zinc-950">
-                  <img
+                  <Image
                     src={item.media_url}
-                    alt={item.title}
+                    alt={item.title || 'Portofolio'}
+                    width={500}
+                    height={280}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute top-3 left-3">
@@ -743,7 +747,7 @@ export default function FreelancerDetailPage() {
       />
 
       {/* STICKY BOTTOM ACTION BAR (Khusus Layar HP) */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800 z-40 flex items-center justify-between sm:hidden shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800 z-40 flex items-center justify-between sm:hidden shadow-xl">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">
             {hasForcedPrice && profile.forced_price === 0 ? 'Kompensasi' : 'Mulai dari'}

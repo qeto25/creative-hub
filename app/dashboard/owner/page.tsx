@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
@@ -30,17 +31,14 @@ import {
   Banknote,
   DollarSign,
   ArrowUpRight,
-  RefreshCw,
 } from 'lucide-react';
 import { MOCK_PROFILES, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Booking, BookingStatus } from '@/lib/types';
 import PriceOverrideModal from '@/components/PriceOverrideModal';
 import OwnerMemberEditModal from '@/components/OwnerMemberEditModal';
-import DisciplineModal from '@/components/DisciplineModal';
 import BookingDetailModal from '@/components/BookingDetailModal';
+import DisciplineModal from '@/components/DisciplineModal';
 import { ownerCreateMember } from '@/app/actions/owner-create-member';
-import { ownerDeleteMember } from '@/app/actions/owner-delete-member';
-import { updateBookingStepAction, updateBookingPayoutAction } from '@/app/actions/update-booking';
 import * as dataLayer from '@/lib/dataLayer';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
@@ -49,7 +47,6 @@ import { isDemoMode } from '@/lib/config';
 import { formatRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
 import { useAuthSession } from '@/lib/context/AuthContext';
-import { sanitizeUrl } from '@/lib/security';
 
 export default function OwnerDashboardPage() {
   const { logout } = useAuthSession();
@@ -126,10 +123,7 @@ export default function OwnerDashboardPage() {
             dataLayer.getProfiles({ includeTesters: true }),
           ]);
           if (liveBookings) {
-            const sorted = [...liveBookings].sort(
-              (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-            );
-            setBookings(sorted);
+            setBookings(liveBookings);
           }
           if (liveProfiles) {
             setProfiles(liveProfiles);
@@ -144,56 +138,14 @@ export default function OwnerDashboardPage() {
     verifyOwnerAndLoadData();
   }, []);
 
-  // Refetch / Refresh Otomatis Pesanan dari Tabel Bookings (Sorted by created_at DESC)
-  const [isRefreshingBookings, setIsRefreshingBookings] = useState(false);
-  const fetchBookings = useCallback(async () => {
-    try {
-      setIsRefreshingBookings(true);
-      const liveBookings = await dataLayer.getBookings();
-      if (liveBookings) {
-        const sorted = [...liveBookings].sort(
-          (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-        );
-        setBookings(sorted);
-      }
-    } catch (err) {
-      console.warn('Error refreshing bookings:', err);
-    } finally {
-      setIsRefreshingBookings(false);
-    }
-  }, []);
-
-  // Refresh otomatis saat tab 'bookings' (Daftar Pesanan) dibuka
-  useEffect(() => {
-    if (isAuthorized && activeTab === 'bookings') {
-      fetchBookings();
-    }
-  }, [activeTab, isAuthorized, fetchBookings]);
-
   // Update Booking Status
   const handleUpdateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
-    const isCompleted = dataLayer.isBookingCompleted({ status: newStatus });
-    const step = isCompleted ? 5 : undefined;
-
     setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus, ...(step ? { step_progress: step } : {}) } : b))
+      prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
     );
 
-    if (isCompleted) {
-      const targetB = bookings.find((b) => b.id === bookingId);
-      if (targetB?.profile_id) {
-        setProfiles((prev) =>
-          prev.map((p) => (p.id === targetB.profile_id ? { ...p, hire_count: (p.hire_count || 0) + 1 } : p))
-        );
-      }
-    }
-
     try {
-      await updateBookingStepAction({
-        bookingId,
-        status: newStatus,
-        stepProgress: step,
-      });
+      await dataLayer.updateBooking(bookingId, { status: newStatus });
     } catch (err) {
       console.warn('Status update note:', err);
     }
@@ -212,19 +164,9 @@ export default function OwnerDashboardPage() {
       prev.map((b) => (b.id === bookingId ? { ...b, step_progress: step, status: newStatus } : b))
     );
 
-    if (step === 5) {
-      const targetB = bookings.find((b) => b.id === bookingId);
-      if (targetB?.profile_id) {
-        setProfiles((prev) =>
-          prev.map((p) => (p.id === targetB.profile_id ? { ...p, hire_count: (p.hire_count || 0) + 1 } : p))
-        );
-      }
-    }
-
     try {
-      await updateBookingStepAction({
-        bookingId,
-        stepProgress: step,
+      await dataLayer.updateBooking(bookingId, {
+        step_progress: step,
         status: newStatus,
       });
     } catch (err) {
@@ -249,14 +191,10 @@ export default function OwnerDashboardPage() {
     );
 
     try {
-      const res = await updateBookingPayoutAction({
-        bookingId,
-        payoutStatus: newStatus,
-        payoutDate: newDate,
+      await dataLayer.updateBooking(bookingId, {
+        payout_status: newStatus,
+        payout_date: newDate,
       });
-      if (!res.success) {
-        console.warn('Payout update fallback note:', res.error);
-      }
     } catch (err) {
       console.warn('Payout update fallback note:', err);
     }
@@ -430,57 +368,24 @@ export default function OwnerDashboardPage() {
     );
   });
 
-  // State indikator proses hapus member
-  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
-
   // Toggle Tester
-  const toggleTesterStatus = async (id: string) => {
-    const target = profiles.find((p) => p.id === id);
-    if (!target) return;
-    const newTester = !target.is_tester;
+  const toggleTesterStatus = (id: string) => {
     setProfiles((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, is_tester: newTester } : p))
+      prev.map((p) => (p.id === id ? { ...p, is_tester: !p.is_tester } : p))
     );
-    await dataLayer.updateProfile(id, { is_tester: newTester });
   };
 
   // Toggle Working
-  const toggleWorkingStatus = async (id: string) => {
-    const target = profiles.find((p) => p.id === id);
-    if (!target) return;
-    const newWorking = !target.is_working;
+  const toggleWorkingStatus = (id: string) => {
     setProfiles((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, is_working: newWorking } : p))
+      prev.map((p) => (p.id === id ? { ...p, is_working: !p.is_working } : p))
     );
-    await dataLayer.updateProfile(id, { is_working: newWorking });
   };
 
-  // Delete Member Permanen (Persisten ke DataLayer localStorage & Supabase Server)
-  const handleDeleteMember = async (id: string, name: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus akun member "${name}" secara permanen? Data member tidak akan muncul lagi setelah halaman di-refresh.`)) {
-      return;
-    }
-
-    try {
-      setDeletingMemberId(id);
-
-      // 1. Hapus dari Data Layer (localStorage demo snapshot di browser & live client)
-      await dataLayer.deleteProfile(id);
-
-      // 2. Hapus via Server Action (Supabase Auth admin & DB jika live, atau server memory snapshot)
-      const res = await ownerDeleteMember(id);
-      if (!res.success && !isDemoMode()) {
-        alert(res.error || 'Gagal menghapus member dari database server.');
-        return;
-      }
-
-      // 3. Update local state
+  // Delete Member
+  const handleDeleteMember = (id: string, name: string) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus akun member "${name}" dari database?`)) {
       setProfiles((prev) => prev.filter((p) => p.id !== id));
-    } catch (err: any) {
-      console.error('Error deleting member:', err);
-      alert('Terjadi kesalahan saat menghapus member: ' + (err?.message || 'Coba lagi.'));
-    } finally {
-      setDeletingMemberId(null);
     }
   };
 
@@ -515,13 +420,6 @@ export default function OwnerDashboardPage() {
     setBookings((prev) =>
       prev.map((b) => (b.id === updated.id ? updated : b))
     );
-    if (dataLayer.isBookingCompleted(updated) && updated.profile_id) {
-      setProfiles((prev) =>
-        prev.map((p) =>
-          p.id === updated.profile_id ? { ...p, hire_count: (p.hire_count || 0) + 1 } : p
-        )
-      );
-    }
   };
 
   const handleCreateMember = async (e: React.FormEvent) => {
@@ -546,7 +444,6 @@ export default function OwnerDashboardPage() {
       });
 
       if (res.success && res.profile) {
-        await dataLayer.createProfile(res.profile);
         setProfiles((prev) => [res.profile!, ...prev]);
         setAddMemberMessage({
           type: 'success',
@@ -632,8 +529,8 @@ export default function OwnerDashboardPage() {
   if (isVerifyingAuth || !isAuthorized) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
-        <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Owner Agensi...</p>
+        <Loader2 size={32} className="text-amber-400 animate-spin" />
+        <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Owner Grown...</p>
       </div>
     );
   }
@@ -766,7 +663,7 @@ export default function OwnerDashboardPage() {
 
       {/* TAB 1: MEMBERS MANAGEMENT TABLE */}
       {activeTab === 'members' && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl space-y-4 p-6">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-xl space-y-4 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold text-white">Member Roster</h2>
@@ -802,9 +699,11 @@ export default function OwnerDashboardPage() {
                   {/* Baris Atas: Avatar bulat mini, Nama + Rating, Live Status & Tombol Edit Ringkas */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <img
-                        src={sanitizeUrl(p.avatar_url)}
-                        alt={p.full_name}
+                      <Image
+                        src={p.avatar_url}
+                        alt={p.full_name || 'Avatar'}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full object-cover border border-zinc-700 shrink-0"
                       />
                       <div className="min-w-0">
@@ -947,9 +846,11 @@ export default function OwnerDashboardPage() {
                     {/* Talent */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={sanitizeUrl(p.avatar_url)}
-                          alt={p.full_name}
+                        <Image
+                          src={p.avatar_url}
+                          alt={p.full_name || 'Avatar'}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 rounded-xl object-cover border border-zinc-700 shrink-0"
                         />
                         <div>
@@ -1094,19 +995,10 @@ export default function OwnerDashboardPage() {
 
                         <button
                           onClick={() => handleDeleteMember(p.id, p.full_name)}
-                          disabled={deletingMemberId === p.id}
-                          className={`rounded-lg p-1.5 transition-colors ${
-                            deletingMemberId === p.id
-                              ? 'opacity-50 cursor-not-allowed bg-red-500/10 text-red-400'
-                              : 'text-zinc-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20'
-                          }`}
-                          title="Hapus Member Permanen"
+                          className="rounded-lg p-1.5 text-zinc-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-colors"
+                          title="Hapus Member"
                         >
-                          {deletingMemberId === p.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-red-400" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -1120,7 +1012,7 @@ export default function OwnerDashboardPage() {
 
       {/* TAB 2: BOOKINGS TABLE */}
       {activeTab === 'bookings' && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl space-y-4 p-6">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-xl space-y-4 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold text-white">Daftar Tiket & Pesanan Klien</h2>
@@ -1129,28 +1021,15 @@ export default function OwnerDashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={fetchBookings}
-                disabled={isRefreshingBookings}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-750 text-xs font-semibold text-zinc-300 hover:text-white transition disabled:opacity-50 shrink-0 cursor-pointer"
-                title="Refresh Daftar Pesanan"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingBookings ? 'animate-spin text-amber-400' : ''}`} />
-                <span>{isRefreshingBookings ? 'Memuat...' : 'Refresh'}</span>
-              </button>
-
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="text"
-                  placeholder="Cari no. tiket, nama klien, atau talent..."
-                  value={bookingSearchQuery}
-                  onChange={(e) => setBookingSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
-                />
-              </div>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Cari no. tiket, nama klien, atau talent..."
+                value={bookingSearchQuery}
+                onChange={(e) => setBookingSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+              />
             </div>
           </div>
 
@@ -1491,7 +1370,7 @@ export default function OwnerDashboardPage() {
           </div>
 
           {/* Tabel Payout Tracking */}
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-2xl space-y-4 p-6">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-md overflow-hidden shadow-xl space-y-4 p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-white">Payout Tracking Talent</h2>
@@ -1700,7 +1579,7 @@ export default function OwnerDashboardPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative z-10 w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 shadow-2xl"
+              className="relative z-10 w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8 shadow-xl"
             >
               <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div>
@@ -1794,7 +1673,7 @@ export default function OwnerDashboardPage() {
                     </label>
                     <input
                       type="number"
-                      step="any"
+                      step="50000"
                       min="0"
                       required
                       value={newBasePrice}
@@ -1881,7 +1760,7 @@ export default function OwnerDashboardPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl z-10 space-y-5"
+              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl z-10 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div className="flex items-center gap-2 text-amber-400">
@@ -1923,7 +1802,7 @@ export default function OwnerDashboardPage() {
                       type="number"
                       min="0"
                       max={selectedBookingForKas.estimated_total || 0}
-                      step="any"
+                      step="1000"
                       required
                       value={kasOverrideInput}
                       onChange={(e) => setKasOverrideInput(Number(e.target.value))}
@@ -1996,7 +1875,7 @@ export default function OwnerDashboardPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl z-10 space-y-5"
+              className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl z-10 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div className="flex items-center gap-2 text-amber-400">
@@ -2178,7 +2057,7 @@ export default function OwnerDashboardPage() {
 
       {/* TOAST NOTIFIKASI LOGOUT */}
       {logoutToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-3">
           <CheckCircle className="h-4 w-4 text-emerald-400" />
           <span>Anda berhasil keluar. Mengalihkan ke halaman login...</span>
         </div>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Portfolio } from '@/lib/types';
 import { Sparkles, ArrowUpRight, Play } from 'lucide-react';
@@ -19,9 +20,11 @@ export default function ProjectCard({ portfolio }: ProjectCardProps) {
     >
       {/* Media Box: Aspect Video 16:9 */}
       <div className="relative w-full aspect-video overflow-hidden rounded-t-xl bg-zinc-900">
-        <img
+        <Image
           src={portfolio.media_url}
-          alt={portfolio.title}
+          alt={portfolio.title || 'Project Thumbnail'}
+          width={640}
+          height={360}
           className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-80" />
@@ -62,9 +65,11 @@ export default function ProjectCard({ portfolio }: ProjectCardProps) {
               href={`/freelancers/${portfolio.profile.id}`}
               className="flex items-center gap-2 text-xs text-zinc-400 hover:text-amber-400 transition-colors group/talent truncate mr-2"
             >
-              <img
+              <Image
                 src={portfolio.profile.avatar_url}
-                alt={portfolio.profile.full_name}
+                alt={portfolio.profile.full_name || 'Talent Avatar'}
+                width={20}
+                height={20}
                 className="w-5 h-5 rounded-full object-cover border border-amber-500/40 shrink-0"
               />
               <span className="font-medium truncate text-xs">

@@ -1,0 +1,13 @@
+{
+  "consoleErrors": [
+    "[Console Error] Failed to load resource: the server responded with a status of 404 ()",
+    "[Console Error] Failed to load resource: the server responded with a status of 429 ()",
+    "[Console Error] Failed to load resource: the server responded with a status of 429 ()",
+    "[Console Error] Failed to load resource: the server responded with a status of 429 ()"
+  ],
+  "networkErrors": [
+    "[Failed Request] POST https://ernwownclpnkrtczvuci.supabase.co/auth/v1/logout?scope=global (net::ERR_ABORTED)",
+    "[Failed Request] GET https://creative-hub-sandy.vercel.app/freelancers?_rsc=_H_fFy2_Q06N8BA7 (net::ERR_ABORTED)"
+  ],
+  "findings": []
+}

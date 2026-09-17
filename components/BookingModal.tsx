@@ -230,7 +230,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative z-10 my-4 w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900/95 p-4 sm:p-6 backdrop-blur-xl shadow-2xl max-h-[90vh] overflow-y-auto"
+          className="relative z-10 my-4 w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900/95 p-4 sm:p-6 backdrop-blur-md shadow-xl max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
           <div className="flex items-start justify-between border-b border-zinc-800 pb-4">

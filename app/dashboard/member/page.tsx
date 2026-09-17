@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   User,
@@ -33,14 +34,12 @@ import {
   MessageCircle,
   Calendar,
   CheckCircle2,
-  XCircle,
   Eye,
   X,
 } from 'lucide-react';
 import { MOCK_PROFILES, MOCK_PORTFOLIOS, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Portfolio, Booking, BookingStatus } from '@/lib/types';
 import { uploadAsset, validateImageFile } from '@/lib/supabase/storage';
-import { updateBookingStepAction } from '@/app/actions/update-booking';
 import * as dataLayer from '@/lib/dataLayer';
 import { isDemoMode } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
@@ -49,7 +48,6 @@ import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
 import { useAuthSession } from '@/lib/context/AuthContext';
-import { sanitizeUrl } from '@/lib/security';
 
 const AVAILABLE_TOOLS = [
   'Canva',
@@ -112,7 +110,7 @@ export default function MemberDashboardPage() {
 
         let dbProfile = await dataLayer.getProfileByIdOrSlug(targetId);
         if (!dbProfile) {
-          dbProfile = MOCK_PROFILES.find((p: Profile) => p.id === targetId) || MOCK_PROFILES[0];
+          dbProfile = MOCK_PROFILES.find((p) => p.id === targetId) || MOCK_PROFILES[0];
         }
 
         if (dbProfile) {
@@ -173,9 +171,6 @@ export default function MemberDashboardPage() {
 
   // Handle Member Step Updates (Pemisahan Wewenang MODUL 4)
   const handleMemberUpdateStep = async (bookingId: string, targetStep: 2 | 3 | 5) => {
-    const target = bookings.find((b) => b.id === bookingId);
-    if (!target || target.status === 'cancelled') return;
-
     let newStatus: BookingStatus = 'in_progress';
     if (targetStep === 3) newStatus = 'in_review';
     if (targetStep === 5) newStatus = 'completed';
@@ -186,17 +181,9 @@ export default function MemberDashboardPage() {
       )
     );
 
-    if (targetStep === 5) {
-      setProfile((prev) => ({
-        ...prev,
-        hire_count: (prev.hire_count || 0) + 1,
-      }));
-    }
-
     try {
-      await updateBookingStepAction({
-        bookingId,
-        stepProgress: targetStep,
+      await dataLayer.updateBooking(bookingId, {
+        step_progress: targetStep,
         status: newStatus,
       });
     } catch (e) {
@@ -283,23 +270,14 @@ export default function MemberDashboardPage() {
       return;
     }
 
-    // Set preview gambar lokal seketika agar cepat & tidak lag
-    const localPreview = URL.createObjectURL(file);
-    setNewMediaUrl(localPreview);
-
     setIsUploadingPortfolioThumb(true);
-    try {
-      const { url, error } = await uploadAsset(file, 'portfolios');
-      if (error || !url) {
-        setUploadError(error || 'Gagal mengunggah thumbnail portofolio.');
-      } else {
-        setNewMediaUrl(url);
-      }
-    } catch (err: any) {
-      setUploadError(err?.message || 'Gagal mengunggah gambar.');
-    } finally {
-      setIsUploadingPortfolioThumb(false);
+    const { url, error } = await uploadAsset(file, 'portfolios');
+    if (error || !url) {
+      setUploadError(error || 'Gagal mengunggah thumbnail portofolio.');
+    } else {
+      setNewMediaUrl(url);
     }
+    setIsUploadingPortfolioThumb(false);
   };
 
   // Set Availability Status (Segmented Pill Buttons)
@@ -573,18 +551,7 @@ export default function MemberDashboardPage() {
   const handleAddPortfolio = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLockedOrSuspended) return;
-    if (!newTitle.trim()) {
-      alert('Harap isi judul proyek portofolio.');
-      return;
-    }
-    if (isUploadingPortfolioThumb) {
-      alert('Gambar sedang diunggah, silakan tunggu beberapa detik.');
-      return;
-    }
-    if (!newMediaUrl.trim()) {
-      alert('Harap pilih file gambar atau masukkan tautan URL thumbnail portofolio.');
-      return;
-    }
+    if (!newTitle.trim() || !newMediaUrl.trim()) return;
 
     const newItem: Portfolio = {
       id: `p-${Date.now()}`,
@@ -633,7 +600,7 @@ export default function MemberDashboardPage() {
   if (isVerifyingAuth || !isAuthorized) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+        <Loader2 size={32} className="text-amber-400 animate-spin" />
         <p className="text-xs text-zinc-400 tracking-wider">Memverifikasi otorisasi akun Member...</p>
       </div>
     );
@@ -770,7 +737,7 @@ export default function MemberDashboardPage() {
 
       {/* TAB 1: PESANAN MASUK & PROGRES PENGERJAAN */}
       {activeTab === 'orders' && (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md space-y-6 shadow-2xl">
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md space-y-6 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
@@ -799,10 +766,7 @@ export default function MemberDashboardPage() {
               </div>
             ) : (
               bookings.map((b) => {
-                const isCancelled = b.status === 'cancelled';
-                const step = isCancelled
-                  ? 0
-                  : b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
+                const step = b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
                 const talentShare = b.talent_fee ?? Math.round((b.estimated_total || 0) * 0.75);
 
                 return (
@@ -816,9 +780,7 @@ export default function MemberDashboardPage() {
                         {b.ticket_code}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                        isCancelled
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                          : step === 5
+                        step === 5
                           ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                           : step === 4
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
@@ -828,9 +790,7 @@ export default function MemberDashboardPage() {
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                           : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                       }`}>
-                        {isCancelled
-                          ? 'Dibatalkan'
-                          : step === 5
+                        {step === 5
                           ? 'Tahap 5: Selesai'
                           : step === 4
                           ? 'Tahap 4: Pelunasan 70%'
@@ -880,12 +840,7 @@ export default function MemberDashboardPage() {
                       </div>
 
                       {/* Tombol Aksi Ringkas */}
-                      {isCancelled && (
-                        <span className="text-xs font-bold text-red-400 inline-flex items-center gap-1 shrink-0">
-                          <XCircle className="w-3.5 h-3.5" /> Dibatalkan
-                        </span>
-                      )}
-                      {!isCancelled && step === 1 && (
+                      {step === 1 && (
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 2)}
@@ -894,7 +849,7 @@ export default function MemberDashboardPage() {
                           Mulai Draf →
                         </button>
                       )}
-                      {!isCancelled && step === 2 && (
+                      {step === 2 && (
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 3)}
@@ -903,12 +858,12 @@ export default function MemberDashboardPage() {
                           Kirim Revisi →
                         </button>
                       )}
-                      {!isCancelled && step === 3 && (
+                      {step === 3 && (
                         <span className="text-xs italic text-blue-400 font-medium shrink-0">
                           Verifikasi Owner
                         </span>
                       )}
-                      {!isCancelled && step === 4 && (
+                      {step === 4 && (
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 5)}
@@ -917,7 +872,7 @@ export default function MemberDashboardPage() {
                           Selesaikan →
                         </button>
                       )}
-                      {!isCancelled && step === 5 && (
+                      {step === 5 && (
                         <span className="text-xs font-bold text-emerald-400 inline-flex items-center gap-1 shrink-0">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Selesai
                         </span>
@@ -953,10 +908,7 @@ export default function MemberDashboardPage() {
               </thead>
               <tbody className="divide-y divide-zinc-800/60">
                 {bookings.map((b) => {
-                  const isCancelled = b.status === 'cancelled';
-                  const step = isCancelled
-                    ? 0
-                    : b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
+                  const step = b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1);
                   const talentShare = b.talent_fee ?? Math.round((b.estimated_total || 0) * 0.75);
 
                   return (
@@ -983,9 +935,7 @@ export default function MemberDashboardPage() {
                           <span>{b.deadline_date}</span>
                         </div>
                         <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          isCancelled
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            : step === 5
+                          step === 5
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             : step === 4
                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
@@ -995,9 +945,7 @@ export default function MemberDashboardPage() {
                             ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                             : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                         }`}>
-                          {isCancelled
-                            ? 'Dibatalkan'
-                            : step === 5
+                          {step === 5
                             ? 'Tahap 5: Selesai'
                             : step === 4
                             ? 'Tahap 4: Pelunasan'
@@ -1024,12 +972,7 @@ export default function MemberDashboardPage() {
                       {/* Aksi Progres: w-[25%] text-right pr-4 */}
                       <td className="w-[25%] py-3 px-3.5 text-right pr-4">
                         <div className="flex items-center justify-end">
-                          {isCancelled && (
-                            <span className="text-red-400 font-bold text-xs inline-flex items-center gap-1 whitespace-nowrap">
-                              <XCircle className="w-3.5 h-3.5" /> Dibatalkan
-                            </span>
-                          )}
-                          {!isCancelled && step === 1 && (
+                          {step === 1 && (
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 2)}
@@ -1038,7 +981,7 @@ export default function MemberDashboardPage() {
                               Mulai Draf →
                             </button>
                           )}
-                          {!isCancelled && step === 2 && (
+                          {step === 2 && (
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 3)}
@@ -1047,12 +990,12 @@ export default function MemberDashboardPage() {
                               Kirim Revisi →
                             </button>
                           )}
-                          {!isCancelled && step === 3 && (
+                          {step === 3 && (
                             <span className="text-xs text-blue-400 font-medium whitespace-nowrap italic">
                               Verifikasi Owner
                             </span>
                           )}
-                          {!isCancelled && step === 4 && (
+                          {step === 4 && (
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 5)}
@@ -1061,7 +1004,7 @@ export default function MemberDashboardPage() {
                               Selesaikan →
                             </button>
                           )}
-                          {!isCancelled && step === 5 && (
+                          {step === 5 && (
                             <span className="text-emerald-400 font-bold text-xs inline-flex items-center gap-1 whitespace-nowrap">
                               <CheckCircle2 className="w-3.5 h-3.5" /> Selesai
                             </span>
@@ -1197,7 +1140,7 @@ export default function MemberDashboardPage() {
         </div>
 
         {/* Form Tarif Mandiri Pelajar (Replacing Read-Only Box) */}
-        <div className="lg:col-span-7 rounded-3xl border border-amber-500/40 bg-zinc-900/90 p-5 sm:p-6 backdrop-blur-md shadow-2xl space-y-4">
+        <div className="lg:col-span-7 rounded-3xl border border-amber-500/40 bg-zinc-900/90 p-5 sm:p-6 backdrop-blur-md shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
               <Sparkles className="h-4 w-4" />
@@ -1360,7 +1303,7 @@ export default function MemberDashboardPage() {
       </div>
 
       {/* 2. KARTU PROFIL PUBLIK & IDENTITAS */}
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-2xl">
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4 mb-6">
           <div>
             <h3 className="text-lg font-bold text-white">Profil Publik & Identitas Kreator</h3>
@@ -1387,14 +1330,16 @@ export default function MemberDashboardPage() {
                 Foto Profil (Potret 4:5, maks 2 MB)
               </label>
               <div className="relative h-48 w-36 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-700 shadow-md">
-                <img
-                  src={sanitizeUrl(avatarUrl)}
-                  alt={profile.full_name}
-                  className="h-full w-full object-cover object-top"
+                <Image
+                  src={avatarUrl}
+                  alt={profile.full_name || 'Foto Profil'}
+                  fill
+                  sizes="144px"
+                  className="object-cover object-top"
                 />
                 {isUploadingAvatar && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 text-amber-400 animate-spin" />
+                    <Loader2 size={24} className="text-amber-400 animate-spin" />
                   </div>
                 )}
               </div>
@@ -1420,10 +1365,12 @@ export default function MemberDashboardPage() {
               </label>
               <div className="relative h-36 w-full rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-700 shadow-md">
                 {coverUrl ? (
-                  <img
-                    src={sanitizeUrl(coverUrl)}
+                  <Image
+                    src={coverUrl}
                     alt="Cover Banner"
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 96vw, 800px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="h-full w-full bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center text-xs text-zinc-500">
@@ -1432,7 +1379,7 @@ export default function MemberDashboardPage() {
                 )}
                 {isUploadingCover && (
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 text-amber-400 animate-spin" />
+                    <Loader2 size={24} className="text-amber-400 animate-spin" />
                   </div>
                 )}
               </div>
@@ -1524,7 +1471,7 @@ export default function MemberDashboardPage() {
       </div>
 
       {/* 3. KARTU KEAHLIAN, TOOLS & KETENTUAN PENGERJAAN */}
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-2xl">
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-8 backdrop-blur-md shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4 mb-6">
           <div>
             <h3 className="text-lg font-bold text-white">Keahlian, Tools & Ketentuan Pengerjaan</h3>
@@ -1743,17 +1690,16 @@ export default function MemberDashboardPage() {
                   {/* Live Thumbnail Preview Box */}
                   <div className="relative h-28 w-44 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center">
                     {newMediaUrl ? (
-                      <img
-                        src={sanitizeUrl(newMediaUrl)}
+                      <Image
+                        src={newMediaUrl}
                         alt="Preview thumbnail"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80';
-                        }}
+                        fill
+                        sizes="176px"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-zinc-500 text-[10px] p-2 text-center">
-                        <ImageIcon className="h-6 w-6 text-zinc-600 mb-1" />
+                        <ImageIcon size={24} className="text-zinc-600 mb-1" />
                         <span>Preview Gambar</span>
                       </div>
                     )}
@@ -1770,10 +1716,10 @@ export default function MemberDashboardPage() {
                         isLockedOrSuspended ? 'opacity-50 cursor-not-allowed' : 'hover:border-amber-400 hover:text-amber-400 cursor-pointer'
                       }`}>
                         <Upload className="h-3.5 w-3.5" />
-                        <span>{isUploadingPortfolioThumb ? 'Mengunggah...' : 'Pilih File Gambar'}</span>
+                        <span>Pilih File Gambar</span>
                         <input
                           type="file"
-                          accept="image/jpeg,image/png,image/webp,image/jpg,image/gif"
+                          accept="image/jpeg,image/png,image/webp"
                           disabled={isLockedOrSuspended || isUploadingPortfolioThumb}
                           onChange={handlePortfolioFileChange}
                           className="hidden"
@@ -1783,30 +1729,17 @@ export default function MemberDashboardPage() {
                       <span className="text-[11px] text-zinc-500 text-center sm:text-left">atau tempel tautan:</span>
                     </div>
 
-                    {isUploadingPortfolioThumb && (
-                      <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                        <span>Sedang mengunggah gambar ke server...</span>
-                      </div>
-                    )}
-
-                    {uploadError && (
-                      <div className="flex items-center gap-1.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{uploadError}</span>
-                      </div>
-                    )}
-
                     <input
                       type="url"
+                      required
                       disabled={isLockedOrSuspended}
-                      placeholder="Contoh: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe... (atau upload file di atas)"
+                      placeholder="Contoh: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe..."
                       value={newMediaUrl}
                       onChange={(e) => setNewMediaUrl(e.target.value)}
                       className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <p className="text-[10px] text-zinc-500">
-                      Format didukung: JPG, PNG, WebP (Maks. 5MB). Disarankan rasio landscape 16:9 agar proporsional.
+                      Format didukung: JPG, PNG, WebP (Maks. 2MB). Disarankan rasio landscape 16:9 agar proporsional.
                     </p>
                   </div>
                 </div>
@@ -1860,10 +1793,12 @@ export default function MemberDashboardPage() {
                 className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col justify-between"
               >
                 <div className="relative h-40 w-full overflow-hidden bg-zinc-900">
-                  <img
-                    src={sanitizeUrl(item.media_url)}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
+                  <Image
+                    src={item.media_url}
+                    alt={item.title || 'Portofolio'}
+                    fill
+                    sizes="(max-width: 640px) 96vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
                   />
                   <span className="absolute top-2.5 left-2.5 rounded-lg bg-zinc-950/80 px-2.5 py-1 text-[10px] font-bold text-amber-400 backdrop-blur-md">
                     {item.category}
@@ -1896,7 +1831,7 @@ export default function MemberDashboardPage() {
       {/* MODAL DETAIL BRIEF PESANAN (MOBILE & DESKTOP) */}
       {selectedBookingForDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4 shadow-2xl">
+          <div className="w-full max-w-lg rounded-3xl border border-zinc-800 bg-zinc-950 p-6 space-y-4 shadow-xl">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
                 <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
@@ -1961,7 +1896,7 @@ export default function MemberDashboardPage() {
 
       {/* TOAST NOTIFIKASI LOGOUT */}
       {logoutToast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-emerald-500/40 bg-zinc-900 px-5 py-3.5 text-xs font-bold text-emerald-400 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-3">
           <CheckCircle2 className="h-4 w-4 text-emerald-400" />
           <span>Anda berhasil keluar. Mengalihkan ke halaman login...</span>
         </div>
