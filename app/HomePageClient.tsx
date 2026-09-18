@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, Users, Trophy, Award, CheckCircle } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, Users, Trophy, Award, CheckCircle, FolderKanban, Star } from 'lucide-react';
 import FreelancerCard from '@/components/FreelancerCard';
 import ProjectCard from '@/components/ProjectCard';
 
@@ -76,7 +76,7 @@ export default function HomePageClient() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-300 backdrop-blur-md shadow-gold-glow mb-6"
           >
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+            <Award className="h-3.5 w-3.5 text-amber-400" />
             <span>THE COLLECTIVE FOR HIGH-STAKES CREATIVE WORK</span>
           </motion.div>
 
@@ -179,7 +179,7 @@ export default function HomePageClient() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1.5">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Star className="h-3.5 w-3.5 text-amber-400" />
               <span>Featured Creators</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
@@ -271,7 +271,7 @@ export default function HomePageClient() {
           {featuredPortfolios.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 rounded-2xl border border-dashed border-zinc-700/60 bg-zinc-900/30 text-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                <Sparkles size={24} className="text-amber-400" />
+                <FolderKanban size={24} className="text-amber-400" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-zinc-200">Showcase Sedang Dikurasi</p>

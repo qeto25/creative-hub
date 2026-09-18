@@ -13,7 +13,7 @@ import {
   Edit2,
   Edit3,
   Search,
-  Sparkles,
+  Award,
   Eye,
   LogOut,
   Sliders,
@@ -602,7 +602,7 @@ export default function OwnerDashboardPage() {
         <div className="rounded-2xl border border-amber-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Tahap Peninjauan</span>
-            <Sparkles className="h-4 w-4 text-amber-400" />
+            <Award className="h-4 w-4 text-amber-400" />
           </div>
           <p className="text-2xl font-extrabold text-amber-300 mt-2">{testerProfiles}</p>
           <span className="text-[11px] text-amber-400/80">Profil belum dipublikasikan</span>
@@ -679,7 +679,7 @@ export default function OwnerDashboardPage() {
                 placeholder="Cari member..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
               />
             </div>
           </div>
@@ -738,7 +738,7 @@ export default function OwnerDashboardPage() {
                         return (
                           <button
                             onClick={() => toggleWorkingStatus(p.id)}
-                            className="focus:outline-none"
+                            className="focus-visible:ring-2 focus-visible:ring-amber-400 rounded-full"
                             title="Klik untuk ubah ketersediaan order"
                           >
                             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${
@@ -905,7 +905,7 @@ export default function OwnerDashboardPage() {
                         return (
                           <button
                             onClick={() => toggleWorkingStatus(p.id)}
-                            className="flex items-center gap-2 focus:outline-none"
+                            className="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-amber-400 rounded-full"
                             title="Klik untuk ubah status ketersediaan"
                           >
                             <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${
@@ -1028,7 +1028,7 @@ export default function OwnerDashboardPage() {
                 placeholder="Cari no. tiket, nama klien, atau talent..."
                 value={bookingSearchQuery}
                 onChange={(e) => setBookingSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
               />
             </div>
           </div>
@@ -1133,7 +1133,7 @@ export default function OwnerDashboardPage() {
                           <select
                             value={b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1)}
                             onChange={(e) => handleOwnerSetStep(b.id, Number(e.target.value) as 1 | 2 | 3 | 4 | 5)}
-                            className="flex-1 min-w-0 text-xs py-2 px-2.5 bg-zinc-950 border border-zinc-700/80 rounded-lg text-zinc-200 truncate focus:outline-none focus:border-amber-500"
+                            className="flex-1 min-w-0 text-xs py-2 px-2.5 bg-zinc-950 border border-zinc-700/80 rounded-lg text-zinc-200 truncate focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-400"
                           >
                             <option value={1}>⏳ Tahap 1: Verifikasi DP Diterima</option>
                             <option value={2}>⚡ Tahap 2: Pengerjaan Draft Desain</option>
@@ -1289,7 +1289,7 @@ export default function OwnerDashboardPage() {
                             <select
                               value={b.step_progress || (b.status === 'completed' ? 5 : b.status === 'in_review' ? 3 : b.status === 'in_progress' ? 2 : 1)}
                               onChange={(e) => handleOwnerSetStep(b.id, Number(e.target.value) as 1 | 2 | 3 | 4 | 5)}
-                              className="rounded-lg py-1 px-2 text-[10px] font-bold border border-zinc-700 bg-zinc-800 text-zinc-200 focus:border-amber-400 focus:outline-none cursor-pointer max-w-[140px] truncate"
+                              className="rounded-lg py-1 px-2 text-[10px] font-bold border border-zinc-700 bg-zinc-800 text-zinc-200 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer max-w-[140px] truncate"
                             >
                               <option value={1}>Tahap 1: Verif DP</option>
                               <option value={2}>Tahap 2: Draf Desain</option>
@@ -1396,7 +1396,7 @@ export default function OwnerDashboardPage() {
                     placeholder="Cari tiket, talent, klien..."
                     value={financeSearchQuery}
                     onChange={(e) => setFinanceSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                   />
                 </div>
               </div>
@@ -1619,7 +1619,7 @@ export default function OwnerDashboardPage() {
                     placeholder="Contoh: Farhan Nugraha"
                     value={newFullName}
                     onChange={(e) => setNewFullName(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                   />
                 </div>
 
@@ -1634,7 +1634,7 @@ export default function OwnerDashboardPage() {
                       placeholder="farhan@creativehub.id"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
 
@@ -1647,7 +1647,7 @@ export default function OwnerDashboardPage() {
                       required
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
                 </div>
@@ -1662,7 +1662,7 @@ export default function OwnerDashboardPage() {
                     placeholder="PPT Specialist, Keynote, Infografis"
                     value={newSkills}
                     onChange={(e) => setNewSkills(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                   />
                 </div>
 
@@ -1678,7 +1678,7 @@ export default function OwnerDashboardPage() {
                       required
                       value={newBasePrice}
                       onChange={(e) => setNewBasePrice(Number(e.target.value))}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
 
@@ -1693,7 +1693,7 @@ export default function OwnerDashboardPage() {
                       required
                       value={newDpPercentage}
                       onChange={(e) => setNewDpPercentage(Number(e.target.value))}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
                 </div>
@@ -1806,7 +1806,7 @@ export default function OwnerDashboardPage() {
                       required
                       value={kasOverrideInput}
                       onChange={(e) => setKasOverrideInput(Number(e.target.value))}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 pl-10 pr-4 py-2.5 text-sm font-bold text-amber-400 focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 pl-10 pr-4 py-2.5 text-sm font-bold text-amber-400 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
                   <p className="text-[11px] text-zinc-500 mt-1">
@@ -1955,7 +1955,7 @@ export default function OwnerDashboardPage() {
                       required
                       value={globalKasPercentage}
                       onChange={(e) => setGlobalKasPercentage(Math.max(0, Math.min(100, Number(e.target.value))))}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm font-bold text-amber-400 focus:border-amber-400 focus:outline-none pr-10"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm font-bold text-amber-400 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 pr-10"
                     />
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-500">%</span>
                   </div>

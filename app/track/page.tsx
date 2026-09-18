@@ -10,7 +10,6 @@ import {
   Clock,
   MessageCircle,
   ShieldCheck,
-  Sparkles,
   ArrowRight,
   AlertTriangle,
   Phone,
@@ -139,7 +138,7 @@ function TrackContent() {
       {/* Header Tracker */}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3.5 py-1 text-xs font-semibold text-amber-300 backdrop-blur-md">
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
           <span>SECURE PROJECT TRACKER</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
@@ -174,7 +173,7 @@ function TrackContent() {
                   placeholder="Contoh: #CH-2609-4821"
                   value={ticketInput}
                   onChange={(e) => setTicketInput(e.target.value)}
-                  className="w-full pl-10 pr-3 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50 uppercase"
+                  className="w-full pl-10 pr-3 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 uppercase"
                 />
               </div>
             </div>
@@ -192,7 +191,7 @@ function TrackContent() {
                   placeholder="Contoh: 5432"
                   value={waLast4Input}
                   onChange={(e) => setWaLast4Input(e.target.value.replace(/\D/g, ''))}
-                  className="w-full pl-10 pr-3 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50 font-mono text-center tracking-widest"
+                  className="w-full pl-10 pr-3 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 font-mono text-center tracking-widest"
                 />
               </div>
             </div>

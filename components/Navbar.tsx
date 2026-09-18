@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Sparkles,
   Compass,
   Users,
   FolderKanban,
@@ -41,7 +40,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-0.5 shadow-gold-glow transition-colors duration-200 duration-300 group-hover:scale-105 group-hover:shadow-gold-glow-lg">
             <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-950">
-              <Sparkles className="h-5 w-5 text-amber-400" />
+              <Palette className="h-5 w-5 text-amber-400" />
             </div>
           </div>
           <div className="flex flex-col">

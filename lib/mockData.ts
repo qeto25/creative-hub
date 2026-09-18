@@ -28,7 +28,7 @@ let memorySnapshot: DatabaseSnapshot = {
 export function getDemoSnapshot(): DatabaseSnapshot {
   if (typeof window !== 'undefined') {
     try {
-      const stored = localStorage.getItem(DEMO_STORAGE_KEY);
+      const stored = globalThis.localStorage?.getItem(DEMO_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && parsed.profiles && parsed.bookings) {

@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Loader2,
   MessageSquare,
-  Sparkles,
   AlertTriangle,
   Copy,
   Check,
@@ -236,7 +235,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
           <div className="flex items-start justify-between border-b border-zinc-800 pb-4">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400 mb-1">
-                <Sparkles className="h-4 w-4" />
+                <Calendar className="h-4 w-4" />
                 <span>Form Booking Proyek</span>
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-white">
@@ -378,7 +377,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                       placeholder="Contoh: Budi Santoso (Kelompok 3)"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
                   <div>
@@ -391,7 +390,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                       placeholder="081234567890"
                       value={clientWhatsapp}
                       onChange={(e) => setClientWhatsapp(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                     />
                   </div>
                 </div>
@@ -415,7 +414,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                     min={new Date().toISOString().split('T')[0]}
                     value={deadlineDate}
                     onChange={(e) => setDeadlineDate(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                   />
                 </div>
 
@@ -444,7 +443,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                   placeholder="Jelaskan jenis tugas/konten, jumlah slide/durasi video, tema warna, materi teks, atau link Google Drive asset..."
                   value={projectBrief}
                   onChange={(e) => setProjectBrief(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -526,7 +525,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                     />
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                        <Zap className="h-3.5 w-3.5 text-amber-400" />
                         <span>Ekstra 2x Revisi Minor</span>
                       </div>
                       <p className="text-[10px] text-zinc-400">

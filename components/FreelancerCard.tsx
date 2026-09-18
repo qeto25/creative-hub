@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Star, Briefcase, Sparkles, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Star, Briefcase, Award, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import { formatRupiahDisplay } from '@/lib/utils/currency';
 import { getTalentStatus } from '@/lib/utils/status';
@@ -33,7 +33,10 @@ export default function FreelancerCard({
   });
 
   return (
-    <Link href={`/freelancers/${profile.id}`} className="block h-full group focus:outline-none">
+    <Link
+      href={`/freelancers/${profile.id}`}
+      className="block h-full group focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded-2xl"
+    >
       <motion.div
         layoutId={`card-${profile.id}`}
         className={`relative flex flex-col h-full overflow-hidden rounded-2xl border bg-zinc-950/90 backdrop-blur-md transition-colors duration-200 duration-300 group-hover:border-amber-500/50 cursor-pointer shadow-lg ${
@@ -116,17 +119,17 @@ export default function FreelancerCard({
           <div>
             {/* Nama Talent */}
             <div className="flex items-center justify-between gap-1">
-              <h3 className="text-sm sm:text-base font-bold text-white tracking-wide group-hover:text-amber-400 transition-colors truncate">
+              <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors truncate">
                 {profile.full_name}
               </h3>
-              <Sparkles className="h-3.5 w-3.5 text-amber-400/40 group-hover:text-amber-400 transition-colors shrink-0" />
+              <Award className="h-3.5 w-3.5 text-amber-400/60 group-hover:text-amber-400 transition-colors shrink-0" />
             </div>
 
             {/* Skills Tags */}
             <div className="mt-1.5 flex flex-wrap gap-1">
-              {(profile.skills || []).slice(0, 2).map((skill, index) => (
+              {(profile.skills || []).slice(0, 2).map((skill) => (
                 <span
-                  key={index}
+                  key={skill}
                   className="text-[11px] bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800 text-zinc-300 truncate max-w-[120px]"
                 >
                   {skill}

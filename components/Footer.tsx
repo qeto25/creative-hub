@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, Shield, Mail, Phone, ArrowUpRight } from 'lucide-react';
+import { Palette, Shield, Mail, Phone, ArrowUpRight } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppUrl } from '@/lib/siteConfig';
 
 export default function Footer() {
@@ -13,7 +13,7 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 p-0.5 shadow-gold-glow">
                 <div className="flex h-full w-full items-center justify-center rounded-[6px] bg-zinc-950">
-                  <Sparkles className="h-4 w-4 text-amber-400" />
+                  <Palette className="h-4 w-4 text-amber-400" />
                 </div>
               </div>
               <span className="font-extrabold tracking-wider text-white text-lg">

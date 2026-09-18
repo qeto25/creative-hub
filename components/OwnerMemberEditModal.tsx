@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Loader2, Sparkles, Check } from 'lucide-react';
+import { X, Save, Loader2, Award, Check } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
 
@@ -142,7 +142,7 @@ export default function OwnerMemberEditModal({
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
             <div>
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
-                <Sparkles className="h-3.5 w-3.5" />
+                <Award className="h-3.5 w-3.5" />
                 <span>Owner Full Profile Editor</span>
               </div>
               <h3 className="text-xl font-extrabold text-white mt-0.5">
@@ -182,7 +182,7 @@ export default function OwnerMemberEditModal({
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -195,7 +195,7 @@ export default function OwnerMemberEditModal({
                   required
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function OwnerMemberEditModal({
                 placeholder="https://images.unsplash.com/..."
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
               />
             </div>
 
@@ -222,7 +222,7 @@ export default function OwnerMemberEditModal({
                 required
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
               />
             </div>
 
@@ -236,7 +236,7 @@ export default function OwnerMemberEditModal({
                   type="text"
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -249,7 +249,7 @@ export default function OwnerMemberEditModal({
                   value={tools}
                   onChange={(e) => setTools(e.target.value)}
                   placeholder="Figma, Premiere Pro, Blender"
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function OwnerMemberEditModal({
                   min="0"
                   value={basePrice}
                   onChange={(e) => setBasePrice(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -280,7 +280,7 @@ export default function OwnerMemberEditModal({
                   max="100"
                   value={dpPercentage}
                   onChange={(e) => setDpPercentage(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>
@@ -295,7 +295,7 @@ export default function OwnerMemberEditModal({
                   type="text"
                   value={turnaroundTime}
                   onChange={(e) => setTurnaroundTime(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -307,7 +307,7 @@ export default function OwnerMemberEditModal({
                   type="text"
                   value={deliverables}
                   onChange={(e) => setDeliverables(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>
@@ -322,7 +322,7 @@ export default function OwnerMemberEditModal({
                   min="0"
                   value={freeRevisions}
                   onChange={(e) => setFreeRevisions(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -335,7 +335,7 @@ export default function OwnerMemberEditModal({
                   step="any"
                   value={extraRevisionFee}
                   onChange={(e) => setExtraRevisionFee(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -348,7 +348,7 @@ export default function OwnerMemberEditModal({
                   step="any"
                   value={rushFee}
                   onChange={(e) => setRushFee(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -361,7 +361,7 @@ export default function OwnerMemberEditModal({
                   step="any"
                   value={sourceFilePrice}
                   onChange={(e) => setSourceFilePrice(Number(e.target.value))}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>

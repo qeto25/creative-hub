@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // 1. Cek dari storage
     try {
-      const saved = localStorage.getItem(SESSION_KEY);
+      const saved = typeof window !== 'undefined' ? globalThis.localStorage?.getItem(SESSION_KEY) : null;
       if (saved) {
         const parsed = safeDecode<UserSession>(saved);
         if (parsed && (parsed.role === 'owner' || parsed.role === 'member')) {

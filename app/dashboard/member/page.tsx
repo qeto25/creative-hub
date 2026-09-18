@@ -13,7 +13,7 @@ import {
   Check,
   Save,
   LogOut,
-  Sparkles,
+  Award,
   DollarSign,
   Percent,
   FolderPlus,
@@ -1143,7 +1143,7 @@ export default function MemberDashboardPage() {
         <div className="lg:col-span-7 rounded-3xl border border-amber-500/40 bg-zinc-900/90 p-5 sm:p-6 backdrop-blur-md shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
-              <Sparkles className="h-4 w-4" />
+              <DollarSign className="h-4 w-4" />
               <span>Form Tarif Mandiri Pelajar</span>
             </div>
             <span className="text-[11px] text-zinc-400">Atur harga sesuai kapasitas Anda</span>
@@ -1177,7 +1177,7 @@ export default function MemberDashboardPage() {
                       setBasePrice(num);
                       setBasePriceInput(formatRupiah(num));
                     }}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs font-bold text-amber-400 focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs font-bold text-amber-400 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <p className="text-[10px] text-zinc-500 mt-1">Default standar pelajar: Rp 20.000</p>
@@ -1196,7 +1196,7 @@ export default function MemberDashboardPage() {
                     disabled={isLockedOrSuspended}
                     value={dpPercentage}
                     onChange={(e) => setDpPercentage(Number(e.target.value))}
-                    className="w-full pl-4 pr-9 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs font-bold text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full pl-4 pr-9 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs font-bold text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-500">%</span>
                 </div>
@@ -1222,7 +1222,7 @@ export default function MemberDashboardPage() {
                       setRushFee(num);
                       setRushFeeInput(formatRupiah(num));
                     }}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <p className="text-[10px] text-zinc-500 mt-1">Tambahan deadline kilat (default Rp 10.000)</p>
@@ -1247,7 +1247,7 @@ export default function MemberDashboardPage() {
                       setSourceFilePrice(num);
                       setSourceFilePriceInput(formatRupiah(num));
                     }}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <p className="text-[10px] text-zinc-500 mt-1">File mentah Canva/PPTX (default Rp 5.000)</p>
@@ -1272,7 +1272,7 @@ export default function MemberDashboardPage() {
                       setExtraRevisionFee(num);
                       setExtraRevisionFeeInput(formatRupiah(num));
                     }}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <p className="text-[10px] text-zinc-500 mt-1">Dikenakan setelah jatah revisi gratis habis (default Rp 3.000)</p>
@@ -1405,7 +1405,7 @@ export default function MemberDashboardPage() {
                   disabled={isLockedOrSuspended}
                   value={coverUrl}
                   onChange={(e) => setCoverUrl(e.target.value)}
-                  className="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -1423,7 +1423,7 @@ export default function MemberDashboardPage() {
                 disabled={isLockedOrSuspended}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -1439,7 +1439,7 @@ export default function MemberDashboardPage() {
                   disabled={isLockedOrSuspended}
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <p className="mt-1 text-[11px] text-zinc-500">
                   Untuk koordinasi penugasan order dari Admin Agensi (terproteksi, tidak dipublikasikan ke publik).
@@ -1543,7 +1543,7 @@ export default function MemberDashboardPage() {
                     handleAddCustomTool();
                   }
                 }}
-                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button
                 type="button"
@@ -1568,7 +1568,7 @@ export default function MemberDashboardPage() {
                 disabled={isLockedOrSuspended}
                 value={turnaroundTime}
                 onChange={(e) => setTurnaroundTime(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -1582,7 +1582,7 @@ export default function MemberDashboardPage() {
                 disabled={isLockedOrSuspended}
                 value={deliverablesInput}
                 onChange={(e) => setDeliverablesInput(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="text-[10px] text-zinc-500 mt-1">Pisahkan dengan koma</p>
             </div>
@@ -1597,7 +1597,7 @@ export default function MemberDashboardPage() {
                 disabled={isLockedOrSuspended}
                 value={freeRevisions}
                 onChange={(e) => setFreeRevisions(Number(e.target.value))}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="text-[10px] text-zinc-500 mt-1">Revisi minor teks/warna</p>
             </div>
@@ -1664,7 +1664,7 @@ export default function MemberDashboardPage() {
                   placeholder="Contoh: Slide Presentasi Bisnis Plan SMA"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div>
@@ -1673,7 +1673,7 @@ export default function MemberDashboardPage() {
                   value={newCategory}
                   disabled={isLockedOrSuspended}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="PPT Specialist">PPT Specialist</option>
                   <option value="Video Editor">Video Editor</option>
@@ -1736,7 +1736,7 @@ export default function MemberDashboardPage() {
                       placeholder="Contoh: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe..."
                       value={newMediaUrl}
                       onChange={(e) => setNewMediaUrl(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <p className="text-[10px] text-zinc-500">
                       Format didukung: JPG, PNG, WebP (Maks. 2MB). Disarankan rasio landscape 16:9 agar proporsional.
@@ -1753,7 +1753,7 @@ export default function MemberDashboardPage() {
                   placeholder="Rincian jumlah slide atau software yang digunakan..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>

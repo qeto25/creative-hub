@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, SlidersHorizontal, Users, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, Users, Award, CheckCircle2 } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
 import FreelancerCard from '@/components/FreelancerCard';
@@ -75,7 +75,7 @@ export default function FreelancersClient() {
       {/* Header Section */}
       <div className="space-y-2.5">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
-          <Sparkles className="h-4 w-4" />
+          <Award className="h-4 w-4" />
           <span>Talent Directory</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-extrabold text-white">
@@ -97,7 +97,7 @@ export default function FreelancersClient() {
               placeholder="Cari nama talent, keahlian (PPT, Video, Canva)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
             />
           </div>
 
@@ -106,7 +106,7 @@ export default function FreelancersClient() {
             <select
               value={statusFilter}
               onChange={(e: any) => setStatusFilter(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               <option value="all">Semua Status Ketersediaan</option>
               <option value="available">Tersedia menerima order</option>
@@ -120,7 +120,7 @@ export default function FreelancersClient() {
             <select
               value={selectedSkill}
               onChange={(e) => setSelectedSkill(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-xs sm:text-sm text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               {allSkills.map((s) => (
                 <option key={s} value={s}>

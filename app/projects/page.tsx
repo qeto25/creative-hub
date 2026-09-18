@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Sparkles, FolderKanban } from 'lucide-react';
+import { FolderKanban } from 'lucide-react';
 import { Portfolio } from '@/lib/types';
 import * as dataLayer from '@/lib/dataLayer';
 import EmptyState from '@/components/EmptyState';
@@ -47,7 +47,7 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
-          <Sparkles className="h-4 w-4" />
+          <FolderKanban className="h-4 w-4" />
           <span>Collective Archive</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">

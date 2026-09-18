@@ -154,7 +154,7 @@ export default function ReviewModal({
                   placeholder="Contoh: #CH-2609-8269"
                   value={ticketCode}
                   onChange={(e) => setTicketCode(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs font-mono font-bold text-amber-400 uppercase placeholder-zinc-600 focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs font-mono font-bold text-amber-400 uppercase placeholder-zinc-600 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -169,7 +169,7 @@ export default function ReviewModal({
                   placeholder="Nomor WA saat booking (contoh: 081234567890)"
                   value={clientWhatsapp}
                   onChange={(e) => setClientWhatsapp(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 
@@ -186,7 +186,7 @@ export default function ReviewModal({
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
                       onClick={() => setRating(star)}
-                      className="p-1.5 transition-transform hover:scale-115 focus:outline-none"
+                      className="p-1.5 transition-transform hover:scale-115 focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg"
                     >
                       <Star
                         className={`h-7 w-7 ${
@@ -214,7 +214,7 @@ export default function ReviewModal({
                   placeholder="Ceritakan pengalaman Anda, ketepatan deadline tugas, kerapihan file PPT/video, dan komunikasinya..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-3 px-4 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
 

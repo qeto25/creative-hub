@@ -249,7 +249,7 @@ export default function DisciplineModal({ isOpen, onClose, profile, onSaved }: D
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Contoh: Terlambat deadline proyek #CH-2609 tanpa konfirmasi, dalam masa evaluasi 7 hari."
                 rows={2}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-red-500/50"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-400"
               />
             </div>
 
@@ -270,7 +270,7 @@ export default function DisciplineModal({ isOpen, onClose, profile, onSaved }: D
                     value={forcedPrice}
                     onChange={(e) => setForcedPrice(e.target.value)}
                     placeholder="Kosongkan untuk tarif normal"
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/50"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-zinc-600 focus:border-amber-500/50 focus-visible:ring-2 focus-visible:ring-amber-400"
                   />
                 </div>
                 <button

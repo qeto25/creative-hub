@@ -313,9 +313,9 @@ export default function FreelancerDetailPage() {
                       <span>Software & Tools Mastery</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {profile.tools.map((tool, idx) => (
+                      {profile.tools.map((tool) => (
                         <span
-                          key={idx}
+                          key={tool}
                           className="rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-3 py-1.5 text-xs font-semibold text-zinc-200 shadow-sm"
                         >
                           {tool}
@@ -495,7 +495,7 @@ export default function FreelancerDetailPage() {
                       setCustomProjectCost(num);
                       setCostInput(formatRupiah(num));
                     }}
-                    className="w-40 rounded-xl border border-zinc-700 bg-zinc-950 py-1.5 px-3 text-sm font-extrabold text-amber-400 focus:border-amber-400 focus:outline-none"
+                    className="w-40 rounded-xl border border-zinc-700 bg-zinc-950 py-1.5 px-3 text-sm font-extrabold text-amber-400 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                   />
                 </div>
               </div>

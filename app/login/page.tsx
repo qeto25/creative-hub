@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Sparkles, User, Lock, LogIn, Shield, Loader2 } from 'lucide-react';
+import { ShieldCheck, User, Lock, LogIn, Shield, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthSession } from '@/lib/context/AuthContext';
 import { isDemoMode } from '@/lib/config';
@@ -160,7 +160,7 @@ export default function LoginPage() {
         <div className="text-center space-y-2">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 p-0.5 shadow-gold-glow mb-2">
             <div className="flex h-full w-full items-center justify-center rounded-[14px] bg-zinc-950">
-              <Sparkles size={24} className="text-amber-400" />
+              <ShieldCheck size={24} className="text-amber-400" />
             </div>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide">
@@ -192,7 +192,7 @@ export default function LoginPage() {
                   placeholder="Username / Email"
                   value={usernameOrEmail}
                   onChange={(e) => setUsernameOrEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
             </div>

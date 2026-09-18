@@ -131,7 +131,7 @@ export default function PriceOverrideModal({
                     setBasePriceInput(formatted);
                     setBasePrice(parseRupiah(formatted));
                   }}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm font-semibold text-white focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm font-semibold text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
               </div>
               <p className="mt-1 text-[11px] text-zinc-500">
@@ -153,7 +153,7 @@ export default function PriceOverrideModal({
                   required
                   value={dpPercentage}
                   onChange={(e) => setDpPercentage(Number(e.target.value))}
-                  className="w-full pl-4 pr-9 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="w-full pl-4 pr-9 py-2.5 rounded-xl border border-zinc-700 bg-zinc-950 text-sm text-white focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-400 text-sm">
                   <Percent className="h-4 w-4" />
