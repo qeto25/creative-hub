@@ -106,7 +106,7 @@ export default function BookingDetailModal({
             <label className="block text-xs font-semibold text-zinc-400">
               Update Status Pesanan
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(4,minmax(0,1fr))] gap-2">
               {(
                 [
                   { value: 'pending_dp', label: 'Pending DP', color: 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10' },
@@ -119,7 +119,7 @@ export default function BookingDetailModal({
                   key={st.value}
                   type="button"
                   onClick={() => handleUpdateStatus(st.value)}
-                  className={`rounded-xl border py-2 text-xs font-bold transition-all ${
+                  className={`rounded-xl border py-2 text-xs font-bold transition-colors duration-200 ${
                     currentStatus === st.value
                       ? `${st.color} shadow-sm ring-1 ring-white/20`
                       : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:text-zinc-300'

@@ -498,8 +498,8 @@ export default function OwnerDashboardPage() {
         );
       case 3:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/10 px-2.5 py-1 text-[11px] font-bold text-purple-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-bold text-indigo-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
             Tahap 3: Review Draf
           </span>
         );
@@ -553,7 +553,7 @@ export default function OwnerDashboardPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all"
+            className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200"
           >
             <Plus className="h-4 w-4" />
             <span>Tambah Member Baru</span>
@@ -571,7 +571,7 @@ export default function OwnerDashboardPage() {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))] gap-5">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 backdrop-blur-md">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Member</span>
@@ -599,13 +599,13 @@ export default function OwnerDashboardPage() {
           <span className="text-[11px] text-zinc-500">In Progress Pengerjaan</span>
         </div>
 
-        <div className="rounded-2xl border border-purple-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
+        <div className="rounded-2xl border border-amber-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Tahap Peninjauan</span>
-            <Sparkles className="h-4 w-4 text-purple-400" />
+            <Sparkles className="h-4 w-4 text-amber-400" />
           </div>
-          <p className="text-2xl font-extrabold text-purple-300 mt-2">{testerProfiles}</p>
-          <span className="text-[11px] text-purple-400/80">Profil belum dipublikasikan</span>
+          <p className="text-2xl font-extrabold text-amber-300 mt-2">{testerProfiles}</p>
+          <span className="text-[11px] text-amber-400/80">Profil belum dipublikasikan</span>
         </div>
       </div>
 
@@ -613,7 +613,7 @@ export default function OwnerDashboardPage() {
       <div className="flex items-center gap-2 border-b border-zinc-800 overflow-x-auto no-scrollbar pb-2">
         <button
           onClick={() => setActiveTab('members')}
-          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-all shrink-0 ${
+          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-colors duration-200 shrink-0 ${
             activeTab === 'members'
               ? 'border-amber-400 text-amber-400'
               : 'border-transparent text-zinc-400 hover:text-white'
@@ -625,7 +625,7 @@ export default function OwnerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('bookings')}
-          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-all shrink-0 ${
+          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-colors duration-200 shrink-0 ${
             activeTab === 'bookings'
               ? 'border-amber-400 text-amber-400'
               : 'border-transparent text-zinc-400 hover:text-white'
@@ -642,7 +642,7 @@ export default function OwnerDashboardPage() {
 
         <button
           onClick={() => setActiveTab('finance')}
-          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-all shrink-0 ${
+          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-colors duration-200 shrink-0 ${
             activeTab === 'finance'
               ? 'border-amber-400 text-amber-400'
               : 'border-transparent text-zinc-400 hover:text-white'
@@ -957,7 +957,7 @@ export default function OwnerDashboardPage() {
                         onClick={() => toggleTesterStatus(p.id)}
                         className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${
                           p.is_tester
-                            ? 'border border-purple-500/40 bg-purple-500/10 text-purple-300'
+                            ? 'border border-amber-500/40 bg-amber-500/10 text-amber-300'
                             : 'border border-zinc-800 bg-zinc-950 text-zinc-500'
                         }`}
                         title="Klik untuk ubah visibilitas publik talent"
@@ -1320,7 +1320,7 @@ export default function OwnerDashboardPage() {
       {activeTab === 'finance' && (
         <div className="space-y-6">
           {/* Revenue Split Top Metrics (Modul 1) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))] gap-5">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 backdrop-blur-md">
               <div className="flex items-center justify-between text-zinc-400">
                 <span className="text-xs font-semibold uppercase tracking-wider">Total Omset Masuk (100%)</span>
@@ -1457,7 +1457,7 @@ export default function OwnerDashboardPage() {
                       </span>
                       <button
                         onClick={() => handleTogglePayout(b.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors duration-200 ${
                           isPaid
                             ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'
                             : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-md'
@@ -1544,7 +1544,7 @@ export default function OwnerDashboardPage() {
                         <td className="px-4 py-3.5 text-right whitespace-nowrap pr-4">
                           <button
                             onClick={() => handleTogglePayout(b.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors duration-200 ${
                               isPaid
                                 ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'
                                 : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-md'
@@ -1723,7 +1723,7 @@ export default function OwnerDashboardPage() {
                   <button
                     type="submit"
                     disabled={isSubmittingNewMember}
-                    className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50"
                   >
                     {isSubmittingNewMember ? (
                       <>
@@ -1838,7 +1838,7 @@ export default function OwnerDashboardPage() {
                   <button
                     type="submit"
                     disabled={isSavingKas}
-                    className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50"
                   >
                     {isSavingKas ? (
                       <>
@@ -1904,11 +1904,11 @@ export default function OwnerDashboardPage() {
                   <label className="block text-xs font-semibold text-zinc-300 mb-2">
                     Preset Pembagian Cepat:
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2">
                     <button
                       type="button"
                       onClick={() => setGlobalKasPercentage(20)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition-colors duration-200 ${
                         globalKasPercentage === 20
                           ? 'bg-amber-500 text-black border-amber-400 shadow-gold-glow'
                           : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-750'
@@ -1919,7 +1919,7 @@ export default function OwnerDashboardPage() {
                     <button
                       type="button"
                       onClick={() => setGlobalKasPercentage(25)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition-colors duration-200 ${
                         globalKasPercentage === 25
                           ? 'bg-amber-500 text-black border-amber-400 shadow-gold-glow'
                           : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-750'
@@ -1930,7 +1930,7 @@ export default function OwnerDashboardPage() {
                     <button
                       type="button"
                       onClick={() => setGlobalKasPercentage(30)}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition-colors duration-200 ${
                         globalKasPercentage === 30
                           ? 'bg-amber-500 text-black border-amber-400 shadow-gold-glow'
                           : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-750'
@@ -2002,7 +2002,7 @@ export default function OwnerDashboardPage() {
                   <button
                     type="submit"
                     disabled={isApplyingGlobalSplit}
-                    className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50"
                   >
                     {isApplyingGlobalSplit ? (
                       <>

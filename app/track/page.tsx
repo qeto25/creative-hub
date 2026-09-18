@@ -201,7 +201,7 @@ function TrackContent() {
           <button
             type="submit"
             disabled={loading || !ticketInput.trim() || waLast4Input.length !== 4}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-xs sm:text-sm font-bold text-zinc-950 hover:from-amber-300 hover:to-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-gold-glow flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-xs sm:text-sm font-bold text-zinc-950 hover:from-amber-300 hover:to-amber-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-gold-glow flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -280,7 +280,7 @@ function TrackContent() {
                       : currentStepNumber === 4
                       ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                       : currentStepNumber === 3
-                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                      ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
                       : currentStepNumber === 2
                       ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                       : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
@@ -331,12 +331,12 @@ function TrackContent() {
               <div className="relative">
                 <div className="hidden md:block absolute top-5 left-6 right-6 h-1 bg-zinc-800 -z-0">
                   <div
-                    className="h-full bg-gradient-to-r from-amber-400 via-blue-400 to-emerald-400 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-amber-400 via-blue-400 to-emerald-400 transition-colors duration-200 duration-500"
                     style={{ width: `${((currentStepNumber - 1) / 4) * 100}%` }}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-[repeat(5,minmax(0,1fr))] gap-3 relative z-10">
                   {STEPS.map((item) => {
                     const isDone = item.step < currentStepNumber;
                     const isCurrent = item.step === currentStepNumber;
@@ -344,7 +344,7 @@ function TrackContent() {
                     return (
                       <div
                         key={item.step}
-                        className={`flex md:flex-col items-start md:items-center md:text-center gap-3 p-3.5 rounded-2xl border transition-all ${
+                        className={`flex md:flex-col items-start md:items-center md:text-center gap-3 p-3.5 rounded-2xl border transition-colors duration-200 ${
                           isCurrent
                             ? 'bg-amber-500/10 border-amber-400/60 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/30'
                             : isDone
@@ -399,7 +399,7 @@ function TrackContent() {
                   href={`https://wa.me/${adminWhatsapp}?text=${encodeURIComponent(`Halo Admin Creative Hub, saya ingin berkonsultasi mengenai status tiket pesanan ${booking.ticket_code}.`)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 text-xs font-bold transition-all shrink-0 whitespace-nowrap"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 text-xs font-bold transition-colors duration-200 shrink-0 whitespace-nowrap"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>Hubungi Admin Hub</span>

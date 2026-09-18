@@ -64,7 +64,7 @@ export default function ProjectsPage() {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`rounded-full px-5 py-2 text-xs font-semibold transition-all duration-200 ${
+            className={`rounded-full px-5 py-2 text-xs font-semibold transition-colors duration-200 ${
               selectedCategory === cat
                 ? 'bg-amber-500 text-zinc-950 shadow-gold-glow'
                 : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
@@ -84,7 +84,7 @@ export default function ProjectsPage() {
           </div>
         </div>
       ) : filteredPortfolios.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(4,minmax(0,1fr))] gap-4 sm:gap-6">
           {filteredPortfolios.map((portfolio) => (
             <ProjectCard key={portfolio.id} portfolio={portfolio} />
           ))}

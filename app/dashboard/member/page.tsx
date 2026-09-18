@@ -670,11 +670,11 @@ export default function MemberDashboardPage() {
       )}
 
       {/* NAVIGASI TAB DASHBOARD (RESPONSIVE GRID PADA MOBILE & DESKTOP) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2 border-b border-zinc-800">
+      <div className="grid grid-cols-1 sm:grid-cols-[repeat(3,minmax(0,1fr))] gap-2 pb-2 border-b border-zinc-800">
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-all ${
+          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
             activeTab === 'orders'
               ? 'bg-amber-500 text-zinc-950 font-bold shadow-gold-glow'
               : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
@@ -698,7 +698,7 @@ export default function MemberDashboardPage() {
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-all ${
+          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
             activeTab === 'profile'
               ? 'bg-amber-500 text-zinc-950 font-bold shadow-gold-glow'
               : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
@@ -713,7 +713,7 @@ export default function MemberDashboardPage() {
         <button
           type="button"
           onClick={() => setActiveTab('portfolio')}
-          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-all ${
+          className={`flex items-center justify-between sm:justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
             activeTab === 'portfolio'
               ? 'bg-amber-500 text-zinc-950 font-bold shadow-gold-glow'
               : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
@@ -785,7 +785,7 @@ export default function MemberDashboardPage() {
                           : step === 4
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                           : step === 3
-                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                          ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
                           : step === 2
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                           : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
@@ -853,7 +853,7 @@ export default function MemberDashboardPage() {
                         <button
                           type="button"
                           onClick={() => handleMemberUpdateStep(b.id, 3)}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-400 text-white shrink-0 transition-colors"
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shrink-0 transition-colors"
                         >
                           Kirim Revisi →
                         </button>
@@ -940,7 +940,7 @@ export default function MemberDashboardPage() {
                             : step === 4
                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             : step === 3
-                            ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                            ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
                             : step === 2
                             ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                             : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
@@ -985,7 +985,7 @@ export default function MemberDashboardPage() {
                             <button
                               type="button"
                               onClick={() => handleMemberUpdateStep(b.id, 3)}
-                              className="shrink-0 px-3 py-1.5 text-xs whitespace-nowrap font-semibold rounded-lg bg-purple-600 hover:bg-purple-500 text-white transition shadow-sm"
+                              className="shrink-0 px-3 py-1.5 text-xs whitespace-nowrap font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm"
                             >
                               Kirim Revisi →
                             </button>
@@ -1045,7 +1045,7 @@ export default function MemberDashboardPage() {
               type="button"
               disabled={isLockedOrSuspended}
               onClick={() => handleSetAvailabilityStatus('available')}
-              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-bold transition-colors duration-200 ${
                 availabilityStatus === 'available'
                   ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/50 border border-emerald-400'
                   : 'bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/80 border border-transparent'
@@ -1065,7 +1065,7 @@ export default function MemberDashboardPage() {
               type="button"
               disabled={isLockedOrSuspended}
               onClick={() => handleSetAvailabilityStatus('busy')}
-              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-bold transition-colors duration-200 ${
                 availabilityStatus === 'busy'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-950/50 border border-blue-400'
                   : 'bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/80 border border-transparent'
@@ -1085,7 +1085,7 @@ export default function MemberDashboardPage() {
               type="button"
               disabled={isLockedOrSuspended}
               onClick={() => handleSetAvailabilityStatus('resting')}
-              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl text-xs font-bold transition-colors duration-200 ${
                 availabilityStatus === 'resting'
                   ? 'bg-amber-600 text-white shadow-lg shadow-amber-950/50 border border-amber-400'
                   : 'bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/80 border border-transparent'
@@ -1283,7 +1283,7 @@ export default function MemberDashboardPage() {
               <button
                 type="submit"
                 disabled={isSavingPricing || isLockedOrSuspended}
-                className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSavingPricing ? (
                   <>
@@ -1369,7 +1369,7 @@ export default function MemberDashboardPage() {
                     src={coverUrl}
                     alt="Cover Banner"
                     fill
-                    sizes="(max-width: 768px) 96vw, 800px"
+                    sizes="(max-width: 48rem) 96vw, 800px"
                     className="object-cover"
                   />
                 ) : (
@@ -1452,7 +1452,7 @@ export default function MemberDashboardPage() {
             <button
               type="submit"
               disabled={isSavingIdentity || isLockedOrSuspended}
-              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSavingIdentity ? (
                 <>
@@ -1516,7 +1516,7 @@ export default function MemberDashboardPage() {
                     key={tool}
                     disabled={isLockedOrSuspended}
                     onClick={() => toggleTool(tool)}
-                    className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       isSelected
                         ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
                         : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
@@ -1557,7 +1557,7 @@ export default function MemberDashboardPage() {
           </div>
 
           {/* Durasi, Deliverables & Revision Rules */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-[repeat(3,minmax(0,1fr))] gap-4 pt-4 border-t border-zinc-800">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1">
                 Estimasi Durasi Pengerjaan
@@ -1607,7 +1607,7 @@ export default function MemberDashboardPage() {
             <button
               type="submit"
               disabled={isSavingSkills || isLockedOrSuspended}
-              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-2 rounded-xl bg-amber-500 py-2.5 px-6 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSavingSkills ? (
                 <>
@@ -1641,7 +1641,7 @@ export default function MemberDashboardPage() {
             type="button"
             disabled={isLockedOrSuspended}
             onClick={() => setIsAddingPortfolio(!isAddingPortfolio)}
-            className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" />
             <span>Tambah Portofolio Baru</span>
@@ -1786,7 +1786,7 @@ export default function MemberDashboardPage() {
             icon={Briefcase}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] gap-4">
             {portfolios.map((item) => (
               <div
                 key={item.id}
@@ -1797,7 +1797,7 @@ export default function MemberDashboardPage() {
                     src={item.media_url}
                     alt={item.title || 'Portofolio'}
                     fill
-                    sizes="(max-width: 640px) 96vw, (max-width: 1024px) 50vw, 33vw"
+                    sizes="(max-width: 40rem) 96vw, (max-width: 64rem) 50vw, 33vw"
                     className="object-cover"
                   />
                   <span className="absolute top-2.5 left-2.5 rounded-lg bg-zinc-950/80 px-2.5 py-1 text-[10px] font-bold text-amber-400 backdrop-blur-md">

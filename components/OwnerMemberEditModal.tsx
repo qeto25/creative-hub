@@ -312,7 +312,7 @@ export default function OwnerMemberEditModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(4,minmax(0,1fr))] gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-zinc-400 mb-1">
                   Revisi Gratis (x)
@@ -392,7 +392,7 @@ export default function OwnerMemberEditModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 disabled:opacity-50"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 <span>Simpan Seluruh Data Member</span>

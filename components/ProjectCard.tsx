@@ -14,7 +14,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ portfolio }: ProjectCardProps) {
   return (
     <motion.div
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/80 backdrop-blur-md transition-all duration-300 hover:border-amber-500/50 h-full"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-900/80 backdrop-blur-md transition-colors duration-200 duration-300 hover:border-amber-500/50 h-full"
       whileHover={{ y: -4, boxShadow: '0 0 20px rgba(234, 179, 8, 0.15)' }}
       transition={{ duration: 0.2 }}
     >

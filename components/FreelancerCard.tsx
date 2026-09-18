@@ -36,7 +36,7 @@ export default function FreelancerCard({
     <Link href={`/freelancers/${profile.id}`} className="block h-full group focus:outline-none">
       <motion.div
         layoutId={`card-${profile.id}`}
-        className={`relative flex flex-col h-full overflow-hidden rounded-2xl border bg-zinc-950/90 backdrop-blur-md transition-all duration-300 group-hover:border-amber-500/50 cursor-pointer shadow-lg ${
+        className={`relative flex flex-col h-full overflow-hidden rounded-2xl border bg-zinc-950/90 backdrop-blur-md transition-colors duration-200 duration-300 group-hover:border-amber-500/50 cursor-pointer shadow-lg ${
           isSuspended ? 'border-red-900/60 opacity-85' : 'border-zinc-800/90'
         }`}
         style={{ perspective: 1000 }}
@@ -58,7 +58,7 @@ export default function FreelancerCard({
             src={profile.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80'}
             alt={profile.full_name}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            sizes="(max-width: 40rem) 50vw, (max-width: 64rem) 33vw, 25vw"
             className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
             priority={false}
           />

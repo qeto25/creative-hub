@@ -48,7 +48,8 @@ export default function SecurityGuard() {
 
     // 3. Security Banner di Console
     try {
-      console.log(
+      const logBanner = console.info || console.warn;
+      logBanner(
         '%c🛡️ CREATIVE HUB SECURITY SHIELD ACTIVE %c\nSistem keamanan aktif. Dilarang melakukan rekayasa balik atau eksploitasi.',
         'background: #f59e0b; color: #000; font-weight: bold; font-size: 14px; padding: 4px 8px; border-radius: 4px;',
         'color: #9ca3af; font-size: 12px;'

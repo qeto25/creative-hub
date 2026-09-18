@@ -65,7 +65,7 @@ export default function HomePageClient() {
       {/* ========================================================================= */}
       <section className="relative pt-16 pb-12 sm:pt-24 sm:pb-16 lg:pt-32">
         {/* Background glow & radial lighting */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-[600px] rounded-full bg-gradient-to-tr from-amber-500/15 via-yellow-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-full max-w-2xl rounded-full bg-gradient-to-tr from-amber-500/15 via-yellow-500/10 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute top-10 right-10 h-72 w-72 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -85,7 +85,7 @@ export default function HomePageClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.15]"
+            className="text-3xl sm:text-5xl lg:text-[4rem] font-extrabold tracking-tight text-white leading-[1.15]"
           >
             Curated Elite Freelancers <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
@@ -113,7 +113,7 @@ export default function HomePageClient() {
           >
             <Link
               href="/freelancers"
-              className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-8 py-4 text-sm font-bold text-zinc-950 shadow-gold-glow-lg hover:from-amber-300 hover:to-amber-400 hover:scale-105 transition-all duration-300"
+              className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-8 py-4 text-sm font-bold text-zinc-950 shadow-gold-glow-lg hover:from-amber-300 hover:to-amber-400 hover:scale-105 transition-colors duration-200 duration-300"
             >
               <span>Jelajahi Direktori Talent</span>
               <ArrowRight className="h-4 w-4" />
@@ -121,14 +121,14 @@ export default function HomePageClient() {
 
             <Link
               href="/projects"
-              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-8 py-4 text-sm font-semibold text-zinc-200 backdrop-blur-md hover:border-amber-400/60 hover:text-amber-400 hover:bg-zinc-800 transition-all duration-300"
+              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-8 py-4 text-sm font-semibold text-zinc-200 backdrop-blur-md hover:border-amber-400/60 hover:text-amber-400 hover:bg-zinc-800 transition-colors duration-200 duration-300"
             >
               <span>Lihat Showcase Proyek</span>
             </Link>
           </motion.div>
 
           {/* Agency Trust Badges */}
-          <div className="mt-14 pt-8 border-t border-zinc-900 grid grid-cols-2 md:grid-cols-4 gap-6 text-left">
+          <div className="mt-14 pt-8 border-t border-zinc-900 grid grid-cols-2 md:grid-cols-[repeat(4,minmax(0,1fr))] gap-6 text-left">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-amber-400">
                 <Trophy className="h-5 w-5" />
@@ -193,7 +193,7 @@ export default function HomePageClient() {
               <button
                 key={skill}
                 onClick={() => setSelectedSkill(skill)}
-                className={`shrink-0 snap-start rounded-full px-3.5 sm:px-4 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                className={`shrink-0 snap-start rounded-full px-3.5 sm:px-4 py-1.5 text-xs font-semibold transition-colors duration-200 ${
                   selectedSkill === skill
                     ? 'bg-amber-500 text-zinc-950 shadow-gold-glow'
                     : 'border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white hover:border-zinc-700'
@@ -206,7 +206,7 @@ export default function HomePageClient() {
         </div>
 
         {/* 3D Freelancer Cards Grid: Dense 4-5 Columns */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-[repeat(3,minmax(0,1fr))] md:grid-cols-[repeat(4,minmax(0,1fr))] xl:grid-cols-[repeat(5,minmax(0,1fr))] gap-3 sm:gap-4">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div
@@ -287,7 +287,7 @@ export default function HomePageClient() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(4,minmax(0,1fr))] gap-4 sm:gap-6">
               {featuredPortfolios.map((item) => (
                 <div key={item.id} className="h-full">
                   <ProjectCard portfolio={item} />
@@ -317,7 +317,7 @@ export default function HomePageClient() {
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-[repeat(3,minmax(0,1fr))] gap-6">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-6 space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold">
                 1

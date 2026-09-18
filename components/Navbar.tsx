@@ -39,7 +39,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* KIRI: Logo + Nama Agensi + Status Mode */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-0.5 shadow-gold-glow transition-all duration-300 group-hover:scale-105 group-hover:shadow-gold-glow-lg">
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-0.5 shadow-gold-glow transition-colors duration-200 duration-300 group-hover:scale-105 group-hover:shadow-gold-glow-lg">
             <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-950">
               <Sparkles className="h-5 w-5 text-amber-400" />
             </div>
@@ -72,7 +72,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-colors duration-200 ${
                   isActive
                     ? 'bg-zinc-800 text-amber-400 shadow-sm border border-zinc-700/60'
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800/40'
@@ -92,7 +92,7 @@ export default function Navbar() {
               {session.role === 'owner' ? (
                 <Link
                   href="/dashboard/owner"
-                  className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 transition-all shadow-gold-glow"
+                  className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors duration-200 shadow-gold-glow"
                 >
                   <ShieldCheck className="h-4 w-4 text-amber-400" />
                   <span>🛡️ Dashboard Owner</span>
@@ -100,7 +100,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/dashboard/member"
-                  className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all"
+                  className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors duration-200"
                 >
                   <Palette className="h-4 w-4 text-emerald-400" />
                   <span>🎨 Dashboard Saya</span>
@@ -110,7 +110,7 @@ export default function Navbar() {
               {/* Tombol Logout */}
               <button
                 onClick={logout}
-                className="flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3.5 py-2 text-xs font-medium text-zinc-400 hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                className="flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3.5 py-2 text-xs font-medium text-zinc-400 hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/10 transition-colors duration-200"
                 title="Keluar dari akun"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -120,7 +120,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 px-5 py-2.5 text-sm font-medium text-white hover:border-amber-500/60 hover:text-amber-400 hover:shadow-gold-glow transition-all duration-200"
+              className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 px-5 py-2.5 text-sm font-medium text-white hover:border-amber-500/60 hover:text-amber-400 hover:shadow-gold-glow transition-colors duration-200"
             >
               <LogIn className="h-4 w-4 text-amber-400" />
               <span>Sign In</span>

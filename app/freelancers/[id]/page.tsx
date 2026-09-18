@@ -240,7 +240,7 @@ export default function FreelancerDetailPage() {
                 alt={profile.full_name}
                 fill
                 priority
-                sizes="(max-width: 1024px) 320px, 400px"
+                sizes="(max-width: 64rem) 320px, 400px"
                 className="object-cover object-top"
               />
               {/* Live Indicator on Top */}
@@ -326,7 +326,7 @@ export default function FreelancerDetailPage() {
                 )}
 
                 {/* Quick Metrics */}
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-zinc-800">
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-[repeat(3,minmax(0,1fr))] gap-4 pt-6 border-t border-zinc-800">
                   <div className="rounded-xl bg-zinc-950/60 p-3.5 border border-zinc-800/80">
                     <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Total Hired</span>
                     <p className="text-lg font-bold text-white mt-0.5">{profile.hire_count || 0}x Diselesaikan</p>
@@ -358,7 +358,7 @@ export default function FreelancerDetailPage() {
                   <button
                     type="button"
                     onClick={() => setBookingModalOpen(true)}
-                    className="w-full sm:w-auto flex-1 flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 px-8 py-4 text-sm font-extrabold text-zinc-950 shadow-gold-glow-lg hover:scale-105 hover:from-amber-300 hover:to-amber-500 transition-all duration-300 cursor-pointer"
+                    className="w-full sm:w-auto flex-1 flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 px-8 py-4 text-sm font-extrabold text-zinc-950 shadow-gold-glow-lg hover:scale-105 hover:from-amber-300 hover:to-amber-500 transition-colors duration-200 duration-300 cursor-pointer"
                   >
                     <MessageSquare className="h-5 w-5" />
                     <span>Hire {profile.full_name} / Booking Project</span>
@@ -381,7 +381,7 @@ export default function FreelancerDetailPage() {
       {/* ========================================================================= */}
       {/* 2. SERVICE SPECS GRID (COMPACT 2-COLUMN HP FRIENDLY)                      */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] gap-2.5 sm:gap-4">
         {/* Box 1: Durasi Pengerjaan & Deliverables */}
         <div className="rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3.5 sm:p-5 backdrop-blur-md space-y-3">
           <div className="flex items-center gap-2.5 text-amber-400">
@@ -621,11 +621,11 @@ export default function FreelancerDetailPage() {
         </div>
 
         {filteredPortfolios.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] gap-6">
             {filteredPortfolios.map((item) => (
               <div
                 key={item.id}
-                className="group overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 transition-all hover:border-amber-500/40"
+                className="group overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 transition-colors duration-200 hover:border-amber-500/40"
               >
                 <div className="relative aspect-video w-full overflow-hidden bg-zinc-950">
                   <Image
@@ -681,7 +681,7 @@ export default function FreelancerDetailPage() {
 
           <button
             onClick={() => setReviewModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all"
+            className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Tulis Ulasan Anda</span>
@@ -768,7 +768,7 @@ export default function FreelancerDetailPage() {
           <button
             type="button"
             onClick={() => setBookingModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-extrabold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-all active:scale-95"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-extrabold text-zinc-950 shadow-gold-glow hover:bg-amber-400 transition-colors duration-200 active:scale-95"
           >
             <MessageSquare className="h-4 w-4" />
             <span>Hire Sekarang</span>

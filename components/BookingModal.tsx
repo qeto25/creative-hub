@@ -325,7 +325,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                       href={waLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-5 py-3 text-xs font-bold text-zinc-950 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-5 py-3 text-xs font-bold text-zinc-950 transition-colors duration-200 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                     >
                       <MessageSquare className="h-4 w-4" />
                       <span>Lanjut ke WhatsApp Admin</span>
@@ -333,7 +333,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                     <button
                       type="button"
                       onClick={handleDone}
-                      className="rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-xs font-bold text-zinc-300 hover:bg-zinc-700 hover:text-white transition-all"
+                      className="rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-3 text-xs font-bold text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors duration-200"
                     >
                       Selesai & Tutup
                     </button>
@@ -616,7 +616,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 px-5 text-xs font-bold text-zinc-950 shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:from-emerald-400 hover:to-emerald-500 transition-all disabled:opacity-50"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 px-5 text-xs font-bold text-zinc-950 shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:from-emerald-400 hover:to-emerald-500 transition-colors duration-200 disabled:opacity-50"
                 >
                   {loading ? (
                     <>

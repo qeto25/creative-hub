@@ -19,7 +19,7 @@ export const SITE_CONFIG = {
   /** Email kontak resmi */
   email: 'grown@creativehub.id',
   /** Nomor WhatsApp resmi (format internasional tanpa +) */
-  whatsapp: '6281234567891',
+  whatsapp: '6285831041464',
   /** Pesan default untuk WhatsApp */
   whatsappMessage:
     'Halo%20Admin%20Creative%20Hub,%20saya%20ingin%20konsultasi%20proyek',
