@@ -31,7 +31,9 @@ import {
   Banknote,
   DollarSign,
   ArrowUpRight,
+  BarChart3,
 } from 'lucide-react';
+import OwnerAnalyticsView from '@/components/OwnerAnalyticsView';
 import { MOCK_PROFILES, MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { Profile, Booking, BookingStatus } from '@/lib/types';
 import PriceOverrideModal from '@/components/PriceOverrideModal';
@@ -50,7 +52,7 @@ import { useAuthSession } from '@/lib/context/AuthContext';
 
 export default function OwnerDashboardPage() {
   const { logout } = useAuthSession();
-  const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance'>('members');
+  const [activeTab, setActiveTab] = useState<'members' | 'bookings' | 'finance' | 'analytics'>('members');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -658,6 +660,21 @@ export default function OwnerDashboardPage() {
               {unpaidBookingsCount} Belum Payout
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`flex items-center gap-2 whitespace-nowrap py-2.5 px-4 font-medium text-sm border-b-2 transition-colors duration-200 shrink-0 ${
+            activeTab === 'analytics'
+              ? 'border-amber-400 text-amber-400'
+              : 'border-transparent text-zinc-400 hover:text-white'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 shrink-0" />
+          <span>Analitik Pribadi</span>
+          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+            Advance
+          </span>
         </button>
       </div>
 
@@ -1561,6 +1578,11 @@ export default function OwnerDashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 4: OWNER BUSINESS ANALYTICS */}
+      {activeTab === 'analytics' && (
+        <OwnerAnalyticsView bookings={bookings} profiles={profiles} />
       )}
 
       {/* MODAL: PROVISI MEMBER BARU */}
