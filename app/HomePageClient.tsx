@@ -113,7 +113,7 @@ export default function HomePageClient() {
           >
             <Link
               href="/freelancers"
-              className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-7 py-3.5 text-sm font-bold text-zinc-950 shadow-gold-glow-lg hover:from-amber-300 hover:to-amber-400 hover:scale-[1.02] transition-all duration-200"
+              className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-7 py-3.5 text-sm font-bold text-zinc-950 shadow-gold-glow-lg hover:from-amber-300 hover:to-amber-400 hover:scale-[1.02] transition-transform transition-colors duration-200"
             >
               <span>Jelajahi Direktori Talent</span>
               <ArrowRight className="h-4 w-4" />
@@ -121,7 +121,7 @@ export default function HomePageClient() {
 
             <Link
               href="/projects"
-              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-7 py-3.5 text-sm font-semibold text-zinc-200 backdrop-blur-md hover:border-amber-400/60 hover:text-amber-400 hover:bg-zinc-800 transition-all duration-200"
+              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-7 py-3.5 text-sm font-semibold text-zinc-200 backdrop-blur-md hover:border-amber-400/60 hover:text-amber-400 hover:bg-zinc-800 transition-colors duration-200"
             >
               <span>Lihat Showcase Portofolio</span>
             </Link>

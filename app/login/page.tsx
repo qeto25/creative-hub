@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const isLive = process.env.NEXT_PUBLIC_APP_MODE === 'live' || !isDemoMode();
+  const isProductionMode = !isDemoMode();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +41,7 @@ export default function LoginPage() {
 
       if (error) {
         // Hanya berikan fallback demo login jika aplikasi BERJALAN di mode demo
-        if (!isLive) {
+        if (!isProductionMode) {
           const demoRole: 'owner' | 'member' =
             resolvedEmail.includes('owner') || rawInput.toLowerCase() === 'grown' ? 'owner' : 'member';
           const res = await loginDemoAction(demoRole);
@@ -54,7 +54,7 @@ export default function LoginPage() {
           }
         }
 
-        // Mode Live: Tampilkan pesan error resmi dari Supabase
+        // Mode Produksi: Tampilkan pesan error resmi dari Supabase
         setErrorMessage(
           error.message === 'Invalid login credentials'
             ? 'Username/email atau kata sandi tidak cocok. Periksa kembali kredensial Anda.'
@@ -234,7 +234,7 @@ export default function LoginPage() {
           </form>
 
           {/* Quick Demo Access Bar (HANYA tampil saat mode DEMO) */}
-          {!isLive && (
+          {!isProductionMode && (
             <div className="pt-4 border-t border-zinc-800 space-y-3">
               <span className="block text-[11px] uppercase tracking-wider text-center text-zinc-500 font-semibold">
                 Mode Demo Cepat (1-Click Access)

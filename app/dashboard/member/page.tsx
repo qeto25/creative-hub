@@ -71,7 +71,7 @@ export default function MemberDashboardPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [selectedBookingForDetail, setSelectedBookingForDetail] = useState<Booking | null>(null);
 
-  // Load member data via unified Data Layer (otomatis pilih snapshot demo atau live Supabase)
+  // Load member data via unified Data Layer (otomatis pilih snapshot demo atau database Supabase)
   useEffect(() => {
     async function loadMemberData() {
       setIsVerifyingAuth(true);
@@ -1687,7 +1687,7 @@ export default function MemberDashboardPage() {
                 </label>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-start">
-                  {/* Live Thumbnail Preview Box */}
+                  {/* Pratinjau Thumbnail Gambar */}
                   <div className="relative h-28 w-44 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center">
                     {newMediaUrl ? (
                       <Image

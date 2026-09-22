@@ -18,7 +18,6 @@ import {
   BarChart2,
   PieChart,
   Calendar,
-  Sparkles,
   Database,
   Radio,
   Info,
@@ -35,33 +34,33 @@ interface OwnerAnalyticsViewProps {
 }
 
 type Timeframe = 'all' | '30d' | '7d';
-type DataSourceMode = 'live' | 'demo';
+type DataSourceMode = 'production' | 'demo';
 
 export default function OwnerAnalyticsView({
-  bookings: liveBookings,
-  profiles: liveProfiles,
+  bookings: initialBookings,
+  profiles: initialProfiles,
 }: OwnerAnalyticsViewProps) {
-  // Jika database live kosong, user bisa dengan 1 klik menyalakan mode pratinjau demo
+  // Jika database utama kosong, user bisa dengan 1 klik menyalakan mode pratinjau demo
   const [dataSourceMode, setDataSourceMode] = useState<DataSourceMode>(
-    liveBookings.length === 0 ? 'live' : 'live'
+    initialBookings.length === 0 ? 'production' : 'production'
   );
   const [timeframe, setTimeframe] = useState<Timeframe>('all');
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
-  // Active data source: Live Supabase vs Demo Simulation
+  // Sumber data aktif: Database Produksi Supabase vs Simulasi Demo
   const activeBookings = useMemo(() => {
     if (dataSourceMode === 'demo') {
       return INITIAL_MOCK_DATA.bookings;
     }
-    return liveBookings;
-  }, [dataSourceMode, liveBookings]);
+    return initialBookings;
+  }, [dataSourceMode, initialBookings]);
 
   const activeProfiles = useMemo(() => {
     if (dataSourceMode === 'demo') {
       return INITIAL_MOCK_DATA.profiles;
     }
-    return liveProfiles;
-  }, [dataSourceMode, liveProfiles]);
+    return initialProfiles;
+  }, [dataSourceMode, initialProfiles]);
 
   // Filter bookings based on timeframe
   const filteredBookings = useMemo(() => {
@@ -209,14 +208,14 @@ export default function OwnerAnalyticsView({
 
   // Timeline / Month Revenue Simulation
   const monthlyRevenueData = useMemo(() => {
-    const monthsMap = new Map<string, { label: string; revenue: number; hub: number; orders: number }>();
+    const monthsMap = new Map<string, { key: string; label: string; revenue: number; hub: number; orders: number }>();
     const sorted = [...filteredBookings].filter((b) => b.status !== 'cancelled');
 
     sorted.forEach((b) => {
       const d = b.created_at ? new Date(b.created_at) : new Date();
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const label = d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
-      const current = monthsMap.get(key) || { label, revenue: 0, hub: 0, orders: 0 };
+      const current = monthsMap.get(key) || { key, label, revenue: 0, hub: 0, orders: 0 };
       
       const { hubShare } = getBookingShares(b);
       current.revenue += b.estimated_total || 0;
@@ -236,7 +235,7 @@ export default function OwnerAnalyticsView({
       const rows: string[][] = [
         ['LAPORAN ANALITIK BISNIS & TRANSAKSI - CREATIVE HUB AGENCY'],
         [`Tanggal Unduh: ${new Date().toLocaleString('id-ID')}`],
-        [`Sumber Data: ${dataSourceMode === 'demo' ? 'Simulasi Demo' : 'Database Live Supabase'}`],
+        [`Sumber Data: ${dataSourceMode === 'demo' ? 'Simulasi Demo' : 'Database Utama (Produksi)'}`],
         [`Rentang Waktu: ${timeframe === 'all' ? 'Semua Waktu' : timeframe === '30d' ? '30 Hari Terakhir' : '7 Hari Terakhir'}`],
         [''],
         ['RINGKASAN EKSEKUTIF'],
@@ -288,7 +287,7 @@ export default function OwnerAnalyticsView({
     }
   };
 
-  const isLiveEmpty = dataSourceMode === 'live' && analytics.totalValidOrders === 0;
+  const isProductionEmpty = dataSourceMode === 'production' && analytics.totalValidOrders === 0;
 
   return (
     <div className="space-y-6">
@@ -296,7 +295,7 @@ export default function OwnerAnalyticsView({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 p-5 rounded-2xl">
         <div>
           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-amber-400">
-            <Sparkles className="w-3.5 h-3.5" />
+            <TrendingUp className="w-3.5 h-3.5" />
             <span>Owner Executive Intelligence</span>
           </div>
           <h2 className="text-xl font-extrabold text-white mt-0.5">Analitik & Performa Bisnis Agensi</h2>
@@ -306,19 +305,19 @@ export default function OwnerAnalyticsView({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Data Source Mode Toggle: Live vs Demo (Anti-Slop Solution) */}
+          {/* Data Source Mode Toggle: Production vs Demo */}
           <div className="flex items-center bg-zinc-950 p-1 rounded-xl border border-zinc-800 text-xs">
             <button
               type="button"
-              onClick={() => setDataSourceMode('live')}
+              onClick={() => setDataSourceMode('production')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-colors ${
-                dataSourceMode === 'live'
+                dataSourceMode === 'production'
                   ? 'bg-emerald-500 text-zinc-950 shadow-sm'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${dataSourceMode === 'live' ? 'bg-zinc-950' : 'bg-emerald-400'}`} />
-              <span>Live Database</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${dataSourceMode === 'production' ? 'bg-zinc-950' : 'bg-emerald-400'}`} />
+              <span>Database Utama</span>
             </button>
             <button
               type="button"
@@ -329,7 +328,7 @@ export default function OwnerAnalyticsView({
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Sparkles className="w-3 h-3" />
+              <Layers className="w-3 h-3" />
               <span>Pratinjau Demo</span>
             </button>
           </div>
@@ -380,8 +379,8 @@ export default function OwnerAnalyticsView({
         </div>
       </div>
 
-      {/* Live Zero Data Notice Banner (If Live DB has no orders yet) */}
-      {isLiveEmpty && (
+      {/* Zero Data Notice Banner (If Production DB has no orders yet) */}
+      {isProductionEmpty && (
         <div className="rounded-2xl border border-amber-500/30 bg-zinc-900 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 shrink-0 mt-0.5 border border-amber-500/20">
@@ -389,22 +388,22 @@ export default function OwnerAnalyticsView({
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <span>Database Live Siap Menerima Order</span>
+                <span>Database Utama Siap Menerima Order</span>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-medium">
                   Status: Siap Operasi
                 </span>
               </h3>
               <p className="text-xs text-zinc-400 leading-relaxed max-w-3xl">
-                Saat ini belum ada transaksi order masuk di database live Supabase. Begitu klien memesan via halaman talenta/portofolio, metrik omset, corong status, dan pembukuan kas akan otomatis terisi secara real-time.
+                Saat ini belum ada transaksi order masuk di database produksi Supabase. Begitu klien memesan via halaman talenta/portofolio, metrik omset, corong status, dan pembukuan kas akan otomatis terisi secara real-time.
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setDataSourceMode('demo')}
-            className="flex items-center gap-2 whitespace-nowrap bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold px-4 py-2.5 rounded-xl transition shrink-0"
+            className="flex items-center gap-2 whitespace-nowrap bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Layers className="w-3.5 h-3.5" />
             <span>Lihat Simulasi Data Demo</span>
           </button>
         </div>
@@ -533,7 +532,7 @@ export default function OwnerAnalyticsView({
                 const hubHeightPercent = Math.max(8, Math.round((m.hub / monthlyRevenueData.maxRev) * 100));
 
                 return (
-                  <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative">
+                  <div key={m.key || m.label || idx} className="flex-1 flex flex-col items-center h-full justify-end group relative">
                     <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950 border border-zinc-700 px-2.5 py-1 rounded-lg text-center pointer-events-none z-20 shadow-xl whitespace-nowrap">
                       <p className="text-[10px] font-bold text-amber-400">{formatRupiahDisplay(m.revenue)}</p>
                       <p className="text-[9px] text-zinc-400">{m.orders} Order • Kas: {formatRupiahDisplay(m.hub)}</p>
@@ -542,11 +541,11 @@ export default function OwnerAnalyticsView({
                     <div className="w-full max-w-[42px] flex items-end justify-center gap-1.5 h-full">
                       <div
                         style={{ height: `${heightPercent}%` }}
-                        className="w-1/2 bg-amber-500 hover:bg-amber-400 rounded-t transition-all duration-200"
+                        className="w-1/2 bg-amber-500 hover:bg-amber-400 rounded-t transition-colors duration-200"
                       />
                       <div
                         style={{ height: `${hubHeightPercent}%` }}
-                        className="w-1/2 bg-emerald-500 hover:bg-emerald-400 rounded-t transition-all duration-200"
+                        className="w-1/2 bg-emerald-500 hover:bg-emerald-400 rounded-t transition-colors duration-200"
                       />
                     </div>
                     <span className="text-[10px] font-medium text-zinc-400 mt-2 truncate w-full text-center">
@@ -564,7 +563,7 @@ export default function OwnerAnalyticsView({
               <p className="text-[11px] text-zinc-500 max-w-sm">
                 Grafik omset dan alokasi kas agensi akan otomatis tampil begitu ada pemesanan tiket masuk.
               </p>
-              {dataSourceMode === 'live' && (
+              {dataSourceMode === 'production' && (
                 <button
                   type="button"
                   onClick={() => setDataSourceMode('demo')}
@@ -577,7 +576,7 @@ export default function OwnerAnalyticsView({
           )}
 
           {/* Sub Financial Breakdown Footer */}
-          <div className="grid grid-cols-3 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800">
               <span className="text-[10px] text-zinc-400 uppercase font-semibold">Omset Terverifikasi</span>
               <p className="text-sm font-bold text-white mt-0.5">{formatRupiahDisplay(analytics.grossRevenue)}</p>
@@ -614,7 +613,7 @@ export default function OwnerAnalyticsView({
               </div>
               <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-yellow-400 rounded-full transition-all duration-300"
+                  className="h-full bg-yellow-400 rounded-full transition-opacity duration-300"
                   style={{ width: `${analytics.totalOrders ? (analytics.pendingDpCount / analytics.totalOrders) * 100 : 0}%` }}
                 />
               </div>
@@ -628,7 +627,7 @@ export default function OwnerAnalyticsView({
               </div>
               <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-400 rounded-full transition-all duration-300"
+                  className="h-full bg-blue-400 rounded-full transition-opacity duration-300"
                   style={{ width: `${analytics.totalOrders ? (analytics.inProgressCount / analytics.totalOrders) * 100 : 0}%` }}
                 />
               </div>
@@ -642,7 +641,7 @@ export default function OwnerAnalyticsView({
               </div>
               <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-indigo-400 rounded-full transition-all duration-300"
+                  className="h-full bg-indigo-400 rounded-full transition-opacity duration-300"
                   style={{ width: `${analytics.totalOrders ? (analytics.inReviewCount / analytics.totalOrders) * 100 : 0}%` }}
                 />
               </div>
@@ -656,7 +655,7 @@ export default function OwnerAnalyticsView({
               </div>
               <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-400 rounded-full transition-all duration-300"
+                  className="h-full bg-emerald-400 rounded-full transition-opacity duration-300"
                   style={{ width: `${analytics.totalOrders ? (analytics.completedCount / analytics.totalOrders) * 100 : 0}%` }}
                 />
               </div>
@@ -670,7 +669,7 @@ export default function OwnerAnalyticsView({
               </div>
               <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-red-400/60 rounded-full transition-all duration-300"
+                  className="h-full bg-red-400/60 rounded-full transition-opacity duration-300"
                   style={{ width: `${analytics.totalOrders ? (analytics.cancelledCount / analytics.totalOrders) * 100 : 0}%` }}
                 />
               </div>
@@ -864,8 +863,8 @@ export default function OwnerAnalyticsView({
             </div>
 
             <div className="space-y-2">
-              {skillDemand.list.map((item, idx) => (
-                <div key={idx} className="space-y-1">
+              {skillDemand.list.map((item) => (
+                <div key={item.name} className="space-y-1">
                   <div className="flex justify-between text-[11px]">
                     <span className="text-zinc-300 font-medium truncate max-w-[180px]">{item.name}</span>
                     <span className="text-zinc-400 font-mono">

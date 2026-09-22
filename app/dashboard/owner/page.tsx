@@ -120,15 +120,15 @@ export default function OwnerDashboardPage() {
 
         if (isOwner) {
           setIsAuthorized(true);
-          const [liveBookings, liveProfiles] = await Promise.all([
+          const [activeBookings, activeProfiles] = await Promise.all([
             dataLayer.getBookings(),
             dataLayer.getProfiles({ includeTesters: true }),
           ]);
-          if (liveBookings) {
-            setBookings(liveBookings);
+          if (activeBookings) {
+            setBookings(activeBookings);
           }
-          if (liveProfiles) {
-            setProfiles(liveProfiles);
+          if (activeProfiles) {
+            setProfiles(activeProfiles);
           }
         }
       } catch (err) {
@@ -713,7 +713,7 @@ export default function OwnerDashboardPage() {
                   key={p.id}
                   className="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5 shadow-sm overflow-hidden"
                 >
-                  {/* Baris Atas: Avatar bulat mini, Nama + Rating, Live Status & Tombol Edit Ringkas */}
+                  {/* Baris Atas: Avatar bulat mini, Nama + Rating, Status Kerja & Tombol Edit Ringkas */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Image
@@ -748,7 +748,7 @@ export default function OwnerDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Live Status Badge (Single Indicator Dot) & Edit Button di Pojok Kanan Atas */}
+                    {/* Status Keaktifan (Single Indicator Dot) & Edit Button di Pojok Kanan Atas */}
                     <div className="flex items-center gap-1 shrink-0">
                       {(() => {
                         const statusMeta = getTalentStatus(p);
@@ -786,8 +786,8 @@ export default function OwnerDashboardPage() {
 
                   {/* Baris Tengah: Tags Keahlian (Maks 4 tag, sisanya +N lainnya) */}
                   <div className="flex flex-wrap gap-1 text-[10px]">
-                    {(p.skills || []).slice(0, 4).map((s, i) => (
-                      <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800/80 text-zinc-300 border border-zinc-700/50">
+                    {(p.skills || []).slice(0, 4).map((s) => (
+                      <span key={s} className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800/80 text-zinc-300 border border-zinc-700/50">
                         {s}
                       </span>
                     ))}
@@ -851,7 +851,7 @@ export default function OwnerDashboardPage() {
                 <tr className="border-b border-zinc-800 text-zinc-500 uppercase tracking-wider font-semibold">
                   <th className="py-3 px-4">Talent</th>
                   <th className="py-3 px-4">Keahlian & Tools</th>
-                  <th className="py-3 px-4">Live Status</th>
+                  <th className="py-3 px-4">Status Keaktifan</th>
                   <th className="py-3 px-4">Tarif & DP</th>
                   <th className="py-3 px-4">Mode Draft</th>
                   <th className="py-3 px-4 text-right">Aksi</th>
@@ -901,8 +901,8 @@ export default function OwnerDashboardPage() {
                     <td className="py-3.5 px-4">
                       <div className="space-y-1 max-w-[200px]">
                         <div className="flex flex-wrap gap-1">
-                          {(p.skills || []).slice(0, 2).map((s, i) => (
-                            <span key={i} className="rounded-md bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-300">
+                          {(p.skills || []).slice(0, 2).map((s) => (
+                            <span key={s} className="rounded-md bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-300">
                               {s}
                             </span>
                           ))}
@@ -915,7 +915,7 @@ export default function OwnerDashboardPage() {
                       </div>
                     </td>
 
-                    {/* Live Working Toggle */}
+                    {/* Status Kerja Toggle */}
                     <td className="py-3.5 px-4">
                       {(() => {
                         const statusMeta = getTalentStatus(p);
@@ -979,7 +979,7 @@ export default function OwnerDashboardPage() {
                         }`}
                         title="Klik untuk ubah visibilitas publik talent"
                       >
-                        {p.is_tester ? 'Dalam Peninjauan (Hidden)' : 'Publik Live'}
+                        {p.is_tester ? 'Dalam Peninjauan (Hidden)' : 'Publik Aktif'}
                       </button>
                     </td>
 

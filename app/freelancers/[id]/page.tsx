@@ -54,7 +54,7 @@ export default function FreelancerDetailPage() {
 
   // Load data via server-verified action (guarantees zero draft leak without valid owner server session)
   useEffect(() => {
-    async function fetchLiveData() {
+    async function fetchTalentData() {
       try {
         const res = await getVerifiedProfile(profileId);
         setIsDraft(res.isDraft);
@@ -74,7 +74,7 @@ export default function FreelancerDetailPage() {
         setLoading(false);
       }
     }
-    fetchLiveData();
+    fetchTalentData();
   }, [profileId]);
 
   // Sync customProjectCost if base_price or forced_price changes
@@ -243,7 +243,7 @@ export default function FreelancerDetailPage() {
                 sizes="(max-width: 64rem) 320px, 400px"
                 className="object-cover object-top"
               />
-              {/* Live Indicator on Top */}
+              {/* Status Indicator on Top */}
               <div className="absolute top-4 left-4 z-10">
                 <div className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-md ${statusMeta.badgeClass}`}>
                   <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dotClass}`}></span>
