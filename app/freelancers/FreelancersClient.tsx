@@ -76,7 +76,7 @@ export default function FreelancersClient() {
       <div className="space-y-2.5">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
           <Award className="h-4 w-4" />
-          <span>Talent Directory</span>
+          <span>Direktori Talenta</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-extrabold text-white">
           Direktori Lengkap Member Kreatif

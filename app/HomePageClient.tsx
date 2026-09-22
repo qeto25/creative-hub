@@ -59,11 +59,11 @@ export default function HomePageClient() {
     }));
 
   return (
-    <div className="space-y-24 pb-20 overflow-hidden">
+    <div className="space-y-16 sm:space-y-20 pb-20 overflow-hidden">
       {/* ========================================================================= */}
       {/* 1. HERO SECTION DARK LUXURY                                              */}
       {/* ========================================================================= */}
-      <section className="relative pt-16 pb-12 sm:pt-24 sm:pb-16 lg:pt-32">
+      <section className="relative pt-10 pb-8 sm:pt-16 sm:pb-12 lg:pt-20">
         {/* Background glow & radial lighting */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-full max-w-2xl rounded-full bg-gradient-to-tr from-amber-500/15 via-yellow-500/10 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute top-10 right-10 h-72 w-72 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
@@ -74,10 +74,10 @@ export default function HomePageClient() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-300 backdrop-blur-md shadow-gold-glow mb-6"
+            className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-300 backdrop-blur-md shadow-gold-glow mb-5"
           >
             <Award className="h-3.5 w-3.5 text-amber-400" />
-            <span>THE COLLECTIVE FOR HIGH-STAKES CREATIVE WORK</span>
+            <span>KOLEKTIF KREATIF &amp; PRODUKSI DIGITAL TERKURASI</span>
           </motion.div>
 
           {/* Main Title */}
@@ -85,11 +85,11 @@ export default function HomePageClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-5xl lg:text-[4rem] font-extrabold tracking-tight text-white leading-[1.15]"
+            className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.18]"
           >
-            Curated Elite Freelancers <br className="hidden sm:inline" />
+            Kolektif Talenta Kreatif Terpilih <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
-              Ready for Your Next Breakthrough
+              untuk Proyek &amp; Brand Skala Tinggi
             </span>
           </motion.h1>
 
@@ -98,7 +98,7 @@ export default function HomePageClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-6 mx-auto max-w-xl text-base sm:text-lg text-zinc-400 leading-relaxed"
+            className="mt-4 sm:mt-5 mx-auto max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed"
           >
             Spesialis presentasi investor, video komersial, fotografi produk, dan UI/UX.
             Transparan dari tarif, DP, hingga status pengerjaan — tanpa spekulasi.
@@ -109,11 +109,11 @@ export default function HomePageClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-10 flex flex-wrap items-center justify-center gap-4"
+            className="mt-8 flex flex-wrap items-center justify-center gap-3.5"
           >
             <Link
               href="/freelancers"
-              className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-8 py-4 text-sm font-bold text-zinc-950 shadow-gold-glow-lg hover:from-amber-300 hover:to-amber-400 hover:scale-105 transition-colors duration-200 duration-300"
+              className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-7 py-3.5 text-sm font-bold text-zinc-950 shadow-gold-glow-lg hover:from-amber-300 hover:to-amber-400 hover:scale-[1.02] transition-all duration-200"
             >
               <span>Jelajahi Direktori Talent</span>
               <ArrowRight className="h-4 w-4" />
@@ -121,14 +121,14 @@ export default function HomePageClient() {
 
             <Link
               href="/projects"
-              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-8 py-4 text-sm font-semibold text-zinc-200 backdrop-blur-md hover:border-amber-400/60 hover:text-amber-400 hover:bg-zinc-800 transition-colors duration-200 duration-300"
+              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-7 py-3.5 text-sm font-semibold text-zinc-200 backdrop-blur-md hover:border-amber-400/60 hover:text-amber-400 hover:bg-zinc-800 transition-all duration-200"
             >
-              <span>Lihat Showcase Proyek</span>
+              <span>Lihat Showcase Portofolio</span>
             </Link>
           </motion.div>
 
           {/* Agency Trust Badges */}
-          <div className="mt-14 pt-8 border-t border-zinc-900 grid grid-cols-2 md:grid-cols-[repeat(4,minmax(0,1fr))] gap-6 text-left">
+          <div className="mt-10 pt-6 border-t border-zinc-800/80 grid grid-cols-2 md:grid-cols-[repeat(4,minmax(0,1fr))] gap-6 text-left">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-amber-400">
                 <Trophy className="h-5 w-5" />
@@ -180,7 +180,7 @@ export default function HomePageClient() {
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1.5">
               <Star className="h-3.5 w-3.5 text-amber-400" />
-              <span>Featured Creators</span>
+              <span>Talenta Terpilih</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
               Talenta Pilihan untuk Proyek Anda
@@ -247,7 +247,7 @@ export default function HomePageClient() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
               <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest">
-                Our Work
+                Portofolio Kurasi
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mt-1">
                 Karya Pilihan Kolektif

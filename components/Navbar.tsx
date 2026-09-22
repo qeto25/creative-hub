@@ -27,9 +27,9 @@ export default function Navbar() {
   const isDemo = isDemoMode();
 
   const navLinks = [
-    { href: '/', label: 'Home', icon: Compass },
-    { href: '/freelancers', label: 'Freelancers', icon: Users },
-    { href: '/projects', label: 'Projects', icon: FolderKanban },
+    { href: '/', label: 'Beranda', icon: Compass },
+    { href: '/freelancers', label: 'Talenta', icon: Users },
+    { href: '/projects', label: 'Portofolio', icon: FolderKanban },
     { href: '/track', label: 'Lacak Proyek', icon: FileCheck },
   ];
 
@@ -48,13 +48,11 @@ export default function Navbar() {
               <span className="font-extrabold tracking-widest text-lg text-white group-hover:text-amber-400 transition-colors">
                 CREATIVE<span className="text-amber-400">.</span>HUB
               </span>
-              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
-                isDemo
-                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-              }`}>
-                {isDemo ? 'Demo' : 'Live'}
-              </span>
+              {isDemo && (
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider bg-amber-500/10 text-amber-400 border-amber-500/30">
+                  Demo
+                </span>
+              )}
             </div>
             <span className="text-[10px] tracking-wider uppercase text-zinc-400 font-medium -mt-1">
               {SITE_CONFIG.tagline}
@@ -122,7 +120,7 @@ export default function Navbar() {
               className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 px-5 py-2.5 text-sm font-medium text-white hover:border-amber-500/60 hover:text-amber-400 hover:shadow-gold-glow transition-colors duration-200"
             >
               <LogIn className="h-4 w-4 text-amber-400" />
-              <span>Sign In</span>
+              <span>Masuk</span>
             </Link>
           )}
         </div>
@@ -200,7 +198,7 @@ export default function Navbar() {
                   className="flex items-center justify-center gap-2 rounded-xl bg-zinc-900 border border-zinc-700 py-3 text-sm font-medium text-white hover:text-amber-400"
                 >
                   <LogIn className="h-4 w-4 text-amber-400" />
-                  <span>Sign In</span>
+                  <span>Masuk</span>
                 </Link>
               )}
             </div>

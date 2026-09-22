@@ -48,7 +48,7 @@ export default function ProjectsPage() {
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400">
           <FolderKanban className="h-4 w-4" />
-          <span>Collective Archive</span>
+          <span>Arsip Portofolio Kolektif</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
           Showcase Portofolio Tim Kolektif

@@ -6,7 +6,7 @@ import { SITE_CONFIG } from '@/lib/siteConfig';
 
 export const metadata: Metadata = {
   title: {
-    default: `${SITE_CONFIG.name} — Elite Freelancer Agency & Creative Collective`,
+    default: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
     template: `%s | ${SITE_CONFIG.name}`,
   },
   description: SITE_CONFIG.description,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     locale: 'id_ID',
     url: SITE_CONFIG.url,
     siteName: SITE_CONFIG.name,
-    title: `${SITE_CONFIG.name} — Elite Freelancer Agency & Creative Collective`,
+    title: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
     description: SITE_CONFIG.description,
     images: [
       {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_CONFIG.name} — Elite Freelancer Agency`,
+    title: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
     description: SITE_CONFIG.description,
     images: [SITE_CONFIG.ogImage],
   },
