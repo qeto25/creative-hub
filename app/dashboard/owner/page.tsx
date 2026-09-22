@@ -572,9 +572,9 @@ export default function OwnerDashboardPage() {
         </div>
       </div>
 
-      {/* Metrics Cards */}
+      {/* Metrics Cards (Optimized Solid Styling, No GPU Blur Lag) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))] gap-5">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 backdrop-blur-md">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Member</span>
             <Users className="h-4 w-4 text-amber-400" />
@@ -583,16 +583,16 @@ export default function OwnerDashboardPage() {
           <span className="text-[11px] text-zinc-500">{activeWorkingMembers} Sedang Mengerjakan • {testerProfiles} Peninjauan</span>
         </div>
 
-        <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
+        <div className="rounded-2xl border border-yellow-500/30 bg-zinc-900 p-5">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Tiket Pending DP</span>
-            <span className="flex h-2.5 w-2.5 rounded-full bg-yellow-400 animate-ping"></span>
+            <span className="h-2 w-2 rounded-full bg-yellow-400"></span>
           </div>
           <p className="text-2xl font-extrabold text-yellow-400 mt-2">{pendingDpBookings}</p>
           <span className="text-[11px] text-yellow-500/80 font-medium">Menunggu Konfirmasi Transfer</span>
         </div>
 
-        <div className="rounded-2xl border border-blue-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
+        <div className="rounded-2xl border border-blue-500/30 bg-zinc-900 p-5">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Proyek Berjalan</span>
             <Clock className="h-4 w-4 text-blue-400" />
@@ -601,7 +601,7 @@ export default function OwnerDashboardPage() {
           <span className="text-[11px] text-zinc-500">In Progress Pengerjaan</span>
         </div>
 
-        <div className="rounded-2xl border border-amber-500/30 bg-zinc-900/80 p-5 backdrop-blur-md">
+        <div className="rounded-2xl border border-amber-500/30 bg-zinc-900 p-5">
           <div className="flex items-center justify-between text-zinc-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Tahap Peninjauan</span>
             <Award className="h-4 w-4 text-amber-400" />
