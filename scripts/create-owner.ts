@@ -119,7 +119,7 @@ async function createOrUpdateOwner() {
         role: 'owner',
         avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
         bio: 'Owner & Creative Director of Creative Hub Agency.',
-        whatsapp_number: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6285831041464',
+        whatsapp_number: process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6281234567890',
         skills: ['Creative Director', 'Project Management', 'Business Strategist'],
         is_working: false,
         base_price: 0,

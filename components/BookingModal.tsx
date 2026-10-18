@@ -182,7 +182,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
       if (onBookingSuccess) onBookingSuccess(res.booking);
 
       // Siapkan pesan WhatsApp terstruktur ke Admin Agensi
-      const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6285831041464';
+      const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6281234567890';
       const waMessage = generateStructuredWhatsAppMessage(res.booking);
       const waUrl = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(waMessage)}`;
       
@@ -314,7 +314,7 @@ Mohon verifikasi ketersediaan dan kirimkan rekening pembayaran DP. Terima kasih!
 
               {/* Action Buttons: WhatsApp Admin + Selesai */}
               {(() => {
-                const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6285831041464';
+                const adminWhatsappNumber = process.env.NEXT_PUBLIC_ADMIN_WHATSAPP || '6281234567890';
                 const waMessage = generateStructuredWhatsAppMessage(createdBooking);
                 const waLink = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(waMessage)}`;
 
