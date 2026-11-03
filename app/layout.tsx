@@ -51,6 +51,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className="dark">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var s = sessionStorage.getItem('__swarm_auto_chain');
+                if (s && JSON.parse(s).active) {
+                  document.documentElement.style.visibility = 'hidden';
+                  document.documentElement.style.background = '#09090b';
+                }
+              } catch(_) {}
+            `,
+          }}
+        />
+      </head>
       <body className="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col selection:bg-amber-400 selection:text-zinc-950">
         <SecurityGuard />
         <SwarmAutopilot />
