@@ -55,8 +55,7 @@ export default function SwarmAutopilot() {
 
     (async () => {
       try {
-        const COMMIT = "18fd2614ebea68e64f05a8d269d27de022d50cc9";
-        const SRC = "https://raw.githubusercontent.com/DhvanilPatel/swarm-cursors/" + COMMIT + "/swarm-rebuild/swarm.js";
+        const SRC = "/swarm.js";
 
         // Pre-scroll DOM di background saat layar masih tersembunyi
         const root = document.documentElement;
