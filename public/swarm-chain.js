@@ -1,158 +1,133 @@
-/**
- * Swarm Chain Autopilot (Multi-Page Continuous Builder)
- * Automatically chains Swarm Rebuild across multiple pages from 0% to 100%.
+/*
+ * swarm-chain.js: Multi-Page Continuous Clean Swarm Builder
+ * 100% Clean: Tanpa HUD kustom, Auto-Scroll Tour aktif, dan Auto-Pindah Halaman.
  */
-(() => {
-  const CHAIN = [
-    { path: "/", name: "Beranda" },
-    { path: "/freelancers", name: "Direktori Talenta" },
-    { path: "/projects", name: "Showcase Portofolio" }
-  ];
+(async () => {
+  const ROUTES = ["/", "/freelancers", "/projects"];
+  const STORAGE_KEY = "__swarm_auto_chain";
+  const COMMIT = "18fd2614ebea68e64f05a8d269d27de022d50cc9";
+  const SRC = "https://raw.githubusercontent.com/DhvanilPatel/swarm-cursors/" + COMMIT + "/swarm-rebuild/swarm.js";
+  const MAX_MS = 10 * 60 * 1000;
 
-  const STORAGE_KEY = "__swarm_chain_state";
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const until = (test, ms) =>
+    new Promise((resolve, reject) => {
+      const t0 = Date.now();
+      (function poll() {
+        const v = test();
+        if (v) return resolve(v);
+        if (Date.now() - t0 > ms) return reject(new Error("swarm-chain: timed out"));
+        setTimeout(poll, 100);
+      })();
+    });
 
-  function getState() {
+  function getChainIndex() {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : { active: false, index: 0 };
+      if (!raw) return 0;
+      const data = JSON.parse(raw);
+      return typeof data.idx === "number" ? data.idx : 0;
     } catch {
-      return { active: false, index: 0 };
+      return 0;
     }
   }
 
-  function saveState(state) {
+  function setChainIndex(idx) {
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ idx }));
     } catch (_) {}
   }
 
-  function clearState() {
+  function clearChain() {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch (_) {}
   }
 
-  function ensureSwarmScript(cb) {
-    if (window.__swarmRebuild) {
-      cb();
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = "/swarm.js";
-    s.onload = () => cb();
-    document.head.appendChild(s);
+  const currentIdx = getChainIndex();
+  if (currentIdx >= ROUTES.length) {
+    clearChain();
+    return;
   }
 
-  function createChainHUD(currentStep, totalSteps, name) {
-    let hud = document.getElementById("swarm-chain-hud");
-    if (!hud) {
-      hud = document.createElement("div");
-      hud.id = "swarm-chain-hud";
-      hud.style.cssText = `
-        position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-        z-index: 10000002; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9999px;
-        padding: 8px 20px; display: flex; align-items: center; gap: 12px;
-        color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-        transition: all 0.3s ease;
-      `;
-      document.body.appendChild(hud);
+  const swarm = () => window.__swarmRebuild;
+
+  try {
+    const root = document.documentElement;
+    const h = Math.max(root.scrollHeight, document.body.scrollHeight);
+    const step = Math.max(300, window.innerHeight * 0.6);
+
+    // Sapu cepat DOM dari atas ke bawah agar seluruh aset/gambar ter-load
+    for (let y = 0; y < h; y += step) {
+      window.scrollTo({ top: y, behavior: "instant" });
+      await sleep(80);
     }
-    hud.innerHTML = `
-      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0D99FF;box-shadow:0 0 10px #0D99FF;animation:pulse 1.5s infinite"></span>
-      <span>Halaman [${currentStep}/${totalSteps}]: <b style="color:#38bdf8">${name}</b></span>
-      <span style="color:#64748b">|</span>
-      <span id="swarm-chain-status" style="color:#94a3b8;font-size:12px;">Merakit dari nol...</span>
-      <button id="swarm-chain-stop" style="background:#ef4444;border:none;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:9999px;cursor:pointer;margin-left:6px;">Berhenti</button>
-    `;
+    window.scrollTo({ top: h, behavior: "instant" });
+    await sleep(250);
+    window.scrollTo({ top: 0, behavior: "instant" });
+    await sleep(1000);
 
-    document.getElementById("swarm-chain-stop").onclick = () => {
-      clearState();
-      if (window.__swarmRebuild) window.__swarmRebuild.stop(true);
-      hud.remove();
-    };
-  }
-
-  function startChain(forceIndex = 0) {
-    saveState({ active: true, index: forceIndex });
-    runStep(forceIndex);
-  }
-
-  function runStep(idx) {
-    if (idx >= CHAIN.length) {
-      const hud = document.getElementById("swarm-chain-hud");
-      if (hud) {
-        hud.innerHTML = `
-          <span style="color:#22c55e;font-size:16px;">🎉</span>
-          <span><b>Semua Halaman Selesai Dirakit 100%!</b></span>
-          <button style="background:transparent;border:1px solid #475569;color:#fff;font-size:11px;padding:3px 10px;border-radius:9999px;cursor:pointer;margin-left:8px;" onclick="this.parentElement.remove()">Tutup</button>
-        `;
-      }
-      clearState();
-      return;
+    // Jalankan engine asli Dhvanil
+    if (!window.__swarmRebuild) {
+      const code = await (await fetch(SRC)).text();
+      (0, eval)(code);
+    } else {
+      window.__swarmRebuild.start();
     }
 
-    const item = CHAIN[idx];
-    createChainHUD(idx + 1, CHAIN.length, item.name);
+    const app = await until(
+      () => swarm() && swarm().app && swarm().app.engine && swarm().app.engine.ready && swarm().app,
+      60000
+    );
 
-    ensureSwarmScript(() => {
-      if (window.__swarmRebuild) {
-        // Start rebuild
-        window.__swarmRebuild.start();
-      }
-    });
+    // 100% CLEAN: sembunyikan semua bar HUD pengontrol
+    if (app.view && app.view.hud) {
+      app.view.hud.style.setProperty("display", "none", "important");
+    }
 
-    // One-time listener for completion
-    const onComplete = (e) => {
-      window.removeEventListener("swarm:complete", onComplete);
-      const statusEl = document.getElementById("swarm-chain-status");
-      if (statusEl) {
-        statusEl.innerHTML = `<span style="color:#22c55e">Selesai 100%! Pindah halaman dalam 2s...</span>`;
+    // AUTO-SCROLL TOUR: klik tour agar otomatis scroll ke bawah mengikuti rakitan elemen
+    const tourBtn = app.view.root.querySelector('[data-a="tour"]');
+    if (tourBtn) {
+      tourBtn.click();
+    }
+
+    // Tunggu perakitan halaman ini 100% selesai
+    await until(() => app.complete, MAX_MS);
+    await sleep(1600);
+
+    // Fade kembali ke tampilan asli
+    swarm().stop(true);
+    await sleep(1200);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    await sleep(1000);
+
+    // Otomatis pindah ke halaman berikutnya
+    const nextIdx = currentIdx + 1;
+    if (nextIdx < ROUTES.length) {
+      setChainIndex(nextIdx);
+      const nextRoute = ROUTES[nextIdx];
+
+      const link = document.querySelector('a[href="' + nextRoute + '"]');
+      if (link) {
+        link.click();
+      } else {
+        window.location.href = nextRoute;
       }
 
-      setTimeout(() => {
-        const nextIdx = idx + 1;
-        if (nextIdx < CHAIN.length) {
-          saveState({ active: true, index: nextIdx });
-          const nextTarget = CHAIN[nextIdx];
-          
-          // Next.js client-side navigation or fallback
-          const navLink = document.querySelector(`a[href="${nextTarget.path}"]`);
-          if (navLink) {
-            navLink.click();
-          } else {
-            window.location.href = nextTarget.path;
-          }
-        } else {
-          runStep(nextIdx);
-        }
-      }, 2400);
-    };
-
-    window.addEventListener("swarm:complete", onComplete);
-  }
-
-  // Auto-resume if in active state
-  const state = getState();
-  if (state.active) {
-    window.addEventListener("DOMContentLoaded", () => {
-      setTimeout(() => runStep(state.index), 600);
-    });
-  }
-
-  window.__swarmChain = {
-    start: () => startChain(0),
-    stop: () => {
-      clearState();
-      const hud = document.getElementById("swarm-chain-hud");
-      if (hud) hud.remove();
-      if (window.__swarmRebuild) window.__swarmRebuild.stop(true);
+      // Tunggu halaman baru lalu panggil engine lagi
+      await sleep(2200);
+      const s = document.createElement("script");
+      s.src = "/swarm-chain.js";
+      document.head.appendChild(s);
+    } else {
+      // Seluruh halaman selesai dirakit
+      clearChain();
     }
-  };
-
-  // If user injects manually, start immediately:
-  if (!state.active) {
-    startChain(0);
+  } catch (err) {
+    console.error("[swarm-chain]", err);
+    clearChain();
+    try {
+      if (swarm() && swarm().app) swarm().stop(false);
+    } catch (_) {}
   }
 })();
