@@ -2323,16 +2323,19 @@
       }
 
       if (!this.flocking && this.started && this.waitCount === 0) {
-        for (const c of this.cursors) {
-          c.follow = true;
-          c.gen = null;
-          c.leaving = false;
-          c.ov = null;
-          c.shape = "arrow";
+        for (const c of this.cursors)
+          if (!c.task && !c.follow) {
+            c.follow = true;
+            c.gen = null;
+            c.leaving = false;
+            c.ov = null;
+            c.shape = "arrow";
+          }
+        if (this.cursors.every((c) => c.follow)) {
+          this.flocking = true;
+          this.endTime = this.time;
+          if (this.onComplete) this.onComplete();
         }
-        this.flocking = true;
-        this.endTime = this.time;
-        if (this.onComplete) this.onComplete();
       }
       if (this.flocking) {
         this.flock(dt);
@@ -3592,14 +3595,12 @@
       }, true);
       // browsers only let audio start after a click/keypress on the page
       on(window, "pointerdown", () => this.unlockSound(), true);
-      // Allow wheel scrolling regardless of isRoot so user is never stuck
-      on(this.view.host, "wheel", (e) => {
-        if (this.env.isRoot) {
-          window.scrollBy({ top: e.deltaY, left: e.deltaX, behavior: "instant" });
-        } else {
+      if (!this.env.isRoot) {
+        on(this.view.host, "wheel", (e) => {
+          e.preventDefault();
           this.env.scroller.scrollBy({ top: e.deltaY, left: e.deltaX, behavior: "instant" });
-        }
-      }, { passive: true });
+        }, { passive: false });
+      }
       on(this.view.hud, "click", (e) => {
         const b = e.target.closest("button");
         if (!b) return;
@@ -3712,14 +3713,6 @@
 
     onComplete() {
       this.complete = true;
-      try {
-        window.dispatchEvent(new CustomEvent("swarm:complete", {
-          detail: {
-            workers: this.engine.cursors.filter((c) => c.worked).length + this.engine.retired,
-            secs: (this.engine.endTime - this.engine.startTime).toFixed(1)
-          }
-        }));
-      } catch (_) {}
       if (this.sfx) this.sfx.finale();
       const E = this.engine;
       const v = this.view;
