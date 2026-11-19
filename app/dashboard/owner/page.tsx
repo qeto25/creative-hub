@@ -45,6 +45,7 @@ import * as dataLayer from '@/lib/dataLayer';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
 import { createClient } from '@/lib/supabase/client';
+import { isOwnerUser } from '@/lib/authz';
 import { isDemoMode } from '@/lib/config';
 import { formatRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getDemoSessionAction, logoutDemoAction } from '@/app/actions/demo-auth';
@@ -94,9 +95,7 @@ export default function OwnerDashboardPage() {
             window.location.href = '/login?redirect=/dashboard/owner';
             return;
           }
-          const metaRole = userData.user.user_metadata?.role;
-          const userEmail = userData.user.email?.toLowerCase() || '';
-          if (metaRole === 'owner' || userEmail === 'grown@creativehub.id' || userEmail.includes('owner')) {
+          if (isOwnerUser(userData.user)) {
             isOwner = true;
           } else {
             // Bukan owner -> alihkan ke dashboard member

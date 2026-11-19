@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { getDemoSessionAction } from '@/app/actions/demo-auth';
+import { isOwnerUser } from '@/lib/authz';
 import { isDemoMode } from '@/lib/config';
 import { getDemoSnapshot, saveDemoSnapshot } from '@/lib/mockData';
 
@@ -21,9 +22,7 @@ export async function ownerDeleteMember(profileId: string): Promise<{
       if (authError || !user) {
         return { success: false, error: 'Akses ditolak. Anda harus login terlebih dahulu.' };
       }
-      const metaRole = user.user_metadata?.role;
-      const email = user.email?.toLowerCase() || '';
-      if (metaRole !== 'owner' && email !== 'grown@creativehub.id' && !email.includes('owner')) {
+      if (!isOwnerUser(user)) {
         return { success: false, error: 'Akses ditolak. Hanya Owner yang berwenang menghapus member.' };
       }
 

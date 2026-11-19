@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { isOwnerUser } from '@/lib/authz';
 import { isDemoMode } from '@/lib/config';
 import { logoutDemoAction } from '@/app/actions/demo-auth';
 
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (sbSession?.user) {
           const role: 'owner' | 'member' =
             sbSession.user.user_metadata?.role ||
-            (sbSession.user.email?.includes('owner') ? 'owner' : 'member');
+            (isOwnerUser(sbSession.user) ? 'owner' : 'member');
           const name =
             sbSession.user.user_metadata?.full_name ||
             (role === 'owner' ? 'Owner Agensi' : 'Creative Member');

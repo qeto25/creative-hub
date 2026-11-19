@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getDemoSessionAction } from '@/app/actions/demo-auth';
+import { isOwnerUser } from '@/lib/authz';
 import { isDemoMode } from '@/lib/config';
 import * as dataLayer from '@/lib/dataLayer';
 import { Profile, Portfolio, Review } from '@/lib/types';
@@ -34,13 +35,9 @@ export async function getVerifiedProfile(idOrSlug: string): Promise<VerifiedProf
     try {
       const supabase = await createClient();
       const { data: { user }, error } = await supabase.auth.getUser();
-      if (user && !error) {
-        const metaRole = user.user_metadata?.role;
-        const email = user.email?.toLowerCase() || '';
-        if (metaRole === 'owner' || email === 'grown@creativehub.id' || email.includes('owner')) {
-          isOwner = true;
-        }
-      }
+      if (user && !error && isOwnerUser(user)) {
+              isOwner = true;
+            }
     } catch {
       isOwner = false;
     }

@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { Review } from '@/lib/types';
 import { MOCK_BOOKINGS } from '@/lib/data/mock-data';
 import { revalidatePath } from 'next/cache';
@@ -42,7 +42,7 @@ export async function submitReview(payload: {
       };
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     let foundBooking: any = null;
 
     // 1. Cek di tabel bookings Supabase
@@ -126,7 +126,7 @@ export async function submitReview(payload: {
     // 9. Simpan ke Supabase jika dalam Mode Live
     if (!isDemoMode()) {
       try {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         const { data: insertedReview, error: insertErr } = await supabase
           .from('reviews')
           .insert({

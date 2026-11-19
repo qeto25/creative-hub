@@ -43,6 +43,7 @@ import { uploadAsset, validateImageFile } from '@/lib/supabase/storage';
 import * as dataLayer from '@/lib/dataLayer';
 import { isDemoMode } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
+import { isOwnerUser } from '@/lib/authz';
 import { formatRupiah, parseRupiah, formatRupiahDisplay } from '@/lib/utils/currency';
 import { getTalentStatus } from '@/lib/utils/status';
 import EmptyState from '@/components/EmptyState';
@@ -86,9 +87,7 @@ export default function MemberDashboardPage() {
           }
 
           // Cek role: jika Owner, arahkan ke dashboard owner
-          const metaRole = userData.user.user_metadata?.role;
-          const userEmail = userData.user.email?.toLowerCase() || '';
-          if (metaRole === 'owner' || userEmail === 'grown@creativehub.id' || userEmail.includes('owner')) {
+          if (isOwnerUser(userData.user)) {
             window.location.href = '/dashboard/owner';
             return;
           }
