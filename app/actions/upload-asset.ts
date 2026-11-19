@@ -1,6 +1,9 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import { getDemoSessionAction } from '@/app/actions/demo-auth';
+import { isDemoMode } from '@/lib/config';
 
 const STORAGE_BUCKET = 'portfolio-assets';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB for comfortable uploads
@@ -20,7 +23,24 @@ export async function uploadAssetAction(
   formData: FormData
 ): Promise<{ url: string | null; error: string | null }> {
   try {
-    const file = formData.get('file') as File | null;
+      // Guard: client ini memakai service-role key, jadi tanpa cek login siapa pun
+      // bisa menulis ke bucket publik (abuse storage + hosting file atas nama domain kita).
+      if (isDemoMode()) {
+        const demoSession = await getDemoSessionAction();
+        if (!demoSession) {
+          return { url: null, error: 'Akses ditolak. Silakan login terlebih dahulu.' };
+        }
+      } else {
+        const supabase = await createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          return { url: null, error: 'Akses ditolak. Silakan login terlebih dahulu.' };
+        }
+      }
+
+      const file = formData.get('file') as File | null;
     const folder = (formData.get('folder') as string) || 'portfolios';
 
     if (!file) {

@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { isOwnerUser } from '@/lib/authz';
 import { MemberProvisionPayload, Profile } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
@@ -23,9 +24,7 @@ export async function ownerCreateMember(payload: MemberProvisionPayload): Promis
       if (authError || !user) {
         return { success: false, error: 'Akses ditolak. Anda harus login terlebih dahulu.' };
       }
-      const metaRole = user.user_metadata?.role;
-      const email = user.email?.toLowerCase() || '';
-      if (metaRole !== 'owner' && email !== 'grown@creativehub.id' && !email.includes('owner')) {
+      if (!isOwnerUser(user)) {
         return { success: false, error: 'Akses ditolak. Hanya Owner yang berwenang menambah anggota baru.' };
       }
     } else {

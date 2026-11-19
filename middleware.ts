@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { isOwnerUser } from '@/lib/authz';
 
 // ==============================================================================
 // 1. IN-MEMORY SLIDING WINDOW RATE LIMITER (Zero Overhead, Pure Native Memory)
@@ -30,11 +31,11 @@ function cleanupRateLimitMap() {
 function applySecurityHeaders(res: NextResponse): NextResponse {
   const cspHeader = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: challenges.cloudflare.com",
-    "style-src 'self' 'unsafe-inline' https: fonts.googleapis.com",
-    "img-src 'self' data: blob: https: images.unsplash.com ernwownclpnkrtczvuci.supabase.co",
-    "font-src 'self' data: https: fonts.gstatic.com",
-    "connect-src 'self' https: wss: ernwownclpnkrtczvuci.supabase.co",
+    "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co",
+        "font-src 'self' data: https://fonts.gstatic.com",
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -137,15 +138,8 @@ export async function middleware(request: NextRequest) {
   let role: 'owner' | 'member' | null = null;
 
   if (user) {
-    const metaRole = user.user_metadata?.role as 'owner' | 'member' | undefined;
-    const email = user.email?.toLowerCase() || '';
-
-    if (metaRole === 'owner' || email === 'grown@creativehub.id' || email.includes('owner')) {
-      role = 'owner';
-    } else {
-      role = 'member';
-    }
-  } else if (isDemo) {
+      role = isOwnerUser(user) ? 'owner' : 'member';
+    } else if (isDemo) {
     const demoCookie =
       request.cookies.get('creativehub_demo_session')?.value ||
       request.cookies.get('creativehub_user_session')?.value;

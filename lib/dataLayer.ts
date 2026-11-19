@@ -589,17 +589,15 @@ export async function getBookingByTicket(ticketCode: string): Promise<Booking | 
   // Live Supabase
   try {
     const supabase = createClient();
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .ilike('ticket_code', cleanTicket)
-      .maybeSingle();
+        // RPC: hanya mengembalikan 1 tiket yang kodenya cocok, bukan seluruh tabel.
+        const { data, error } = await supabase.rpc('track_booking', { p_ticket: cleanTicket });
 
-    if (error) {
-      console.warn('[DataLayer] Live ticket lookup error:', error.message);
-      return null;
-    }
-    return (data as Booking) || null;
+        if (error) {
+          console.warn('[DataLayer] Live ticket lookup error:', error.message);
+          return null;
+        }
+        const row = Array.isArray(data) ? data[0] : data;
+        return (row as Booking) || null;
   } catch (err) {
     console.error('[DataLayer] Live ticket lookup exception:', err);
     return null;
