@@ -1,29 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { isOwnerUser } from '@/lib/authz';
+import { rateLimit } from '@/lib/ratelimit';
 
 // ==============================================================================
-// 1. IN-MEMORY SLIDING WINDOW RATE LIMITER (Zero Overhead, Pure Native Memory)
+// 1. RATE LIMITER — Upstash REST (bertahan antar-lambda) / fallback Map lokal
 // ==============================================================================
-interface RateLimitRecord {
-  count: number;
-  lastReset: number;
-}
-const rateLimitMap = new Map<string, RateLimitRecord>();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 Menit
-const MAX_GENERAL_REQUESTS = 120;       // Max 120 req / menit untuk browsing publik
+const RATE_LIMIT_WINDOW_SEC = 60;      // 1 Menit
+const MAX_GENERAL_REQUESTS = 120;      // Max 120 req / menit untuk browsing publik
 const MAX_SENSITIVE_REQUESTS = 30;     // Max 30 req / menit untuk API, Login, dan Server Actions POST
-
-function cleanupRateLimitMap() {
-  if (rateLimitMap.size > 5000) {
-    const now = Date.now();
-    rateLimitMap.forEach((record, key) => {
-      if (now - record.lastReset > RATE_LIMIT_WINDOW_MS) {
-        rateLimitMap.delete(key);
-      }
-    });
-  }
-}
 
 // ==============================================================================
 // 2. HTTP SECURITY HEADERS (OWASP Top 10 Hardened)
@@ -55,7 +40,6 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1';
-  const now = Date.now();
 
   // ----------------------------------------------------------------------------
   // A. Proteksi Rate Limiting
@@ -63,17 +47,9 @@ export async function middleware(request: NextRequest) {
   const isSensitive = pathname.startsWith('/api') || pathname.startsWith('/login') || request.method === 'POST';
   const limit = isSensitive ? MAX_SENSITIVE_REQUESTS : MAX_GENERAL_REQUESTS;
 
-  const clientRecord = rateLimitMap.get(ip) || { count: 0, lastReset: now };
-  if (now - clientRecord.lastReset > RATE_LIMIT_WINDOW_MS) {
-    clientRecord.count = 1;
-    clientRecord.lastReset = now;
-  } else {
-    clientRecord.count += 1;
-  }
-  rateLimitMap.set(ip, clientRecord);
-  cleanupRateLimitMap();
-
-  if (clientRecord.count > limit) {
+  // Bucket terpisah: browsing publik tidak boleh memakan jatah login/API.
+  const bucket = isSensitive ? 'sens' : 'gen';
+  if (!(await rateLimit(`rl:${ip}:${bucket}`, limit, RATE_LIMIT_WINDOW_SEC))) {
     const rateLimitResponse = new NextResponse(
       JSON.stringify({
         success: false,
